@@ -20,6 +20,9 @@ import {
   DEFAULT_SETTINGS,
   wireSettingsModal,
   startAutoThemeWatcher,
+  loadLastSelection,
+  saveLastSelection,
+  clearLastSelection,
 } from './components/settingsModal.js';
 
 const initialState = Object.freeze({
@@ -46,7 +49,43 @@ function $(id) {
 async function bootstrap() {
   const persistedSettings = loadSettings();
   applyAmbientSettings(persistedSettings);
-  const store = createStore({ ...initialState, settings: persistedSettings });
+
+  // "Seçimleri hatırla" açıkken son kayıtlı loader/mod snapshot'unu initial
+  // state'e enjekte et. Kapalıyken (default) modsPanel kendi DEFAULT_LOADER
+  // ('vanilla') fallback'ine düşer.
+  const seededState = { ...initialState };
+  if (persistedSettings.rememberSelection) {
+    const last = loadLastSelection();
+    if (last) Object.assign(seededState, last);
+  }
+  const store = createStore({ ...seededState, settings: persistedSettings });
+
+  // Store değişimlerini dinle: "Seçimleri hatırla" açıkken loader/preset
+  // değiştiğinde otomatik kaydet; setting kapatıldığında saklananı temizle.
+  // lastSerialized — aynı snapshot'u tekrar tekrar yazmamak için.
+  let prevRemember = !!persistedSettings.rememberSelection;
+  let lastSerialized = null;
+  store.subscribe((state) => {
+    const settings = state.settings || {};
+    const nowRemember = !!settings.rememberSelection;
+    if (prevRemember && !nowRemember) {
+      clearLastSelection();
+      lastSerialized = null;
+    }
+    prevRemember = nowRemember;
+    if (!nowRemember) return;
+    const snap = {
+      selectedLoader: state.selectedLoader,
+      modOptifine: !!state.modOptifine,
+      modShaderFps: !!state.modShaderFps,
+      modEmbossedBlocks: !!state.modEmbossedBlocks,
+    };
+    const ser = JSON.stringify(snap);
+    if (ser !== lastSerialized) {
+      lastSerialized = ser;
+      saveLastSelection(snap);
+    }
+  });
 
   const components = [
     createAccountCard({ root: $('account-slot'), store, auth: api.auth }),

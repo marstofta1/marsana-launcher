@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'marsana.settings.v1';
+const LAST_SELECTION_KEY = 'marsana.lastSelection.v1';
 
 // Otomatik tema penceresi: bu saat aralığında gündüz, dışında gece.
 const DAY_START_HOUR = 6;
@@ -9,6 +10,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   masterVolume: 100,        // 0-100
   musicVolume: 50,          // 0-100
   animations: true,
+  rememberSelection: false, // Kapalıyken her açılış Vanilla; açıkken son loader/mod seçimi geri yüklenir.
 });
 
 export function resolveAutoTheme(date = new Date()) {
@@ -38,6 +40,36 @@ export function saveSettings(settings) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   } catch {
     /* best effort */
+  }
+}
+
+// "Seçimleri hatırla" açıkken loader/mod preset snapshot'unu sakla.
+// Settings içine gömmüyoruz çünkü store.subscribe içinde setState ile
+// settings'i güncelleyince loop oluşurdu — bağımsız key kullanıyoruz.
+export function loadLastSelection() {
+  try {
+    const raw = localStorage.getItem(LAST_SELECTION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveLastSelection(snapshot) {
+  try {
+    localStorage.setItem(LAST_SELECTION_KEY, JSON.stringify(snapshot));
+  } catch {
+    /* best effort */
+  }
+}
+
+export function clearLastSelection() {
+  try {
+    localStorage.removeItem(LAST_SELECTION_KEY);
+  } catch {
+    /* ignore */
   }
 }
 
@@ -122,6 +154,14 @@ export function wireSettingsModal({ button, modalRoot, store }) {
             <p class="settings-hint">Yumuşak geçişler ve hover efektleri.</p>
           </div>
 
+          <div class="settings-group">
+            <label class="settings-checkbox">
+              <input type="checkbox" data-role="rememberSelection" ${s.rememberSelection ? 'checked' : ''} />
+              <span>Seçimleri hatırla</span>
+            </label>
+            <p class="settings-hint">Mod yükleyici ve mod seçenekleri bir sonraki açılışta aynı kalır. Kapalıyken her açılışta Vanilla seçili gelir.</p>
+          </div>
+
           <div class="modal-actions">
             <button class="btn ghost" data-role="cancel">Kapat</button>
             <button class="btn primary" data-role="save">Kaydet</button>
@@ -136,6 +176,7 @@ export function wireSettingsModal({ button, modalRoot, store }) {
     const musicSlider = modalRoot.querySelector('[data-role="musicVolume"]');
     const musicVal = modalRoot.querySelector('[data-role="musicVolume-val"]');
     const animationsCb = modalRoot.querySelector('[data-role="animations"]');
+    const rememberCb = modalRoot.querySelector('[data-role="rememberSelection"]');
     const themeNight = modalRoot.querySelector('[data-role="theme-night"]');
     const themeDay = modalRoot.querySelector('[data-role="theme-day"]');
     const themeAuto = modalRoot.querySelector('[data-role="theme-auto"]');
@@ -163,6 +204,9 @@ export function wireSettingsModal({ button, modalRoot, store }) {
     });
     animationsCb.addEventListener('change', () => {
       setDraft({ animations: animationsCb.checked });
+    });
+    rememberCb.addEventListener('change', () => {
+      setDraft({ rememberSelection: rememberCb.checked });
     });
     function selectTheme(value, el) {
       themeNight.classList.toggle('active', el === themeNight);
