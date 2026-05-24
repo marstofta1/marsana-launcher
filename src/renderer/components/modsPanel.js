@@ -49,6 +49,7 @@ function forgeOptifineLikelySupported(versionId) {
 }
 
 const LOADER_OPTIONS = [
+  { value: 'vanilla', label: 'Vanilla', hint: 'Saf Minecraft — hiçbir loader veya mod yüklenmez. Mojang\'ın resmi sürümü olduğu gibi başlar.' },
   { value: 'fabric', label: 'Fabric', hint: 'Modrinth modları (Sodium, Iris, OptiFine for Fabric, vs.). Aşağıdaki seçenekler aktif olur.' },
   { value: 'forge', label: 'Forge', hint: 'Klasik Forge loader (boş profil). Modlarınızı mods/ klasörüne kendiniz eklersiniz.' },
   { value: 'forge-optifine', label: 'Forge + OptiFine', hint: 'Forge loader + optifine.net’ten klasik OptiFine.jar otomatik indirilir.' },
@@ -254,6 +255,12 @@ export function createModsPanel({ root, store }) {
       shaderLabel: '',
       embossedLabel: '',
     },
+    vanilla: {
+      rows: [],
+      title: 'Vanilla',
+      shaderLabel: '',
+      embossedLabel: '',
+    },
   };
 
   function applyLoaderState() {
@@ -303,6 +310,9 @@ export function createModsPanel({ root, store }) {
     } else if (loader === 'legacy-fabric') {
       loaderWarning.textContent =
         'Legacy Fabric otomatik kurulacak. Sürüm seçici yalnızca Legacy Fabric\'in desteklediği eski sürümleri (1.3 – 1.13.2 aralığı) gösterir. Modları mods/ klasörüne kendiniz eklersiniz.';
+    } else if (loader === 'vanilla') {
+      loaderWarning.textContent =
+        'Vanilla seçili — Minecraft, Mojang\'ın resmi profiliyle başlar. Hiçbir loader/mod yüklenmez ve mods/ klasörü okunmaz.';
     } else {
       // forge-optifine
       const v = store.getState().selectedVersion;

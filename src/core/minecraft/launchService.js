@@ -468,6 +468,14 @@ function createLaunchService({
       applyLoaderModsState('fabric');
       return buildLegacyFabricSpec({ version, emit });
     }
+    if (loader === 'vanilla') {
+      applyLoaderModsState('fabric');
+      return {
+        spec: { number: version, type: 'release' },
+        overrides: { detached: false },
+        extra: {},
+      };
+    }
     applyLoaderModsState('fabric');
     return buildFabricSpec({ version, modPresets, emit });
   }
