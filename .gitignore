@@ -6,3 +6,6 @@ out/
 
 # Saklanan kullanıcı verisi (token, ayarlar) — repo'ya commit edilmemeli
 userdata/
+
+# Claude Code kişisel ayarları (settings.json paylaşılır, .local takım dışı kalır)
+.claude/settings.local.json

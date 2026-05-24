@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "PowerShell(& \"C:\\Program Files\\Git\\cmd\\git.exe\" *)",
+      "PowerShell(& 'C:\\Program Files\\Git\\cmd\\git.exe' *)",
+      "PowerShell($git*)",
+      "PowerShell(git *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "$ErrorActionPreference='SilentlyContinue'; $g='C:\\Program Files\\Git\\cmd\\git.exe'; if (-not (Test-Path $g)) { $g='git' }; & $g add -A 2>$null | Out-Null; & $g diff --cached --quiet 2>$null; if ($LASTEXITCODE -eq 1) { & $g commit -m 'otomatik revize' 2>$null | Out-Null; & $g push origin main 2>$null | Out-Null }",
+            "timeout": 60,
+            "async": true,
+            "statusMessage": "Otomatik commit + push main"
+          }
+        ]
+      }
+    ]
+  }
+}
