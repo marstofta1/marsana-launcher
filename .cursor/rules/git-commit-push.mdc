@@ -1,0 +1,43 @@
+---
+description: Her değişiklik ve revize sonrası otomatik commit ve push yap
+alwaysApply: true
+---
+
+# Git Commit & Push
+
+Her kod değişikliği, düzeltme veya revize tamamlandığında **commit ve push yapmayı unutma**. Kullanıcı ayrıca istemeden bile bu adım zorunludur.
+
+## Ne Zaman
+
+- Bir görev veya alt görev bittiğinde
+- Bug fix, refactor, yeni özellik veya stil güncellemesi sonrası
+- Birden fazla dosya değiştiyse tek mantıklı commit'te topla
+
+## Commit Adımları
+
+1. Paralel çalıştır: `git status`, `git diff`, `git log -5 --oneline`
+2. `.env`, credential ve secret dosyalarını commit etme
+3. Anlamlı mesaj yaz (1-2 cümle, "why" odaklı)
+4. Sırayla: `git add` → `git commit` → `git push`
+
+## Push
+
+- Değişiklikler commit edildikten sonra `git push` (veya ilk push için `git push -u origin HEAD`) yap
+- Push başarısız olursa hatayı düzelt ve tekrar dene; kullanıcıya bildir
+
+## Güvenlik
+
+- `git push --force` kullanma (kullanıcı açıkça istemedikçe)
+- `git config` değiştirme
+- Hook atlamak için `--no-verify` kullanma
+
+## Örnek Akış
+
+```
+# Değişiklikler tamamlandı
+git add src/renderer/components/playButton.js
+git commit -m "Fix play button disabled state when no version selected"
+git push
+```
+
+Görev bitmeden önce working tree temiz olmalı (commit + push yapılmış).

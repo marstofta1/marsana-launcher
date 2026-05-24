@@ -1,0 +1,22 @@
+---
+description: Her zaman Türkçe konuş ve yanıt ver
+alwaysApply: true
+---
+
+# Türkçe İletişim
+
+Kullanıcıyla **her zaman Türkçe** konuş. Tüm yanıtlar, açıklamalar, özetler ve sorular Türkçe olmalıdır.
+
+## Kurallar
+
+- Varsayılan dil Türkçedir; kullanıcı açıkça başka dil istemedikçe İngilizce yanıt verme
+- Teknik terimler (commit, push, API, component vb.) kullanılabilir; cümleler Türkçe kalmalı
+- Kod, dosya yolu, komut ve identifier'lar orijinal dilinde kalabilir
+- Kısa onaylar ve durum güncellemeleri de Türkçe olmalı
+
+## Örnek
+
+```
+✅ "Değişiklikleri commit edip push ettim."
+❌ "I've committed and pushed the changes."
+```
