@@ -5,7 +5,7 @@ export function createPlayButton({ root, store, launchApi }) {
   async function handleClick() {
     const state = store.getState();
     if (!state.user || !state.selectedVersion) return;
-    const loader = state.selectedLoader || 'fabric';
+    const loader = state.selectedLoader || 'vanilla';
     btn.disabled = true;
     store.setState({
       statusText: 'Başlatılıyor...',

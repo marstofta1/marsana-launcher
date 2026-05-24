@@ -434,7 +434,7 @@ function createLaunchService({
   }
 
   async function buildLaunchPlan({ version, selectedLoader, modPresets, javaPath, emit }) {
-    const loader = selectedLoader || 'fabric';
+    const loader = selectedLoader || 'vanilla';
     // modPresets.shaderFps / embossedBlocks tüm loader'larda paylaşılan
     // flag'lerdir: Fabric için shaderStackService.ensure içinde işlenir; Forge
     // ailesi için install* dallarına yönlendirilir.
@@ -510,7 +510,7 @@ function createLaunchService({
     // Forge installer'ı subprocess olarak çalıştırmak için javaPath'i önceden çöz.
     // Forge için sistem Java'sı (JAVA_HOME) yerine Mojang'ın tam doğru sürümünü
     // kullan — Forge ASM yeni Java bytecode'unu okuyamayabilir (örn. Java 25).
-    const loaderForJava = opts.selectedLoader || 'fabric';
+    const loaderForJava = opts.selectedLoader || 'vanilla';
     const strictJava =
       loaderForJava === 'forge' ||
       loaderForJava === 'forge-optifine' ||
@@ -556,7 +556,7 @@ function createLaunchService({
     };
     writeLog(
       'launcher',
-      `Launching version=${opts.version} loader=${opts.selectedLoader || 'fabric'} javaPath=${javaPath || '(MCLC default)'}`
+      `Launching version=${opts.version} loader=${opts.selectedLoader || 'vanilla'} javaPath=${javaPath || '(MCLC default)'}`
     );
 
     const client = new Client();
@@ -585,7 +585,7 @@ function createLaunchService({
       emit.close({ code });
     });
 
-    const extraJvmArgs = isForgeFamily(opts.selectedLoader || 'fabric') && spec.custom
+    const extraJvmArgs = isForgeFamily(opts.selectedLoader || 'vanilla') && spec.custom
       ? readForgeFamilyJvmArgs({ gameRoot: paths.gameRoot, customId: spec.custom })
       : [];
 
@@ -606,7 +606,7 @@ function createLaunchService({
     logger.info('Launching Minecraft', {
       version: opts.version,
       memMb,
-      selectedLoader: opts.selectedLoader || 'fabric',
+      selectedLoader: opts.selectedLoader || 'vanilla',
       modPresets,
       offline: !!opts.offline,
     });

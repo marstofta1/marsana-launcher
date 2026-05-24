@@ -59,6 +59,7 @@ const LOADER_OPTIONS = [
 ];
 
 const FABRIC_LOADER = 'fabric';
+const DEFAULT_LOADER = 'vanilla';
 
 export function createModsPanel({ root, store }) {
   const loaderRadios = LOADER_OPTIONS.map(
@@ -143,7 +144,7 @@ export function createModsPanel({ root, store }) {
     for (const opt of LOADER_OPTIONS) {
       if (loaderRadioEls[opt.value].checked) return opt.value;
     }
-    return FABRIC_LOADER;
+    return DEFAULT_LOADER;
   }
 
   function applyMutualExclusion() {
@@ -357,7 +358,7 @@ export function createModsPanel({ root, store }) {
   embossedCb.addEventListener('change', publish);
 
   function renderFromStore(state) {
-    const loader = state.selectedLoader || FABRIC_LOADER;
+    const loader = state.selectedLoader || DEFAULT_LOADER;
     for (const opt of LOADER_OPTIONS) {
       const should = opt.value === loader;
       if (loaderRadioEls[opt.value].checked !== should) {
@@ -373,7 +374,7 @@ export function createModsPanel({ root, store }) {
 
   function mount() {
     if (!store.getState().selectedLoader) {
-      store.setState({ selectedLoader: FABRIC_LOADER });
+      store.setState({ selectedLoader: DEFAULT_LOADER });
     }
     renderFromStore(store.getState());
     return store.subscribe((state) => {
