@@ -222,7 +222,19 @@ code {
 }
 .download-icon { font-size: 36px; line-height: 1; margin-bottom: 10px; }
 .download-card h3 { margin: 0 0 6px; font-size: 1.1rem; }
-.download-card p { margin: 0; color: var(--text-dim); font-size: 14px; }
+.download-card p { margin: 0 0 12px; color: var(--text-dim); font-size: 14px; }
+.download-card.soon { opacity: 0.6; cursor: not-allowed; }
+.download-card.soon:hover { border-color: var(--border); transform: none; }
+.dl-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.3px;
+}
+.dl-badge.ready { background: var(--accent); color: #0d1116; }
+.dl-badge.soon { background: var(--bg-elev); color: var(--text-dim); border: 1px solid var(--border); }
 .download-note {
   margin-top: 18px;
   color: var(--text-dim);
