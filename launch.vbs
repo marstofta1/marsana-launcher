@@ -1,3 +1,4 @@
+' Marsana Launcher - masaüstü kısayolu başlatıcı (CMD penceresi açmadan)
 Set WshShell = CreateObject("WScript.Shell")
 projectDir = CreateObject("Scripting.FileSystemObject").GetParentFolderName(WScript.ScriptFullName)
 WshShell.CurrentDirectory = projectDir
