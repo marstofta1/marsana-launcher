@@ -1,0 +1,86 @@
+:root {
+  --bg-page-from: #1b1f23;
+  --bg-page-to: #0f1115;
+  --bg-card: #181c22;
+  --bg-input: #0f1217;
+  --bg-elevated: #1f2630;
+  --bg-modal: #1b1f23;
+  --border: #2a2f36;
+  --border-strong: #4a525b;
+  --text-primary: #eef2f6;
+  --text-secondary: #c5cdd6;
+  --text-muted: #7d8a99;
+  --accent: #2f7df0;
+  --accent-hover: #4a8df3;
+  --accent-positive: #3fa34d;
+  --accent-positive-hover: #4eb55c;
+  --topbar-bg: rgba(0, 0, 0, 0.35);
+  --footer-bg: rgba(0, 0, 0, 0.25);
+  --overlay-scrim: rgba(0, 0, 0, 0.7);
+  --overlay-update-bg: rgba(10, 13, 17, 0.92);
+  --shadow-card: 0 6px 12px rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-overlay: 0 24px 80px rgba(0, 0, 0, 0.55);
+}
+
+body.theme-day {
+  --bg-page-from: #eef2f7;
+  --bg-page-to: #d9e1ec;
+  --bg-card: #ffffff;
+  --bg-input: #f3f6fa;
+  --bg-elevated: #eef3f9;
+  --bg-modal: #ffffff;
+  --border: #d2dae3;
+  --border-strong: #98a4b3;
+  --text-primary: #1a2230;
+  --text-secondary: #3a4658;
+  --text-muted: #5d6b7d;
+  --accent: #2563eb;
+  --accent-hover: #1d4fd6;
+  --accent-positive: #2f9e44;
+  --accent-positive-hover: #277b34;
+  --topbar-bg: rgba(255, 255, 255, 0.5);
+  --footer-bg: rgba(255, 255, 255, 0.4);
+  --overlay-scrim: rgba(20, 30, 50, 0.45);
+  --overlay-update-bg: rgba(255, 255, 255, 0.92);
+  --shadow-card: 0 6px 12px rgba(70, 90, 120, 0.18);
+  --shadow-modal: 0 20px 60px rgba(70, 90, 120, 0.25);
+  --shadow-overlay: 0 24px 80px rgba(70, 90, 120, 0.28);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(180deg, var(--bg-page-from) 0%, var(--bg-page-to) 100%);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background 0.25s ease, color 0.2s ease;
+}
+
+button {
+  font-family: inherit;
+}
+
+input, select {
+  font-family: inherit;
+}
+
+select, input[type="range"], input[type="text"] {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+input[type="range"] { padding: 0; }
+
+input[type="text"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+}

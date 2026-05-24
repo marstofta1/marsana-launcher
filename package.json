@@ -1,0 +1,50 @@
+{
+  "name": "marsana-launcher",
+  "version": "0.1.0",
+  "description": "Marsana Minecraft Launcher",
+  "private": true,
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder",
+    "pack:mac": "electron-builder --mac",
+    "pack:win": "electron-builder --win",
+    "pack:linux": "electron-builder --linux",
+    "pack:desktop": "electron-builder --mac --win"
+  },
+  "build": {
+    "appId": "com.marsana.launcher",
+    "productName": "Marsana Launcher",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://example.com/marsana-launcher-updates/"
+      }
+    ],
+    "mac": {
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.games"
+    },
+    "win": {
+      "target": "nsis",
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Game"
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3",
+    "minecraft-launcher-core": "^3.18.2",
+    "msmc": "^4.1.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}

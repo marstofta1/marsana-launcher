@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://mc-heads.net; script-src 'self';" />
+  <title>Marsana Launcher</title>
+  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/layout.css" />
+  <link rel="stylesheet" href="styles/components.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">⛏</span>
+        <span>Marsana Launcher</span>
+      </div>
+      <button type="button" class="btn ghost" id="how-to-play-trigger" title="Minecraft nasıl oynanır rehberi">
+        Nasıl oynanır?
+      </button>
+      <button type="button" class="btn ghost" id="update-trigger" title="Güncellemeyi denetle ve launcher'ı yeniden başlat">
+        Güncelle
+      </button>
+      <button type="button" class="btn ghost" id="settings-trigger" title="Tema, ses ve diğer ayarlar">
+        Ayarlar
+      </button>
+    </div>
+    <div id="account-slot" class="account"></div>
+  </header>
+
+  <main class="main">
+    <section class="card">
+      <h2>Oyunu Başlat</h2>
+      <div id="version-slot"></div>
+      <div id="memory-slot"></div>
+      <h3 class="section-title">Modlar</h3>
+      <div id="mods-slot"></div>
+      <div id="launch-options-slot"></div>
+      <div id="play-slot"></div>
+    </section>
+
+    <div class="right-column">
+      <section class="card log">
+        <h3>Durum</h3>
+        <div id="status-slot"></div>
+      </section>
+
+      <section class="card profile-card">
+        <div id="profile-slot"></div>
+      </section>
+    </div>
+
+    <section class="card servers-card full-width">
+      <div id="servers-slot"></div>
+    </section>
+  </main>
+
+  <footer class="bottom-bar" id="bottom-links-slot"></footer>
+
+  <div id="modal-slot"></div>
+  <div id="how-to-play-slot" aria-hidden="true"></div>
+  <div id="settings-modal-slot" aria-hidden="true"></div>
+
+  <div id="update-overlay" class="update-overlay hidden" aria-hidden="true">
+    <div class="update-overlay-card">
+      <div class="update-spinner" aria-hidden="true"></div>
+      <h2 class="update-overlay-title" data-role="title">Güncelleme</h2>
+      <p class="update-overlay-message" data-role="message"></p>
+      <div class="progress-wrap update-overlay-progress" data-role="progress-wrap" style="display: none">
+        <div class="progress-bar" data-role="bar"></div>
+      </div>
+      <button type="button" class="btn primary update-overlay-dismiss hidden" data-role="dismiss">Tamam</button>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
