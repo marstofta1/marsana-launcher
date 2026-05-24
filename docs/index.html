@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Marsana Launcher — Minecraft Java Edition için modern, Türkçe başlatıcı. Fabric, Forge, NeoForge, Quilt ve daha fazla mod yükleyicisi tek tıkla." />
+  <title>Marsana Launcher — Minecraft için Türkçe başlatıcı</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top">
+      <span class="brand-mark">M</span>
+      <span class="brand-text">Marsana Launcher</span>
+    </a>
+    <nav class="topnav">
+      <a href="#indir">İndir</a>
+      <a href="#hakkinda">Hakkında</a>
+      <a href="#premium">Premium</a>
+      <a href="#kurulum">Kurulum</a>
+      <a href="#sss">SSS</a>
+      <a class="ghost-btn" href="https://github.com/marstofta1/marsana-launcher" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <aside class="tts-panel" aria-label="Sesli dinleme kontrolleri">
+    <div class="tts-row">
+      <button class="tts-btn primary" data-tts="play" aria-label="Sayfayı sesli oku">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <span data-tts-label>Sesli Dinle</span>
+      </button>
+      <button class="tts-btn" data-tts="pause" aria-label="Duraklat" disabled>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+      </button>
+      <button class="tts-btn" data-tts="stop" aria-label="Durdur" disabled>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+      </button>
+    </div>
+    <div class="tts-row tts-voice-row">
+      <label class="tts-voice-label">
+        Ses:
+        <select data-tts="voice" aria-label="Seslendirme seçimi"></select>
+      </label>
+      <label class="tts-rate-label">
+        Hız: <span data-tts-rate-val>1.0×</span>
+        <input type="range" min="0.5" max="2" step="0.1" value="1" data-tts="rate" aria-label="Konuşma hızı" />
+      </label>
+    </div>
+    <p class="tts-hint" data-tts-status>Hazır. "Sesli Dinle"ye basınca sayfa baştan okunur.</p>
+  </aside>
+
+  <main id="top">
+
+    <section class="hero" data-tts-section>
+      <div class="hero-inner">
+        <h1 class="hero-title">Minecraft için <span class="accent">modern</span> ve <span class="accent">Türkçe</span> başlatıcı</h1>
+        <p class="hero-sub">
+          Marsana Launcher; Microsoft hesabınla giriş yap, sürümünü ve mod yükleyicini seç, tek tıkla oyna.
+          Fabric, Forge, NeoForge, Quilt ve Legacy Fabric tek arayüzde — Java otomatik kurulur, mod yığınları
+          (Iris + Sodium + Complementary) hazır gelir.
+        </p>
+        <div class="hero-cta">
+          <a class="btn primary" href="#indir">Hemen İndir</a>
+          <a class="btn ghost" href="#premium">Önce şunu oku: Premium gerekli</a>
+        </div>
+        <p class="hero-meta">Windows · macOS · Linux · Açık kaynak</p>
+      </div>
+    </section>
+
+    <section id="indir" class="section section-download" data-tts-section>
+      <h2>İndir</h2>
+      <p>
+        Marsana Launcher'ın en güncel sürümünü GitHub Releases sayfasından, işletim sistemine
+        uygun paketi indirerek kurabilirsin. Tek bir dosya yeterli; başka bir bağımlılık gerekmez.
+      </p>
+      <div class="download-grid">
+        <a class="download-card" href="https://github.com/marstofta1/marsana-launcher/releases/latest" target="_blank" rel="noopener">
+          <div class="download-icon">🪟</div>
+          <h3>Windows</h3>
+          <p><code>.exe</code> kurucu — Windows 10/11 (64 bit)</p>
+        </a>
+        <a class="download-card" href="https://github.com/marstofta1/marsana-launcher/releases/latest" target="_blank" rel="noopener">
+          <div class="download-icon">🍎</div>
+          <h3>macOS</h3>
+          <p><code>.dmg</code> paketi — macOS 10.15 ve üzeri (Intel + Apple Silicon)</p>
+        </a>
+        <a class="download-card" href="https://github.com/marstofta1/marsana-launcher/releases/latest" target="_blank" rel="noopener">
+          <div class="download-icon">🐧</div>
+          <h3>Linux</h3>
+          <p><code>.AppImage</code> — çoğu modern dağıtımda çift tıklayıp çalıştır</p>
+        </a>
+      </div>
+      <p class="download-note">
+        Tüm indirmeler aynı sayfaya gider; oradan platformuna uygun dosyayı seç. Henüz yayımlanmış
+        bir sürüm yoksa repodan kaynak kodu klonlayıp <code>npm install &amp;&amp; npm start</code>
+        ile çalıştırabilirsin.
+      </p>
+    </section>
+
+    <section id="hakkinda" class="section" data-tts-section>
+      <h2>Marsana Launcher Nedir?</h2>
+      <p>
+        Marsana Launcher, Mojang'ın resmi Minecraft Java Edition oyununu başlatmak için yazılmış,
+        Electron tabanlı bir masaüstü uygulamasıdır. Resmi Minecraft Launcher'a kıyasla Türkçe
+        arayüzü, hazır mod yığınları ve önerilen sunucu listesi ile farklılaşır. Oyunu içermez;
+        sadece çalıştırır.
+      </p>
+      <div class="feature-grid">
+        <div class="feature">
+          <h3>Microsoft girişi + offline mod</h3>
+          <p>Microsoft hesabınla giriş yap (önerilen) veya çevrimdışı modda yerel olarak oyna.</p>
+        </div>
+        <div class="feature">
+          <h3>Tüm sürümler</h3>
+          <p>Release, snapshot, eski sürümler (1.x.y), hatta 1.0 öncesi alpha/beta sürümleri.</p>
+        </div>
+        <div class="feature">
+          <h3>Mod yükleyicileri</h3>
+          <p>Fabric · Forge · NeoForge · Quilt · Legacy Fabric — hepsi otomatik kurulur.</p>
+        </div>
+        <div class="feature">
+          <h3>Hazır mod yığınları</h3>
+          <p>Tek tıkla Iris + Sodium + Complementary Reimagined shader; ya da Continuity CTM.</p>
+        </div>
+        <div class="feature">
+          <h3>OptiFine entegrasyonu</h3>
+          <p>Forge + OptiFine veya Fabric için OptiFine paketi otomatik indirilir ve kurulur.</p>
+        </div>
+        <div class="feature">
+          <h3>Java otomatik yönetilir</h3>
+          <p>Sürüm uyumu (Java 8, 17, 21) Mojang'ın resmi runtime'larıyla otomatik çözülür.</p>
+        </div>
+        <div class="feature">
+          <h3>Önerilen sunucular</h3>
+          <p>Topluluğun aktif Türkçe sunucuları arayüzde önceden listelidir.</p>
+        </div>
+        <div class="feature">
+          <h3>Hafıza ayarı</h3>
+          <p>RAM tahsisini kaydırıcıyla ayarla; sistemin üst sınırı otomatik hesaplanır.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="premium" class="section section-warning" data-tts-section>
+      <h2>⚠ Premium Hesap Zorunlu</h2>
+      <div class="warning-box">
+        <p>
+          <strong>Marsana Launcher, Minecraft oyununu satmaz — sadece başlatır.</strong>
+          Oynayabilmek için Microsoft hesabında <strong>Minecraft Java Edition lisansının</strong>
+          (yaygın adıyla "premium hesap") tanımlı olması zorunludur. Bu lisans olmadan oyun
+          sunucularına bağlanamazsın ve tek kişilik modda bile resmi giriş başarısız olur.
+        </p>
+        <h3>Premium hesap nasıl alınır?</h3>
+        <ul>
+          <li>
+            <a href="https://www.minecraft.net/tr-tr/store/minecraft-java-bedrock-edition-pc" target="_blank" rel="noopener">minecraft.net</a>
+            adresinden Microsoft hesabınla tek seferlik satın alma yap (Java + Bedrock paketi yaklaşık 27 €).
+          </li>
+          <li>
+            Aboneliksizdir; bir kez satın alındığında o Microsoft hesabına süresiz bağlıdır.
+          </li>
+          <li>
+            Satın aldıktan sonra Marsana Launcher'da "Microsoft ile Giriş Yap"a tıkla;
+            tarayıcıda hesabını onayla, geri dön.
+          </li>
+        </ul>
+        <h3>Korsan / crack hesap çalışır mı?</h3>
+        <p>
+          <strong>Hayır.</strong> Marsana yalnızca resmi Microsoft kimlik doğrulama akışını kullanır
+          (msmc + Mojang token değişimi). "Cracked" hesaplarla giriş desteklenmez; oyun çevrimiçi
+          sunuculara bağlanamaz. Çevrimdışı mod yerel oyun için tek başına yeterlidir ama Mojang
+          oturum doğrulaması gerektirmez — yine de yasal kullanım için premium hesap önerilir.
+        </p>
+      </div>
+    </section>
+
+    <section id="kurulum" class="section" data-tts-section>
+      <h2>Kurulum ve İlk Adımlar</h2>
+      <ol class="steps">
+        <li>
+          <strong>İndir.</strong> Yukarıdaki "İndir" bölümünden işletim sistemine uygun paketi
+          GitHub Releases'tan indir.
+        </li>
+        <li>
+          <strong>Kur.</strong>
+          Windows'ta <code>.exe</code> kurucusunu çift tıkla;
+          macOS'ta <code>.dmg</code>'yi açıp uygulamayı <code>Applications</code> klasörüne sürükle;
+          Linux'ta <code>.AppImage</code> dosyasına çalıştırma izni verip çift tıkla
+          (<code>chmod +x Marsana*.AppImage</code>).
+        </li>
+        <li>
+          <strong>Giriş yap.</strong> İlk açılışta "Microsoft ile Giriş Yap" butonuna bas;
+          tarayıcı açılır, hesabını onayla, geri dön. Token'ın yerel olarak güvenli şekilde saklanır.
+        </li>
+        <li>
+          <strong>Sürüm ve yükleyici seç.</strong> Sürüm açılır menüsünden istediğin Minecraft
+          sürümünü, mod paneli'nden de yükleyiciyi seç (varsayılan: Vanilla).
+        </li>
+        <li>
+          <strong>Oyna.</strong> "OYNA" butonuna bas; Java ve gerekli dosyalar otomatik indirilir,
+          ilk açılışta birkaç dakika sürer; sonraki açılışlar saniyeler içinde başlar.
+        </li>
+      </ol>
+    </section>
+
+    <section id="sistem" class="section" data-tts-section>
+      <h2>Sistem Gereksinimleri</h2>
+      <div class="reqs-grid">
+        <div class="req">
+          <h3>İşletim Sistemi</h3>
+          <p>Windows 10/11 (64 bit), macOS 10.15+, popüler Linux dağıtımları (Ubuntu, Fedora, Arch, ...)</p>
+        </div>
+        <div class="req">
+          <h3>İşlemci</h3>
+          <p>Modern x86_64 işlemci (Intel/AMD); macOS'ta Apple Silicon (M1/M2/M3) doğal olarak desteklenir.</p>
+        </div>
+        <div class="req">
+          <h3>Bellek (RAM)</h3>
+          <p>Minimum 4 GB; mod ve shader için 8 GB önerilir, ağır mod paketlerinde 12+ GB.</p>
+        </div>
+        <div class="req">
+          <h3>Disk Alanı</h3>
+          <p>Boş kurulum ~500 MB; sürüm dosyaları ve modlarla birlikte 5–20 GB'a çıkabilir.</p>
+        </div>
+        <div class="req">
+          <h3>Java</h3>
+          <p>Kendin kurmana gerek yok. Marsana, Mojang'ın resmi Java runtime'larını gerektiğinde otomatik indirir.</p>
+        </div>
+        <div class="req">
+          <h3>Ağ</h3>
+          <p>İlk açılışta sürüm indirme için stabil internet; sonradan offline modda oynanabilir.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="sss" class="section" data-tts-section>
+      <h2>Sık Sorulan Sorular</h2>
+      <details class="faq">
+        <summary>Hesabım yok, nasıl alırım?</summary>
+        <p>
+          <a href="https://www.minecraft.net/tr-tr/store/minecraft-java-bedrock-edition-pc" target="_blank" rel="noopener">minecraft.net</a>'ten
+          Microsoft hesabınla tek seferlik satın alma yap (~27 €). Java + Bedrock paketi
+          aynı satın almayla gelir. Aboneliksizdir.
+        </p>
+      </details>
+      <details class="faq">
+        <summary>Crack / korsan hesap çalışır mı?</summary>
+        <p>
+          Hayır. Marsana yalnızca resmi Microsoft kimlik doğrulamasını kullanır. Cracked hesaplar
+          desteklenmez ve oyun sunuculara bağlanamaz.
+        </p>
+      </details>
+      <details class="faq">
+        <summary>Mod nasıl eklerim?</summary>
+        <p>
+          Mod paneli'nden bir yükleyici seç (Fabric, Forge vb.). Hazır seçenekler (Shader+FPS,
+          OptiFine, Kabartmalı bloklar) otomatik kurulur. Kendi mod dosyalarını eklemek için
+          <code>mods/</code> klasörüne <code>.jar</code> bırakman yeterli — bu klasörü
+          ayarlarda "Oyun Klasörünü Aç" ile bulabilirsin.
+        </p>
+      </details>
+      <details class="faq">
+        <summary>Oyun açılmıyor, ne yapayım?</summary>
+        <p>
+          Sağ panelde "Log'lar" sekmesinden Minecraft çıktısını görebilirsin. Sık karşılaşılan
+          nedenler: yetersiz RAM (kaydırıcıyı yükselt), uyumsuz Java sürümü (Marsana otomatik
+          yönetir ama JAVA_HOME tanımlıysa çakışabilir), bozuk mod jar'ı. Hala çözemezsen
+          GitHub Issues sayfasında log'larla birlikte sorun aç.
+        </p>
+      </details>
+      <details class="faq">
+        <summary>Verilerim nerede saklanır?</summary>
+        <p>
+          Windows: <code>%APPDATA%\marsana-launcher\</code>; macOS:
+          <code>~/Library/Application Support/marsana-launcher/</code>; Linux:
+          <code>~/.config/marsana-launcher/</code>. Token, dünyalar ve oyun dosyaları burada
+          tutulur; uygulamayı silmek bu klasörü silmez.
+        </p>
+      </details>
+      <details class="faq">
+        <summary>Açık kaynak mı? İnceleyebilir miyim?</summary>
+        <p>
+          Evet, kod tamamen açık. <a href="https://github.com/marstofta1/marsana-launcher" target="_blank" rel="noopener">GitHub repo</a>
+          üzerinden inceleyebilir, katkı yapabilir, kendi fork'unu oluşturabilirsin.
+        </p>
+      </details>
+      <details class="faq">
+        <summary>Otomatik güncelleniyor mu?</summary>
+        <p>
+          electron-updater entegre; yeni sürüm yayımlandığında uygulama içinden bildirim alır
+          ve tek tıkla güncellersin.
+        </p>
+      </details>
+      <details class="faq">
+        <summary>Bu site neden sesli okunabiliyor?</summary>
+        <p>
+          Tarayıcının yerleşik Web Speech API'sini kullanıyoruz; harici bir servis veya hesap
+          gerekmez. Sayfanın sağ üstündeki panelden "Sesli Dinle"ye basıp ses ve hız seçebilirsin.
+          Türkçe sesin yüklü değilse sistemin varsayılan sesi devreye girer.
+        </p>
+      </details>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>
+      <strong>Marsana Launcher</strong> — Açık kaynak Minecraft başlatıcısı.
+      <a href="https://github.com/marstofta1/marsana-launcher" target="_blank" rel="noopener">GitHub'da incele</a>.
+    </p>
+    <p class="footer-fineprint">
+      "Minecraft" Mojang Studios / Microsoft'un tescilli markasıdır. Marsana Launcher resmi olarak
+      Mojang veya Microsoft ile ilişkili değildir.
+    </p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
