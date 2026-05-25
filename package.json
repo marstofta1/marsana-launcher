@@ -22,7 +22,7 @@
     "publish": [
       {
         "provider": "generic",
-        "url": "https://example.com/marsana-launcher-updates/"
+        "url": "https://marstofta1.github.io/marsana-launcher/downloads/"
       }
     ],
     "mac": {
