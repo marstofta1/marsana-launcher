@@ -1,8 +1,8 @@
-version: 0.1.0
+version: 0.1.1
 files:
-  - url: Marsana Launcher-0.1.0-win-x64.exe
-    sha512: wvk7cvSIxjFvzui1T23foNhiQGiul75af2uBlKSUTILLVIa2NjwSbLzZVlZX6FVqVhpbMOxhOQN3yBsQtOvKLw==
-    size: 82556661
-path: Marsana Launcher-0.1.0-win-x64.exe
-sha512: wvk7cvSIxjFvzui1T23foNhiQGiul75af2uBlKSUTILLVIa2NjwSbLzZVlZX6FVqVhpbMOxhOQN3yBsQtOvKLw==
-releaseDate: '2026-05-25T18:36:23.910Z'
+  - url: Marsana Launcher-0.1.1-win-x64.exe
+    sha512: rVubAI5qoE+svmAkk3TPsbiZhVSDaG3LksJKFlpzUCIOTHJtZW/ZnT0MhDaHcIKI4kbNu5tyuEfb/xwLCqYhOA==
+    size: 82558181
+path: Marsana Launcher-0.1.1-win-x64.exe
+sha512: rVubAI5qoE+svmAkk3TPsbiZhVSDaG3LksJKFlpzUCIOTHJtZW/ZnT0MhDaHcIKI4kbNu5tyuEfb/xwLCqYhOA==
+releaseDate: '2026-05-27T18:57:19.894Z'
