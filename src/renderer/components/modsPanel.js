@@ -66,8 +66,16 @@ export function createModsPanel({ root, store }) {
           <input type="checkbox" data-role="shaderFps" />
           <span data-role="label-shaderFps">Shader + FPS</span>
         </label>
+        <label class="field" data-role="shader-picker-field" style="display:none;">
+          <span>Shader paketi</span>
+          <select data-role="shader-picker">
+            ${SHADER_OPTIONS.map(
+              (o) => `<option value="${o.slug}">${o.label}</option>`
+            ).join('')}
+          </select>
+        </label>
         <p class="hint mods-hint" data-role="hint-shader">
-          Gerçekçi ışık ve gölgeler; en akıcı oyun için oyunda Complementary’de <strong>Performance</strong> profilini seçin.
+          Gerçekçi ışık ve gölgeler; en akıcı oyun için oyunda shader paketinde <strong>Performance</strong> profilini seçin.
         </p>
       </div>
 
