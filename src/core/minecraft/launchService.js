@@ -92,7 +92,7 @@ function createLaunchService({
     return m ? `${v}.1` : v;
   }
 
-  async function buildFabricSpec({ version, modPresets, emit }) {
+  async function buildFabricSpec({ version, modPresets, shaderSlug, emit }) {
     const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false };
     const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine);
     if (!useFabric) {
@@ -109,6 +109,7 @@ function createLaunchService({
       gameVersion: effectiveVersion,
       emit,
       modPresets: presets,
+      shaderSlug,
     });
     return {
       spec: { number: effectiveVersion, type: 'release', custom: customId },
