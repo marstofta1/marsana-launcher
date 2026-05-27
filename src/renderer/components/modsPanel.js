@@ -16,7 +16,32 @@ const LOADER_OPTIONS = [
 ];
 
 const FABRIC_LOADER = 'fabric';
-const DEFAULT_LOADER = 'vanilla';
+const DEFAULT_LOADER = 'fabric';
+
+// Modrinth slug → görünür isim. Shader+FPS preset'i seçildiğinde kullanıcı
+// bunlardan birini seçebilir. Slug'lar Modrinth search API'siyle doğrulandı.
+const SHADER_OPTIONS = [
+  { slug: 'complementary-reimagined',  label: 'Complementary Reimagined' },
+  { slug: 'complementary-unbound',     label: 'Complementary Unbound' },
+  { slug: 'bsl-shaders',               label: 'BSL Shaders' },
+  { slug: 'photon-shader',             label: 'Photon Shaders' },
+  { slug: 'solas-shader',              label: 'Solas Shader' },
+  { slug: 'bliss-shader',              label: 'Bliss Shaders' },
+  { slug: 'rethinking-voxels',         label: 'Rethinking Voxels' },
+  { slug: 'makeup-ultra-fast-shaders', label: 'MakeUp – Ultra Fast' },
+  { slug: 'super-duper-vanilla',       label: 'Super Duper Vanilla' },
+  { slug: 'insanity-shader',           label: 'Insanity Shader' },
+  { slug: 'pastel-shaders',            label: 'Pastel Shaders' },
+  { slug: 'mellow',                    label: 'Mellow' },
+  { slug: 'astralex',                  label: 'AstraLex Shaders' },
+  { slug: 'nostalgia-shader',          label: 'Nostalgia Shader' },
+  { slug: 'miniature-shader',          label: 'Miniature Shader' },
+  { slug: 'vanillaa',                  label: 'VanillAA' },
+  { slug: 'hysteria-shaders',          label: 'Hysteria Shaders' },
+  { slug: 'kappa-shader',              label: 'Kappa Shader' },
+  { slug: 'spooklementary',            label: 'Spooklementary' },
+];
+const DEFAULT_SHADER_SLUG = 'complementary-reimagined';
 
 export function createModsPanel({ root, store }) {
   const loaderRadios = LOADER_OPTIONS.map(
