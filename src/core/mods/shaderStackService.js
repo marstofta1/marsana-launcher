@@ -449,7 +449,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   //   'forge'           → oculus + rubidium + Complementary (eski sürümler)
   //   'neoforge'        → iris + sodium (Modrinth NeoForge desteği) + Complementary
   //   'forge-optifine'  → sadece Complementary shader pack (OptiFine kendi shader sistemini içerir)
-  async function installShadersForExternalLoader({ loader, gameRoot, gameVersion, emit }) {
+  async function installShadersForExternalLoader({ loader, gameRoot, gameVersion, emit, shaderSlug }) {
     const modsDir = path.join(gameRoot, 'mods');
     const shaderpacksDir = path.join(gameRoot, 'shaderpacks');
     const status = statusEmitter(emit);
@@ -465,6 +465,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         shaderpacksDir,
         gameVersion,
         loaders: ['optifine', 'iris'],
+        shaderSlug,
       });
       if (packs[0]) {
         activateShaderPackInOptifineConfig({ gameRoot, shaderpackFilename: packs[0] });
