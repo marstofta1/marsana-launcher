@@ -637,8 +637,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
     let shaderpacks = [];
     if (presets.shaderFps && !presets.optifine) {
-      status('Mod profili: Complementary Reimagined shader paketi indiriliyor...');
-      shaderpacks = await downloadShaderPack({ shaderpacksDir, gameVersion });
+      status(`Mod profili: shader paketi indiriliyor (${resolvedShaderSlug})...`);
+      shaderpacks = await downloadShaderPack({
+        shaderpacksDir,
+        gameVersion,
+        shaderSlug: resolvedShaderSlug,
+      });
       if (shaderpacks[0]) {
         activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename: shaderpacks[0] });
       }
@@ -649,7 +653,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     fs.writeFileSync(
       readyPath,
       JSON.stringify(
-        { gameVersion, customId, assetIndexId, loader: loaderVersion, readyAt: Date.now(), presets },
+        { gameVersion, customId, assetIndexId, loader: loaderVersion, readyAt: Date.now(), presets, shaderSlug: resolvedShaderSlug },
         null,
         2
       ),
@@ -663,6 +667,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       assetIndexId,
       presets,
       optifineMeta,
+      shaderSlug: resolvedShaderSlug,
       updatedAt: Date.now(),
     });
 
