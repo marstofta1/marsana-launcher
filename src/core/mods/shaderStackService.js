@@ -557,12 +557,13 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { jars };
   }
 
-  async function ensure({ gameRoot, gameVersion, emit, modPresets }) {
+  async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug }) {
     const presets = normalizePresets(modPresets);
     if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
     }
 
+    const resolvedShaderSlug = resolveShaderSlug(shaderSlug);
     const status = statusEmitter(emit);
     const customId = customIdFor(gameVersion, presets);
     const versionDir = path.join(gameRoot, 'versions', customId);
@@ -579,6 +580,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       versionJsonPath,
       readyPath,
       modPresets: presets,
+      shaderSlug: resolvedShaderSlug,
     });
     if (cached) {
       status('Mod profili (önbellek): hazır, başlatılıyor...');
