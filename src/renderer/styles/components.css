@@ -79,6 +79,33 @@
   color: var(--text-muted);
 }
 
+.loader-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px 20px;
+  margin-bottom: 16px;
+}
+
+.loader-option .field.radio {
+  margin-bottom: 0;
+}
+
+.loader-option .mods-hint {
+  margin: 4px 0 0 0;
+  padding-left: 28px;
+}
+
+.shader-picker-block select {
+  width: 100%;
+  max-width: none;
+}
+
+@media (max-width: 900px) {
+  .loader-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .shader-picker-block {
   margin: -4px 0 14px 0;
   padding: 12px 14px;

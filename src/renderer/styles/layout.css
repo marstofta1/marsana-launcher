@@ -63,6 +63,80 @@
   grid-column: 1 / -1;
 }
 
+.mods-card {
+  padding-bottom: 24px;
+}
+
+.mods-options-heading {
+  margin-bottom: 14px;
+}
+
+.mods-options-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px 40px;
+  width: 100%;
+}
+
+.mods-options-col {
+  min-width: 0;
+}
+
+.mods-options-col .hint {
+  padding-left: 28px;
+}
+
+.mods-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.mods-card-actions #launch-options-slot {
+  flex: 1 1 320px;
+}
+
+.mods-card-actions #launch-options-slot .field {
+  margin-bottom: 0;
+}
+
+.mods-card-actions #play-slot {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.mods-card #play-slot .btn.play {
+  min-width: 180px;
+}
+
+.launch-card {
+  align-self: start;
+}
+
+@media (max-width: 900px) {
+  .mods-options-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mods-card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mods-card-actions #play-slot {
+    margin-left: 0;
+  }
+
+  .mods-card #play-slot .btn.play {
+    width: 100%;
+  }
+}
+
 @media (max-width: 900px) {
   .main { grid-template-columns: 1fr; }
 }

@@ -46,62 +46,72 @@ const DEFAULT_SHADER_SLUG = 'complementary-reimagined';
 export function createModsPanel({ root, store }) {
   const loaderRadios = LOADER_OPTIONS.map(
     (opt) => `
-      <label class="field radio">
-        <input type="radio" name="loader" value="${opt.value}" data-role="loader-${opt.value}" />
-        <span>${opt.label}</span>
-      </label>
-      <p class="hint mods-hint" data-role="hint-loader-${opt.value}">${opt.hint}</p>
+      <div class="loader-option">
+        <label class="field radio">
+          <input type="radio" name="loader" value="${opt.value}" data-role="loader-${opt.value}" />
+          <span>${opt.label}</span>
+        </label>
+        <p class="hint mods-hint" data-role="hint-loader-${opt.value}">${opt.hint}</p>
+      </div>
     `
   ).join('');
 
   root.innerHTML = `
     <h3 class="section-title">Mod Yükleyici</h3>
-    ${loaderRadios}
+    <div class="loader-grid" data-role="loader-grid">
+      ${loaderRadios}
+    </div>
 
     <div class="mods-options" data-role="mods-options">
-      <h3 class="section-title" data-role="mods-title">Mod Seçenekleri</h3>
+      <h3 class="section-title mods-options-heading" data-role="mods-title">Mod Seçenekleri</h3>
 
-      <div data-role="row-shaderFps">
-        <label class="field checkbox">
-          <input type="checkbox" data-role="shaderFps" />
-          <span data-role="label-shaderFps">Shader + FPS</span>
-        </label>
-        <p class="hint mods-hint" data-role="hint-shader">
-          Gerçekçi ışık ve gölgeler; en akıcı oyun için oyunda shader paketinde <strong>Performance</strong> profilini seçin.
-        </p>
-        <div class="shader-picker-block" data-role="shader-picker-block" style="display:none;">
-          <label class="field">
-            <span>Shader paketi</span>
-            <select data-role="shader-picker">
-              ${SHADER_OPTIONS.map(
-                (o) => `<option value="${o.slug}">${o.label}</option>`
-              ).join('')}
-            </select>
-          </label>
-          <p class="hint mods-hint" data-role="hint-shader-picker">
-            Shader + FPS açıkken seçilen paket otomatik indirilir ve oyunda etkinleştirilir.
-          </p>
+      <div class="mods-options-grid">
+        <div class="mods-options-col">
+          <div data-role="row-shaderFps">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="shaderFps" />
+              <span data-role="label-shaderFps">Shader + FPS</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-shader">
+              Gerçekçi ışık ve gölgeler; en akıcı oyun için oyunda shader paketinde <strong>Performance</strong> profilini seçin.
+            </p>
+            <div class="shader-picker-block" data-role="shader-picker-block" style="display:none;">
+              <label class="field">
+                <span>Shader paketi</span>
+                <select data-role="shader-picker">
+                  ${SHADER_OPTIONS.map(
+                    (o) => `<option value="${o.slug}">${o.label}</option>`
+                  ).join('')}
+                </select>
+              </label>
+              <p class="hint mods-hint" data-role="hint-shader-picker">
+                Shader + FPS açıkken seçilen paket otomatik indirilir ve oyunda etkinleştirilir.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div data-role="row-optifine">
-        <label class="field checkbox">
-          <input type="checkbox" data-role="optifine" />
-          <span>OptiFine (Fabric — Modrinth OptiFine for Fabric paketi)</span>
-        </label>
-        <p class="hint mods-hint" data-role="hint-optifine">
-          Zoom, animasyonlar ve video ayarları; tam mod paketi olarak indirilir. <strong>Shader + FPS</strong> ile aynı anda seçilemez.
-        </p>
-      </div>
+        <div class="mods-options-col">
+          <div data-role="row-optifine">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="optifine" />
+              <span>OptiFine (Fabric — Modrinth OptiFine for Fabric paketi)</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-optifine">
+              Zoom, animasyonlar ve video ayarları; tam mod paketi olarak indirilir. <strong>Shader + FPS</strong> ile aynı anda seçilemez.
+            </p>
+          </div>
 
-      <div data-role="row-embossed">
-        <label class="field checkbox">
-          <input type="checkbox" data-role="embossed" />
-          <span data-role="label-embossed">Kabartmalı / bağlı bloklar (Continuity + Sodium)</span>
-        </label>
-        <p class="hint mods-hint" data-role="hint-embossed">
-          Cam ve benzeri bloklarda bağlı doku (CTM). <strong>1.18+</strong> klasik sürümlerde önerilir; OptiFine paketi açıkken ek modlar isteğe bağlı eklenir.
-        </p>
+          <div data-role="row-embossed">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="embossed" />
+              <span data-role="label-embossed">Kabartmalı / bağlı bloklar (Continuity + Sodium)</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-embossed">
+              Cam ve benzeri bloklarda bağlı doku (CTM). <strong>1.18+</strong> klasik sürümlerde önerilir; OptiFine paketi açıkken ek modlar isteğe bağlı eklenir.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -121,6 +131,8 @@ export function createModsPanel({ root, store }) {
   const hintShaderPicker = root.querySelector('[data-role="hint-shader-picker"]');
   const modsTitle = root.querySelector('[data-role="mods-title"]');
   const modsOptionsBox = root.querySelector('[data-role="mods-options"]');
+  const modsOptionsGrid = root.querySelector('.mods-options-grid');
+  const modsOptionsColRight = root.querySelector('.mods-options-col:last-child');
   const loaderWarning = root.querySelector('[data-role="loader-warning"]');
   const loaderRadioEls = LOADER_OPTIONS.reduce((acc, opt) => {
     acc[opt.value] = root.querySelector(`[data-role="loader-${opt.value}"]`);
@@ -297,6 +309,16 @@ export function createModsPanel({ root, store }) {
     for (const key of Object.keys(allRows)) {
       allRows[key].style.display = config.rows.includes(key) ? '' : 'none';
     }
+
+    const rightColVisible =
+      config.rows.includes('optifine') || config.rows.includes('embossed');
+    if (modsOptionsColRight) {
+      modsOptionsColRight.style.display = rightColVisible ? '' : 'none';
+    }
+    if (modsOptionsGrid) {
+      modsOptionsGrid.style.gridTemplateColumns = rightColVisible ? '' : '1fr';
+    }
+
     // Görünmeyen row'lara karşılık gelen checkbox'ları kapat
     if (!config.rows.includes('shaderFps') && shaderCb.checked) {
       shaderCb.checked = false;
