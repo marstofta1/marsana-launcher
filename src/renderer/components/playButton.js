@@ -27,6 +27,7 @@ export function createPlayButton({ root, store, launchApi }) {
         offline: state.offline,
         offlineName: state.offlineName,
         selectedLoader: loader,
+        shaderSlug: state.selectedShader,
         modPresets: {
           optifine: !!state.modOptifine,
           shaderFps: !!state.modShaderFps,
