@@ -325,7 +325,7 @@ function createLaunchService({
     await httpClient.download(assetIndex.url, target);
   }
 
-  async function buildQuiltSpec({ version, includeShader, emit }) {
+  async function buildQuiltSpec({ version, includeShader, shaderSlug, emit }) {
     const effectiveVersion = effectiveModGameVersion(version);
     if (effectiveVersion !== version && emit && emit.status) {
       emit.status({
