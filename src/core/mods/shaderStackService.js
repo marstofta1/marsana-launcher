@@ -310,14 +310,15 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return jars;
   }
 
-  async function downloadShaderPack({ shaderpacksDir, gameVersion, loaders }) {
+  async function downloadShaderPack({ shaderpacksDir, gameVersion, loaders, shaderSlug }) {
     const expanded = (function expand(v) {
       const m = String(v).match(/^(\d+\.\d+)$/);
       return m ? [v, `${v}.1`] : [v];
     })(gameVersion);
     const loaderFilter = Array.isArray(loaders) && loaders.length ? loaders : ['iris'];
+    const slug = resolveShaderSlug(shaderSlug);
     try {
-      const file = await modrinthClient.latestPrimaryFile(SHADER_SLUG, {
+      const file = await modrinthClient.latestPrimaryFile(slug, {
         loaders: loaderFilter,
         gameVersions: expanded,
       });
@@ -325,6 +326,20 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       await httpClient.download(file.url, path.join(shaderpacksDir, file.filename));
       return [file.filename];
     } catch {
+      // Seçili shader bu sürümde yoksa, default Complementary Reimagined'a düş.
+      if (slug !== DEFAULT_SHADER_SLUG) {
+        try {
+          const fallback = await modrinthClient.latestPrimaryFile(DEFAULT_SHADER_SLUG, {
+            loaders: loaderFilter,
+            gameVersions: expanded,
+          });
+          await fs.promises.mkdir(shaderpacksDir, { recursive: true });
+          await httpClient.download(fallback.url, path.join(shaderpacksDir, fallback.filename));
+          return [fallback.filename];
+        } catch {
+          return [];
+        }
+      }
       return [];
     }
   }
