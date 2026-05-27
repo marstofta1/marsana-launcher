@@ -12,6 +12,7 @@ import { createFirstRunNotice } from './components/firstRunNotice.js';
 import { createRecommendedServers } from './components/recommendedServers.js';
 import { createPlayerProfileCard } from './components/playerProfileCard.js';
 import { createBottomLinks } from './components/bottomLinks.js';
+import { createWebsiteLinksPanel } from './components/websiteLinksPanel.js';
 import { wireUpdateFlow } from './components/updateFlow.js';
 import { wireHowToPlayGuide } from './components/howToPlayGuide.js';
 import {
@@ -98,6 +99,7 @@ async function bootstrap() {
     createPlayButton({ root: $('play-slot'), store, launchApi: api.launch }),
     createStatusPanel({ root: $('status-slot'), store, events: api.events }),
     createPlayerProfileCard({ root: $('profile-slot'), store }),
+    createWebsiteLinksPanel({ root: $('website-links-slot'), openExternal: api.openExternal }),
     createRecommendedServers({
       root: $('servers-slot'),
       store,

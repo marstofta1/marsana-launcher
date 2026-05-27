@@ -53,10 +53,16 @@
   align-items: start;
 }
 
+.left-column,
 .right-column {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
+}
+
+.website-links-card {
+  flex: 1 1 auto;
 }
 
 .full-width {
