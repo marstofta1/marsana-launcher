@@ -12,8 +12,25 @@ const READY_FILE = '.marsana-shader-ready.json';
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
 const SHADER_FPS_SLUGS = Object.freeze(['iris', 'sodium', 'fabric-api']);
 const EMBOSSED_SLUGS = Object.freeze(['continuity', 'sodium', 'fabric-api']);
-const SHADER_SLUG = 'complementary-reimagined';
+const DEFAULT_SHADER_SLUG = 'complementary-reimagined';
 const OPTIFINE_PROJECT = 'optifine-for-fabric';
+
+// UI'dan gelen shader slug'ını kabul edilen değerlere kıs — geçersiz/eski bir
+// slug Modrinth'te 404'e dönüp tüm launch'u patlatabilir. Tanınmayan slug
+// için sessizce default'a düş.
+const KNOWN_SHADER_SLUGS = new Set([
+  'complementary-reimagined', 'complementary-unbound', 'bsl-shaders',
+  'photon-shader', 'solas-shader', 'bliss-shader', 'rethinking-voxels',
+  'makeup-ultra-fast-shaders', 'super-duper-vanilla', 'insanity-shader',
+  'pastel-shaders', 'mellow', 'astralex', 'nostalgia-shader',
+  'miniature-shader', 'vanillaa', 'hysteria-shaders', 'kappa-shader',
+  'spooklementary',
+]);
+
+function resolveShaderSlug(requested) {
+  if (typeof requested === 'string' && KNOWN_SHADER_SLUGS.has(requested)) return requested;
+  return DEFAULT_SHADER_SLUG;
+}
 
 function customIdFor(gameVersion, presets) {
   if (presets.optifine) return `marsana-optifine-${gameVersion}`;
