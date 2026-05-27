@@ -495,11 +495,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       modrinthLoaders: [loader],
     });
 
-    status('Complementary Reimagined shader paketi indiriliyor...');
+    status('Shader paketi indiriliyor...');
     const packs = await downloadShaderPack({
       shaderpacksDir,
       gameVersion,
       loaders: ['iris'], // Oculus de Iris API'sini kullanır, aynı paket
+      shaderSlug,
     });
     if (packs[0]) {
       if (loader === 'forge') {
