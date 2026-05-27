@@ -17,22 +17,25 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-weight: 600;
   font-size: 17px;
   letter-spacing: 0.3px;
 }
 
+.brand-name {
+  line-height: 1.1;
+}
+
 .logo {
-  display: inline-block;
-  width: 30px;
-  height: 30px;
-  text-align: center;
-  line-height: 30px;
-  background: var(--accent-positive);
-  border-radius: 6px;
-  color: #fff;
-  font-size: 16px;
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .main {

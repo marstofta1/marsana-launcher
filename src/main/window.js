@@ -1,5 +1,6 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const { BrowserWindow } = require('electron');
 
@@ -11,10 +12,22 @@ const WINDOW_DEFAULTS = Object.freeze({
   backgroundColor: '#1b1f23',
 });
 
+function resolveWindowIcon() {
+  const candidates = [
+    path.join(__dirname, '..', 'renderer', 'assets', 'logo.png'),
+    path.join(__dirname, '..', '..', 'build', 'icon.png'),
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return undefined;
+}
+
 function createMainWindow() {
   const win = new BrowserWindow({
     ...WINDOW_DEFAULTS,
     title: 'Marsana Launcher',
+    icon: resolveWindowIcon(),
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload', 'index.js'),
       contextIsolation: true,
