@@ -53,7 +53,6 @@
   align-items: start;
 }
 
-.left-column,
 .right-column {
   display: flex;
   flex-direction: column;
@@ -61,8 +60,11 @@
   min-width: 0;
 }
 
-.website-links-card {
-  flex: 1 1 auto;
+.profile-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
 }
 
 .full-width {
@@ -145,6 +147,10 @@
 
 @media (max-width: 900px) {
   .main { grid-template-columns: 1fr; }
+
+  .profile-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .card {

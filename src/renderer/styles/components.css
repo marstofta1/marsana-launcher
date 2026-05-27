@@ -425,16 +425,22 @@
 
 .website-links-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.website-links-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
 }
 
 .website-link-tile {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   width: 100%;
-  padding: 14px;
+  padding: 10px 12px;
   text-align: left;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -519,16 +525,12 @@
   color: var(--accent);
 }
 
-@media (max-width: 900px) {
-  .website-links-grid {
-    grid-template-columns: 1fr;
-  }
-}
 
 /* Profil kartı — sağ sütundaki büyük 3B skin gösterimi */
 .profile-card {
   display: flex;
   flex-direction: column;
+  min-height: 100%;
 }
 
 .profile-body {

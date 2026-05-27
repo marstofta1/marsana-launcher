@@ -38,7 +38,7 @@ function escapeHtml(str) {
 export function createWebsiteLinksPanel({ root, openExternal }) {
   root.innerHTML = `
     <h3>Web siteleri</h3>
-    <p class="website-links-intro">Resmi site, mod kaynakları ve proje sayfasına hızlı erişim.</p>
+    <p class="website-links-intro">Resmi site ve mod kaynaklarına hızlı erişim.</p>
     <div class="website-links-grid">
       ${LINKS.map(
         (link) => `
