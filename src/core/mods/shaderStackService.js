@@ -157,7 +157,7 @@ function statusEmitter(emit) {
 }
 
 function createShaderStackService({ httpClient, fabricInstaller, modrinthClient, mrpackInstaller }) {
-  function cachedReady({ versionDir, modsDir, shaderpacksDir, gameVersion, versionJsonPath, readyPath, modPresets }) {
+  function cachedReady({ versionDir, modsDir, shaderpacksDir, gameVersion, versionJsonPath, readyPath, modPresets, shaderSlug }) {
     const existing = readBundle(modsDir);
     if (
       !existing ||
@@ -165,6 +165,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       !fs.existsSync(versionJsonPath) ||
       !fs.existsSync(readyPath) ||
       existing.gameVersion !== gameVersion ||
+      existing.shaderSlug !== shaderSlug ||
       !allFilesExist(modsDir, existing.jars) ||
       !allFilesExist(shaderpacksDir, existing.shaderpacks || [])
     ) {
