@@ -294,6 +294,7 @@ function createLaunchService({
         gameRoot: paths.gameRoot,
         gameVersion: effectiveVersion,
         emit,
+        shaderSlug,
       });
     }
 
