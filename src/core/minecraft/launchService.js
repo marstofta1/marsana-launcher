@@ -437,7 +437,7 @@ function createLaunchService({
     };
   }
 
-  async function buildLaunchPlan({ version, selectedLoader, modPresets, javaPath, emit }) {
+  async function buildLaunchPlan({ version, selectedLoader, modPresets, shaderSlug, javaPath, emit }) {
     const loader = selectedLoader || 'vanilla';
     // modPresets.shaderFps / embossedBlocks tüm loader'larda paylaşılan
     // flag'lerdir: Fabric için shaderStackService.ensure içinde işlenir; Forge
@@ -452,6 +452,7 @@ function createLaunchService({
         includeOptifine: loader === 'forge-optifine',
         includeShader,
         includeEmbossed,
+        shaderSlug,
         javaPath,
         emit,
       });
@@ -460,13 +461,13 @@ function createLaunchService({
       // NeoForge yapısı Forge ile aynı (Java installer + custom version profile),
       // dolayısıyla mod izolasyon stratejisi aynı.
       applyLoaderModsState('forge');
-      return buildNeoForgeSpec({ version, includeShader, includeEmbossed, javaPath, emit });
+      return buildNeoForgeSpec({ version, includeShader, includeEmbossed, shaderSlug, javaPath, emit });
     }
     if (loader === 'quilt') {
       // Quilt, Fabric'in çatalı: mod ekosistemi büyük oranda Fabric ile uyumlu,
       // o yüzden mods/ izolasyonu Fabric ile aynı kategoriye düşer.
       applyLoaderModsState('fabric');
-      return buildQuiltSpec({ version, includeShader, emit });
+      return buildQuiltSpec({ version, includeShader, shaderSlug, emit });
     }
     if (loader === 'legacy-fabric') {
       applyLoaderModsState('fabric');
@@ -481,7 +482,7 @@ function createLaunchService({
       };
     }
     applyLoaderModsState('fabric');
-    return buildFabricSpec({ version, modPresets, emit });
+    return buildFabricSpec({ version, modPresets, shaderSlug, emit });
   }
 
   function resolveJavaPathSyncFallback() {
