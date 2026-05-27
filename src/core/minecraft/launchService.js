@@ -539,6 +539,7 @@ function createLaunchService({
       version: opts.version,
       selectedLoader: opts.selectedLoader,
       modPresets,
+      shaderSlug: opts.shaderSlug,
       javaPath,
       emit,
     });
