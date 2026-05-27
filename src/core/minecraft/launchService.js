@@ -395,7 +395,7 @@ function createLaunchService({
     };
   }
 
-  async function buildNeoForgeSpec({ version, includeShader, includeEmbossed, javaPath, emit }) {
+  async function buildNeoForgeSpec({ version, includeShader, includeEmbossed, shaderSlug, javaPath, emit }) {
     const effectiveVersion =
       includeShader || includeEmbossed ? effectiveModGameVersion(version) : version;
     if (effectiveVersion !== version && emit && emit.status) {
