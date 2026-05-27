@@ -11,7 +11,7 @@ export function createPlayButton({ root, store, launchApi }) {
     if (isLaunching) return;
     const state = store.getState();
     if (!state.user || !state.selectedVersion) return;
-    const loader = state.selectedLoader || 'vanilla';
+    const loader = state.selectedLoader || 'fabric';
     isLaunching = true;
     btn.disabled = true;
     store.setState({

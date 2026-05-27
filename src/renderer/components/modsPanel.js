@@ -216,6 +216,7 @@ export function createModsPanel({ root, store }) {
     }
 
     applyMutualExclusion();
+    updateShaderPickerVisibility();
   }
 
   // Her loader için hangi mod row'ları görünür ve mods-title:
@@ -325,6 +326,7 @@ export function createModsPanel({ root, store }) {
           'Forge + klasik OptiFine.jar otomatik indirilecek. OptiFine kendi shader ve CTM sistemini içerir; ek mod gerekmez.';
       }
     }
+    updateShaderPickerVisibility();
   }
 
   for (const opt of LOADER_OPTIONS) {
@@ -339,6 +341,7 @@ export function createModsPanel({ root, store }) {
     if (syncing) return;
     syncing = true;
     applyMutualExclusion();
+    updateShaderPickerVisibility();
     publish();
     syncing = false;
   });
@@ -352,10 +355,12 @@ export function createModsPanel({ root, store }) {
       applyMutualExclusion();
       syncing = false;
     }
+    updateShaderPickerVisibility();
     publish();
   });
 
   embossedCb.addEventListener('change', publish);
+  shaderPicker.addEventListener('change', publish);
 
   function renderFromStore(state) {
     const loader = state.selectedLoader || DEFAULT_LOADER;
@@ -368,14 +373,19 @@ export function createModsPanel({ root, store }) {
     if (optifineCb.checked !== !!state.modOptifine) optifineCb.checked = !!state.modOptifine;
     if (shaderCb.checked !== !!state.modShaderFps) shaderCb.checked = !!state.modShaderFps;
     if (embossedCb.checked !== !!state.modEmbossedBlocks) embossedCb.checked = !!state.modEmbossedBlocks;
+    const shader = state.selectedShader || DEFAULT_SHADER_SLUG;
+    if (shaderPicker.value !== shader) shaderPicker.value = shader;
     applyLoaderState();
     applyVersionGates();
+    updateShaderPickerVisibility();
   }
 
   function mount() {
-    if (!store.getState().selectedLoader) {
-      store.setState({ selectedLoader: DEFAULT_LOADER });
-    }
+    const initial = store.getState();
+    const patch = {};
+    if (!initial.selectedLoader) patch.selectedLoader = DEFAULT_LOADER;
+    if (!initial.selectedShader) patch.selectedShader = DEFAULT_SHADER_SLUG;
+    if (Object.keys(patch).length > 0) store.setState(patch);
     renderFromStore(store.getState());
     return store.subscribe((state) => {
       renderFromStore(state);

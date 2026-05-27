@@ -28,11 +28,13 @@ import {
 const initialState = Object.freeze({
   user: null,
   selectedVersion: null,
+  selectedLoader: 'fabric',
+  selectedShader: 'complementary-reimagined',
   memoryMb: 2048,
   offline: false,
   offlineName: '',
   modOptifine: false,
-  modShaderFps: false,
+  modShaderFps: true,
   modEmbossedBlocks: false,
   statusText: 'Hazır.',
   progressPercent: 0,
@@ -51,8 +53,7 @@ async function bootstrap() {
   applyAmbientSettings(persistedSettings);
 
   // "Seçimleri hatırla" açıkken son kayıtlı loader/mod snapshot'unu initial
-  // state'e enjekte et. Kapalıyken (default) modsPanel kendi DEFAULT_LOADER
-  // ('vanilla') fallback'ine düşer.
+  // state'e enjekte et. Kapalıyken (default) Fabric + Shader + FPS seçili gelir.
   const seededState = { ...initialState };
   if (persistedSettings.rememberSelection) {
     const last = loadLastSelection();
@@ -76,6 +77,7 @@ async function bootstrap() {
     if (!nowRemember) return;
     const snap = {
       selectedLoader: state.selectedLoader,
+      selectedShader: state.selectedShader,
       modOptifine: !!state.modOptifine,
       modShaderFps: !!state.modShaderFps,
       modEmbossedBlocks: !!state.modEmbossedBlocks,

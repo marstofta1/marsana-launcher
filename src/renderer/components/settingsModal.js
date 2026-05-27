@@ -10,7 +10,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   masterVolume: 100,        // 0-100
   musicVolume: 50,          // 0-100
   animations: true,
-  rememberSelection: false, // Kapalıyken her açılış Vanilla; açıkken son loader/mod seçimi geri yüklenir.
+  rememberSelection: false, // Kapalıyken her açılış Fabric+Shader; açıkken son loader/mod seçimi geri yüklenir.
 });
 
 export function resolveAutoTheme(date = new Date()) {
@@ -159,7 +159,7 @@ export function wireSettingsModal({ button, modalRoot, store }) {
               <input type="checkbox" data-role="rememberSelection" ${s.rememberSelection ? 'checked' : ''} />
               <span>Seçimleri hatırla</span>
             </label>
-            <p class="settings-hint">Mod yükleyici ve mod seçenekleri bir sonraki açılışta aynı kalır. Kapalıyken her açılışta Vanilla seçili gelir.</p>
+            <p class="settings-hint">Mod yükleyici, shader paketi ve mod seçenekleri bir sonraki açılışta aynı kalır. Kapalıyken her açılışta Fabric + Shader + FPS seçili gelir.</p>
           </div>
 
           <div class="modal-actions">
