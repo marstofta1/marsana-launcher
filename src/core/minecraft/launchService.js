@@ -290,7 +290,7 @@ function createLaunchService({
 
     if (includeShader) {
       await shaderStackService.installShadersForExternalLoader({
-        loader: includeOptifine ? 'forge-optifine' : 'forge',
+        loader: 'forge',
         gameRoot: paths.gameRoot,
         gameVersion: effectiveVersion,
         emit,

@@ -7,6 +7,7 @@ const { LauncherError, Codes } = require('../infra/errors');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
+const SHADER_BUNDLE_VERSION = 2;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -32,9 +33,84 @@ function resolveShaderSlug(requested) {
   return DEFAULT_SHADER_SLUG;
 }
 
-function customIdFor(gameVersion, presets) {
+// Modrinth dosya adları (AstraLex vb.) § kodları içerebiliyor. Yerel diskte
+// her zaman slug.zip kullan — Iris eşleşmesi ve önbellek tutarlı kalır.
+function shaderPackLocalName(slug) {
+  return `${resolveShaderSlug(slug)}.zip`;
+}
+
+function isModrinthNotFound(err) {
+  return err instanceof LauncherError && err.code === Codes.MODRINTH_NOT_FOUND;
+}
+
+function customIdFor(gameVersion, presets, shaderSlug) {
   if (presets.optifine) return `marsana-optifine-${gameVersion}`;
+  if (presets.shaderFps && shaderSlug && KNOWN_SHADER_SLUGS.has(shaderSlug)) {
+    return `marsana-shader-${gameVersion}-${shaderSlug}`;
+  }
   return `marsana-shader-${gameVersion}`;
+}
+
+function cleanupStaleShaderPacks(shaderpacksDir, activeSlug) {
+  if (!fs.existsSync(shaderpacksDir)) return;
+  const keepName = shaderPackLocalName(activeSlug);
+  for (const entry of fs.readdirSync(shaderpacksDir)) {
+    if (!entry.toLowerCase().endsWith('.zip')) continue;
+    if (entry === keepName) continue;
+    const lower = entry.toLowerCase();
+    const isKnown = [...KNOWN_SHADER_SLUGS].some((s) => lower === `${s}.zip`);
+    if (isKnown || /§|Â§/.test(entry)) {
+      removeIfExists(path.join(shaderpacksDir, entry));
+    }
+  }
+}
+
+function isCorruptShaderPackName(name) {
+  const s = String(name || '').trim();
+  if (!s) return false;
+  return /§|Â§|\u00C2\u00A7|\\u00C2\\u00A7|LexBoosT/i.test(s);
+}
+
+function repairLegacyShaderPack({ gameRoot, shaderpacksDir, shaderSlug, activateFns }) {
+  const slug = resolveShaderSlug(shaderSlug);
+  const targetName = shaderPackLocalName(slug);
+  const targetPath = path.join(shaderpacksDir, targetName);
+
+  if (fs.existsSync(shaderpacksDir) && !fs.existsSync(targetPath)) {
+    for (const entry of fs.readdirSync(shaderpacksDir)) {
+      if (!entry.toLowerCase().endsWith('.zip')) continue;
+      if (entry === targetName) continue;
+      const lower = entry.toLowerCase();
+      const slugHint = slug.replace(/-/g, '');
+      if (
+        isCorruptShaderPackName(entry) ||
+        lower.includes(slugHint) ||
+        (slug === 'astralex' && /astra|lexboost/i.test(lower))
+      ) {
+        fs.renameSync(path.join(shaderpacksDir, entry), targetPath);
+        break;
+      }
+    }
+  }
+
+  for (const activate of activateFns) {
+    activate({ gameRoot, shaderpackFilename: targetName });
+  }
+
+  const modsDir = path.join(gameRoot, 'mods');
+  const bundle = readBundle(modsDir);
+  if (!bundle) return targetName;
+  const current = (bundle.shaderpacks || [])[0];
+  if (current !== targetName || isCorruptShaderPackName(current) || (bundle.bundleVersion || 1) < SHADER_BUNDLE_VERSION) {
+    writeBundle(modsDir, {
+      ...bundle,
+      bundleVersion: SHADER_BUNDLE_VERSION,
+      shaderSlug: slug,
+      shaderpacks: fs.existsSync(targetPath) ? [targetName] : bundle.shaderpacks,
+      updatedAt: Date.now(),
+    });
+  }
+  return targetName;
 }
 
 function normalizePresets(p) {
@@ -159,15 +235,19 @@ function statusEmitter(emit) {
 function createShaderStackService({ httpClient, fabricInstaller, modrinthClient, mrpackInstaller }) {
   function cachedReady({ versionDir, modsDir, shaderpacksDir, gameVersion, versionJsonPath, readyPath, modPresets, shaderSlug }) {
     const existing = readBundle(modsDir);
+    const expectedPack = modPresets.shaderFps && !modPresets.optifine ? shaderPackLocalName(shaderSlug) : null;
     if (
       !existing ||
+      (existing.bundleVersion || 1) < SHADER_BUNDLE_VERSION ||
       !presetsMatch(existing.presets, modPresets) ||
       !fs.existsSync(versionJsonPath) ||
       !fs.existsSync(readyPath) ||
       existing.gameVersion !== gameVersion ||
       existing.shaderSlug !== shaderSlug ||
+      (expectedPack && (existing.shaderpacks || [])[0] !== expectedPack) ||
       !allFilesExist(modsDir, existing.jars) ||
-      !allFilesExist(shaderpacksDir, existing.shaderpacks || [])
+      !allFilesExist(shaderpacksDir, existing.shaderpacks || []) ||
+      (existing.shaderpacks || []).some((name) => /§/.test(String(name)))
     ) {
       return null;
     }
@@ -180,7 +260,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         assetIndexId = gameVersion;
       }
     }
-    return { customId: customIdFor(gameVersion, modPresets), assetIndexId };
+    return {
+      customId: customIdFor(gameVersion, modPresets, shaderSlug),
+      assetIndexId,
+      shaderpacks: existing.shaderpacks || [],
+    };
   }
 
   async function installFabricProfile({ gameVersion, customId, versionDir, versionJsonPath }) {
@@ -311,38 +395,62 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return jars;
   }
 
-  async function downloadShaderPack({ shaderpacksDir, gameVersion, loaders, shaderSlug }) {
+  async function downloadShaderPack({ shaderpacksDir, gameVersion, loaders, shaderSlug, onNotice }) {
     const expanded = (function expand(v) {
       const m = String(v).match(/^(\d+\.\d+)$/);
       return m ? [v, `${v}.1`] : [v];
     })(gameVersion);
     const loaderFilter = Array.isArray(loaders) && loaders.length ? loaders : ['iris'];
     const slug = resolveShaderSlug(shaderSlug);
-    try {
-      const file = await modrinthClient.latestPrimaryFile(slug, {
-        loaders: loaderFilter,
-        gameVersions: expanded,
-      });
-      await fs.promises.mkdir(shaderpacksDir, { recursive: true });
-      await httpClient.download(file.url, path.join(shaderpacksDir, file.filename));
-      return [file.filename];
-    } catch {
-      // Seçili shader bu sürümde yoksa, default Complementary Reimagined'a düş.
-      if (slug !== DEFAULT_SHADER_SLUG) {
-        try {
-          const fallback = await modrinthClient.latestPrimaryFile(DEFAULT_SHADER_SLUG, {
-            loaders: loaderFilter,
-            gameVersions: expanded,
-          });
-          await fs.promises.mkdir(shaderpacksDir, { recursive: true });
-          await httpClient.download(fallback.url, path.join(shaderpacksDir, fallback.filename));
-          return [fallback.filename];
-        } catch {
-          return [];
+
+    const queryAttempts = [
+      { loaders: loaderFilter, gameVersions: expanded },
+      { loaders: loaderFilter },
+      { gameVersions: expanded },
+      {},
+    ];
+
+    let lastErr = null;
+    for (const query of queryAttempts) {
+      try {
+        const file = await modrinthClient.latestPrimaryFile(slug, query);
+        const safeName = shaderPackLocalName(slug);
+        cleanupStaleShaderPacks(shaderpacksDir, slug);
+        await fs.promises.mkdir(shaderpacksDir, { recursive: true });
+        await httpClient.download(file.url, path.join(shaderpacksDir, safeName));
+        if (onNotice) {
+          onNotice(`Shader paketi hazır: ${safeName}`);
         }
+        return [safeName];
+      } catch (err) {
+        lastErr = err;
+        if (!isModrinthNotFound(err)) break;
       }
-      return [];
     }
+
+    if (slug !== DEFAULT_SHADER_SLUG && isModrinthNotFound(lastErr)) {
+      if (onNotice) {
+        onNotice(
+          `"${slug}" bu Minecraft sürümünde bulunamadı — Complementary Reimagined kullanılıyor.`
+        );
+      }
+      try {
+        const fallback = await modrinthClient.latestPrimaryFile(DEFAULT_SHADER_SLUG, {
+          loaders: loaderFilter,
+          gameVersions: expanded,
+        });
+        const safeName = shaderPackLocalName(DEFAULT_SHADER_SLUG);
+        cleanupStaleShaderPacks(shaderpacksDir, DEFAULT_SHADER_SLUG);
+        await fs.promises.mkdir(shaderpacksDir, { recursive: true });
+        await httpClient.download(fallback.url, path.join(shaderpacksDir, safeName));
+        return [safeName];
+      } catch {
+        return [];
+      }
+    }
+
+    if (lastErr) throw lastErr;
+    return [];
   }
 
   // Iris shader paketi otomatik aktivasyonu: indirilen pack zaten varsa kullanıcının
@@ -355,18 +463,21 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     } else {
       fs.mkdirSync(path.dirname(propsPath), { recursive: true });
     }
-    const lines = body.split(/\r?\n/);
-    let touched = false;
+    const lines = body ? body.split(/\r?\n/) : [];
+    let touchedPack = false;
+    let touchedEnable = false;
     for (let i = 0; i < lines.length; i++) {
       if (/^shaderPack\s*=/.test(lines[i])) {
         lines[i] = `shaderPack=${shaderpackFilename}`;
-        touched = true;
-        break;
+        touchedPack = true;
+      } else if (/^enableShaders\s*=/.test(lines[i])) {
+        lines[i] = 'enableShaders=true';
+        touchedEnable = true;
       }
     }
-    if (!touched) lines.push(`shaderPack=${shaderpackFilename}`);
-    if (!lines.some((l) => /^enableShaders\s*=/.test(l))) lines.push('enableShaders=true');
-    fs.writeFileSync(propsPath, lines.join('\n'), 'utf8');
+    if (!touchedPack) lines.push(`shaderPack=${shaderpackFilename}`);
+    if (!touchedEnable) lines.push('enableShaders=true');
+    fs.writeFileSync(propsPath, `${lines.join('\n')}\n`, 'utf8');
   }
 
   function activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename }) {
@@ -454,6 +565,17 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const modsDir = path.join(gameRoot, 'mods');
     const shaderpacksDir = path.join(gameRoot, 'shaderpacks');
     const status = statusEmitter(emit);
+    const resolvedSlug = resolveShaderSlug(shaderSlug);
+
+    repairLegacyShaderPack({
+      gameRoot,
+      shaderpacksDir,
+      shaderSlug: resolvedSlug,
+      activateFns: [
+        activateShaderPackInIrisConfig,
+        activateShaderPackInOculusConfig,
+      ],
+    });
 
     // Eski shader mod kombinasyonlarını temizle — duplicate riskini önler.
     if (loader === 'forge' || loader === 'neoforge') {
@@ -467,6 +589,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         gameVersion,
         loaders: ['optifine', 'iris'],
         shaderSlug,
+        onNotice: status,
       });
       if (packs[0]) {
         activateShaderPackInOptifineConfig({ gameRoot, shaderpackFilename: packs[0] });
@@ -502,6 +625,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       gameVersion,
       loaders: ['iris'], // Oculus de Iris API'sini kullanır, aynı paket
       shaderSlug,
+      onNotice: status,
     });
     if (packs[0]) {
       if (loader === 'forge') {
@@ -565,12 +689,19 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
     const resolvedShaderSlug = resolveShaderSlug(shaderSlug);
     const status = statusEmitter(emit);
-    const customId = customIdFor(gameVersion, presets);
+    const customId = customIdFor(gameVersion, presets, resolvedShaderSlug);
     const versionDir = path.join(gameRoot, 'versions', customId);
     const modsDir = path.join(gameRoot, 'mods');
     const shaderpacksDir = path.join(gameRoot, 'shaderpacks');
     const versionJsonPath = path.join(versionDir, `${customId}.json`);
     const readyPath = path.join(versionDir, READY_FILE);
+
+    repairLegacyShaderPack({
+      gameRoot,
+      shaderpacksDir,
+      shaderSlug: resolvedShaderSlug,
+      activateFns: [activateShaderPackInIrisConfig],
+    });
 
     const cached = cachedReady({
       versionDir,
@@ -583,8 +714,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       shaderSlug: resolvedShaderSlug,
     });
     if (cached) {
-      status('Mod profili (önbellek): hazır, başlatılıyor...');
-      return cached;
+      if (presets.shaderFps && !presets.optifine && cached.shaderpacks[0]) {
+        activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename: cached.shaderpacks[0] });
+      }
+      status(`Mod profili (önbellek): ${resolvedShaderSlug} shader hazır, başlatılıyor...`);
+      return { customId: cached.customId, assetIndexId: cached.assetIndexId };
     }
 
     status(`Mod profili: Fabric yükleyici eşleştiriliyor (${gameVersion})...`);
@@ -642,6 +776,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         shaderpacksDir,
         gameVersion,
         shaderSlug: resolvedShaderSlug,
+        onNotice: status,
       });
       if (shaderpacks[0]) {
         activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename: shaderpacks[0] });
@@ -660,6 +795,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       'utf8'
     );
     writeBundle(modsDir, {
+      bundleVersion: SHADER_BUNDLE_VERSION,
       gameVersion,
       loader: loaderVersion,
       jars,

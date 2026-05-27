@@ -85,7 +85,13 @@ export function createVersionSelector({ root, store, versionsApi }) {
       parts.push('OptiFine uyumlu sürümler');
     }
     if (snap.modShaderFps) {
-      parts.push('Shader + FPS uyumlu sürümler');
+      parts.push(
+        snap.loader === 'neoforge'
+          ? 'NeoForge Shader + FPS uyumlu sürümler (1.20.1+ veya 1.20.2+)'
+          : snap.loader === 'forge'
+            ? 'Forge Shader + FPS uyumlu sürümler'
+            : 'Shader + FPS uyumlu sürümler'
+      );
     }
     if (snap.modEmbossedBlocks) {
       parts.push(

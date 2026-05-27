@@ -69,20 +69,19 @@ export function createModsPanel({ root, store }) {
         <p class="hint mods-hint" data-role="hint-shader">
           Gerçekçi ışık ve gölgeler; en akıcı oyun için oyunda shader paketinde <strong>Performance</strong> profilini seçin.
         </p>
-      </div>
-
-      <div class="shader-picker-block" data-role="shader-picker-block" style="display:none;">
-        <label class="field">
-          <span>Shader paketi</span>
-          <select data-role="shader-picker">
-            ${SHADER_OPTIONS.map(
-              (o) => `<option value="${o.slug}">${o.label}</option>`
-            ).join('')}
-          </select>
-        </label>
-        <p class="hint mods-hint" data-role="hint-shader-picker">
-          Shader + FPS açıkken seçilen paket otomatik indirilir ve oyunda etkinleştirilir.
-        </p>
+        <div class="shader-picker-block" data-role="shader-picker-block" style="display:none;">
+          <label class="field">
+            <span>Shader paketi</span>
+            <select data-role="shader-picker">
+              ${SHADER_OPTIONS.map(
+                (o) => `<option value="${o.slug}">${o.label}</option>`
+              ).join('')}
+            </select>
+          </label>
+          <p class="hint mods-hint" data-role="hint-shader-picker">
+            Shader + FPS açıkken seçilen paket otomatik indirilir ve oyunda etkinleştirilir.
+          </p>
+        </div>
       </div>
 
       <div data-role="row-optifine">
@@ -119,6 +118,7 @@ export function createModsPanel({ root, store }) {
   const embossedLabel = root.querySelector('[data-role="label-embossed"]');
   const shaderPickerBlock = root.querySelector('[data-role="shader-picker-block"]');
   const shaderPicker = root.querySelector('[data-role="shader-picker"]');
+  const hintShaderPicker = root.querySelector('[data-role="hint-shader-picker"]');
   const modsTitle = root.querySelector('[data-role="mods-title"]');
   const modsOptionsBox = root.querySelector('[data-role="mods-options"]');
   const loaderWarning = root.querySelector('[data-role="loader-warning"]');
@@ -139,14 +139,28 @@ export function createModsPanel({ root, store }) {
     });
   }
 
+  const SHADER_PICKER_HINTS = {
+    fabric: 'Fabric: Iris + Sodium ile seçilen paket otomatik kurulur ve oyunda etkinleştirilir.',
+    quilt: 'Quilt: Iris + Sodium ile seçilen paket otomatik kurulur ve oyunda etkinleştirilir.',
+    forge: 'Forge: Oculus + Rubidium ile seçilen paket otomatik kurulur (Oculus ayarlarına yazılır).',
+    neoforge: 'NeoForge: Iris + Sodium ile seçilen paket otomatik kurulur.',
+  };
+
   function updateShaderPickerVisibility() {
-    const loaderSupportsShader = shaderRow.style.display !== 'none';
-    shaderPickerBlock.style.display = loaderSupportsShader ? '' : 'none';
-    const active = loaderSupportsShader && shaderCb.checked && !shaderCb.disabled;
+    const loader = currentLoader();
+    const loaderSupportsShaderFps = shaderRow.style.display !== 'none';
+
+    shaderPickerBlock.style.display = loaderSupportsShaderFps ? '' : 'none';
+
+    const active = loaderSupportsShaderFps && shaderCb.checked && !shaderCb.disabled;
     shaderPicker.disabled = !active;
     shaderPicker.title = active
       ? ''
       : 'Shader paketi seçmek için Shader + FPS seçeneğini işaretleyin.';
+
+    if (hintShaderPicker && SHADER_PICKER_HINTS[loader]) {
+      hintShaderPicker.textContent = SHADER_PICKER_HINTS[loader];
+    }
   }
 
   function currentLoader() {
@@ -233,19 +247,19 @@ export function createModsPanel({ root, store }) {
     fabric: {
       rows: ['shaderFps', 'optifine', 'embossed'],
       title: 'Fabric Modları',
-      shaderLabel: 'Shader + FPS (Sodium + Iris + Complementary Reimagined)',
+      shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
     },
     quilt: {
       rows: ['shaderFps'],
       title: 'Quilt Modları',
-      shaderLabel: 'Shader + FPS (Sodium + Iris + Complementary Reimagined)',
+      shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity)',
     },
     forge: {
       rows: ['shaderFps', 'embossed'],
       title: 'Forge Modları',
-      shaderLabel: 'Shader + FPS (Embeddium + Oculus + Complementary Reimagined — ⚠ Mac\'te Oculus OpenGL 1282 hatası verebilir; NeoForge veya Fabric önerilir)',
+      shaderLabel: 'Shader + FPS (Embeddium + Oculus + seçilen shader paketi — ⚠ Mac\'te Oculus OpenGL 1282 hatası verebilir; NeoForge veya Fabric önerilir)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity Forge — sadece 1.20.1)',
     },
     'forge-optifine': {
@@ -257,7 +271,7 @@ export function createModsPanel({ root, store }) {
     neoforge: {
       rows: ['shaderFps'],
       title: 'NeoForge Modları',
-      shaderLabel: 'Shader + FPS (Sodium + Iris + Complementary Reimagined)',
+      shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (NeoForge\'da native Continuity yok — desteklenmiyor)',
     },
     'legacy-fabric': {
@@ -331,7 +345,7 @@ export function createModsPanel({ root, store }) {
             `⚠ OptiFine "${v}" sürümünü desteklemiyor. OptiFine en son 1.21.9'a kadar yayınlandı — daha eski bir sürüm seçin veya "Forge" (OptiFine'sız) profilini kullanın.`;
         } else {
           loaderWarning.textContent =
-            'Forge + klasik OptiFine.jar otomatik indirilecek. OptiFine kendi shader ve CTM sistemini içerir; ek mod gerekmez.';
+            'Forge + klasik OptiFine.jar otomatik indirilecek. OptiFine kendi shader ve CTM sistemini içerir; Shader + FPS ile aynı anda kullanılamaz.';
         }
       }
     }
