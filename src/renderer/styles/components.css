@@ -79,6 +79,19 @@
   color: var(--text-muted);
 }
 
+.shader-picker-block {
+  margin: -4px 0 14px 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+}
+
+.shader-picker-block select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .servers-card {
   grid-column: 1 / -1;
 }

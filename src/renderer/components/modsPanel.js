@@ -66,7 +66,13 @@ export function createModsPanel({ root, store }) {
           <input type="checkbox" data-role="shaderFps" />
           <span data-role="label-shaderFps">Shader + FPS</span>
         </label>
-        <label class="field" data-role="shader-picker-field" style="display:none;">
+        <p class="hint mods-hint" data-role="hint-shader">
+          Gerçekçi ışık ve gölgeler; en akıcı oyun için oyunda shader paketinde <strong>Performance</strong> profilini seçin.
+        </p>
+      </div>
+
+      <div class="shader-picker-block" data-role="shader-picker-block" style="display:none;">
+        <label class="field">
           <span>Shader paketi</span>
           <select data-role="shader-picker">
             ${SHADER_OPTIONS.map(
@@ -74,8 +80,8 @@ export function createModsPanel({ root, store }) {
             ).join('')}
           </select>
         </label>
-        <p class="hint mods-hint" data-role="hint-shader">
-          Gerçekçi ışık ve gölgeler; en akıcı oyun için oyunda shader paketinde <strong>Performance</strong> profilini seçin.
+        <p class="hint mods-hint" data-role="hint-shader-picker">
+          Shader + FPS açıkken seçilen paket otomatik indirilir ve oyunda etkinleştirilir.
         </p>
       </div>
 
@@ -111,7 +117,7 @@ export function createModsPanel({ root, store }) {
   const embossedRow = root.querySelector('[data-role="row-embossed"]');
   const shaderLabel = root.querySelector('[data-role="label-shaderFps"]');
   const embossedLabel = root.querySelector('[data-role="label-embossed"]');
-  const shaderPickerField = root.querySelector('[data-role="shader-picker-field"]');
+  const shaderPickerBlock = root.querySelector('[data-role="shader-picker-block"]');
   const shaderPicker = root.querySelector('[data-role="shader-picker"]');
   const modsTitle = root.querySelector('[data-role="mods-title"]');
   const modsOptionsBox = root.querySelector('[data-role="mods-options"]');
@@ -134,10 +140,13 @@ export function createModsPanel({ root, store }) {
   }
 
   function updateShaderPickerVisibility() {
-    // Shader picker yalnızca Shader+FPS açıkken VE shader satırı bu loader için
-    // görünür olduğunda anlamlı. OptiFine seçiliyken Shader+FPS otomatik kapanır.
-    const visible = shaderCb.checked && !shaderCb.disabled && shaderRow.style.display !== 'none';
-    shaderPickerField.style.display = visible ? '' : 'none';
+    const loaderSupportsShader = shaderRow.style.display !== 'none';
+    shaderPickerBlock.style.display = loaderSupportsShader ? '' : 'none';
+    const active = loaderSupportsShader && shaderCb.checked && !shaderCb.disabled;
+    shaderPicker.disabled = !active;
+    shaderPicker.title = active
+      ? ''
+      : 'Shader paketi seçmek için Shader + FPS seçeneğini işaretleyin.';
   }
 
   function currentLoader() {
@@ -297,33 +306,33 @@ export function createModsPanel({ root, store }) {
     if (loader === FABRIC_LOADER) {
       loaderWarning.style.display = 'none';
       loaderWarning.textContent = '';
-      return;
-    }
-    loaderWarning.style.display = '';
-    if (loader === 'forge') {
-      loaderWarning.textContent =
-        'Forge loader otomatik kurulacak. Shader + FPS için Rubidium (Sodium fork) + Oculus (Iris fork) indirilir; en iyi destek Minecraft 1.20.1 ve daha eski sürümlerdedir.';
-    } else if (loader === 'neoforge') {
-      loaderWarning.textContent =
-        'NeoForge (Forge\'un modern çatalı) otomatik kurulacak. Shader + FPS için Iris ve Sodium\'un NeoForge sürümleri indirilir (1.21.2 ve üzeri önerilir).';
-    } else if (loader === 'quilt') {
-      loaderWarning.textContent =
-        'Quilt loader otomatik kurulacak. Shader + FPS Fabric ekosistemiyle çalışır (Iris + Sodium).';
-    } else if (loader === 'legacy-fabric') {
-      loaderWarning.textContent =
-        'Legacy Fabric otomatik kurulacak. Sürüm seçici yalnızca Legacy Fabric\'in desteklediği eski sürümleri (1.3 – 1.13.2 aralığı) gösterir. Modları mods/ klasörüne kendiniz eklersiniz.';
-    } else if (loader === 'vanilla') {
-      loaderWarning.textContent =
-        'Vanilla seçili — Minecraft, Mojang\'ın resmi profiliyle başlar. Hiçbir loader/mod yüklenmez ve mods/ klasörü okunmaz.';
     } else {
-      // forge-optifine
-      const v = store.getState().selectedVersion;
-      if (!forgeOptifineLikelySupported(v)) {
+      loaderWarning.style.display = '';
+      if (loader === 'forge') {
         loaderWarning.textContent =
-          `⚠ OptiFine "${v}" sürümünü desteklemiyor. OptiFine en son 1.21.9'a kadar yayınlandı — daha eski bir sürüm seçin veya "Forge" (OptiFine'sız) profilini kullanın.`;
+          'Forge loader otomatik kurulacak. Shader + FPS için Rubidium (Sodium fork) + Oculus (Iris fork) indirilir; en iyi destek Minecraft 1.20.1 ve daha eski sürümlerdedir.';
+      } else if (loader === 'neoforge') {
+        loaderWarning.textContent =
+          'NeoForge (Forge\'un modern çatalı) otomatik kurulacak. Shader + FPS için Iris ve Sodium\'un NeoForge sürümleri indirilir (1.21.2 ve üzeri önerilir).';
+      } else if (loader === 'quilt') {
+        loaderWarning.textContent =
+          'Quilt loader otomatik kurulacak. Shader + FPS Fabric ekosistemiyle çalışır (Iris + Sodium).';
+      } else if (loader === 'legacy-fabric') {
+        loaderWarning.textContent =
+          'Legacy Fabric otomatik kurulacak. Sürüm seçici yalnızca Legacy Fabric\'in desteklediği eski sürümleri (1.3 – 1.13.2 aralığı) gösterir. Modları mods/ klasörüne kendiniz eklersiniz.';
+      } else if (loader === 'vanilla') {
+        loaderWarning.textContent =
+          'Vanilla seçili — Minecraft, Mojang\'ın resmi profiliyle başlar. Hiçbir loader/mod yüklenmez ve mods/ klasörü okunmaz.';
       } else {
-        loaderWarning.textContent =
-          'Forge + klasik OptiFine.jar otomatik indirilecek. OptiFine kendi shader ve CTM sistemini içerir; ek mod gerekmez.';
+        // forge-optifine
+        const v = store.getState().selectedVersion;
+        if (!forgeOptifineLikelySupported(v)) {
+          loaderWarning.textContent =
+            `⚠ OptiFine "${v}" sürümünü desteklemiyor. OptiFine en son 1.21.9'a kadar yayınlandı — daha eski bir sürüm seçin veya "Forge" (OptiFine'sız) profilini kullanın.`;
+        } else {
+          loaderWarning.textContent =
+            'Forge + klasik OptiFine.jar otomatik indirilecek. OptiFine kendi shader ve CTM sistemini içerir; ek mod gerekmez.';
+        }
       }
     }
     updateShaderPickerVisibility();
@@ -333,6 +342,7 @@ export function createModsPanel({ root, store }) {
     loaderRadioEls[opt.value].addEventListener('change', () => {
       if (syncing) return;
       applyLoaderState();
+      applyVersionGates();
       publish();
     });
   }

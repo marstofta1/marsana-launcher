@@ -23,6 +23,10 @@ function registerUpdateHandlers({ ipcMain, getWindow }) {
   // İmzasız NSIS/generic güncellemeleri Windows'ta varsayılan doğrulamada bloklanabilir.
   if (isWin) autoUpdater.verifyUpdateCodeSignature = false;
 
+  const MANUAL_UPDATE_HINT =
+    'Güncelleme sunucusuna ulaşılamadı. GitHub Pages etkin olmalı ve repo herkese açık olmalıdır. ' +
+    'Manuel indirme: https://github.com/marstofta1/marsana-launcher (docs/downloads).';
+
   const base = process.env.MARSANA_UPDATES_BASE_URL;
   if (base && String(base).trim()) {
     autoUpdater.setFeedURL({
@@ -49,27 +53,28 @@ function registerUpdateHandlers({ ipcMain, getWindow }) {
 
       emit({ phase: 'checking', message: 'Güncellemeler kontrol ediliyor…', percent: null });
 
-      // `checkForUpdates` fail olunca (GitHub Pages henüz aktive edilmemiş 404,
-      // DNS/network down, manifest erişilemez, vs.) kullanıcının niyetine
-      // (=launcher'ı yeniden başlat) en yakın davranış: sessizce "yeni sürüm
-      // yok" akışına gir ve relaunch et. Buradaki hata güncellemenin yapılamadığı
-      // anlamına gelir — kullanıcı için bu "yeni sürüm yok" ile aynı.
-      // `downloadUpdate` hataları farklı: orada manifest VAR, indirme bozuldu —
-      // yarı kurulmuş update riski olduğu için hala error göstermeye devam ediyoruz.
       let result = null;
       let checkFailed = false;
+      let checkErrorMessage = '';
       try {
         result = await autoUpdater.checkForUpdates();
-      } catch {
+      } catch (err) {
         checkFailed = true;
+        const raw = err && err.message ? err.message : String(err);
+        if (/404|not found|latest\.yml/i.test(raw)) {
+          checkErrorMessage = MANUAL_UPDATE_HINT;
+        } else {
+          checkErrorMessage = raw;
+        }
       }
 
       const hasUpdate = !checkFailed && result && result.isUpdateAvailable === true;
       if (!hasUpdate) {
-        const msg = checkFailed
-          ? 'Güncelleme bilgisi alınamadı. Launcher yeniden başlatılıyor…'
-          : 'Yeni sürüm yok. Launcher yeniden başlatılıyor…';
-        emit({ phase: 'relaunching', message: msg, percent: null });
+        if (checkFailed) {
+          emit({ phase: 'error', message: checkErrorMessage || MANUAL_UPDATE_HINT, percent: null });
+          return { ok: false, message: checkErrorMessage || MANUAL_UPDATE_HINT };
+        }
+        emit({ phase: 'relaunching', message: 'Yeni sürüm yok. Launcher yeniden başlatılıyor…', percent: null });
         await sleep(450);
         setImmediate(() => {
           app.relaunch();
