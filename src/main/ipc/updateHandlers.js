@@ -49,18 +49,27 @@ function registerUpdateHandlers({ ipcMain, getWindow }) {
 
       emit({ phase: 'checking', message: 'Güncellemeler kontrol ediliyor…', percent: null });
 
-      let result;
+      // `checkForUpdates` fail olunca (GitHub Pages henüz aktive edilmemiş 404,
+      // DNS/network down, manifest erişilemez, vs.) kullanıcının niyetine
+      // (=launcher'ı yeniden başlat) en yakın davranış: sessizce "yeni sürüm
+      // yok" akışına gir ve relaunch et. Buradaki hata güncellemenin yapılamadığı
+      // anlamına gelir — kullanıcı için bu "yeni sürüm yok" ile aynı.
+      // `downloadUpdate` hataları farklı: orada manifest VAR, indirme bozuldu —
+      // yarı kurulmuş update riski olduğu için hala error göstermeye devam ediyoruz.
+      let result = null;
+      let checkFailed = false;
       try {
         result = await autoUpdater.checkForUpdates();
-      } catch (err) {
-        const msg = err && err.message ? err.message : String(err);
-        emit({ phase: 'error', message: msg, percent: null });
-        return { ok: false, message: msg };
+      } catch {
+        checkFailed = true;
       }
 
-      const hasUpdate = result && result.isUpdateAvailable === true;
+      const hasUpdate = !checkFailed && result && result.isUpdateAvailable === true;
       if (!hasUpdate) {
-        emit({ phase: 'relaunching', message: 'Yeni sürüm yok. Launcher yeniden başlatılıyor…', percent: null });
+        const msg = checkFailed
+          ? 'Güncelleme bilgisi alınamadı. Launcher yeniden başlatılıyor…'
+          : 'Yeni sürüm yok. Launcher yeniden başlatılıyor…';
+        emit({ phase: 'relaunching', message: msg, percent: null });
         await sleep(450);
         setImmediate(() => {
           app.relaunch();

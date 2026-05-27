@@ -1,52 +1,9 @@
-function isReleaseStyleVersionId(id) {
-  return /^\d+\.\d+(\.\d+)?$/.test(String(id || ''));
-}
-
-/** Sadece klasik 1.x.y sürümleri (1.16, 1.20.4); 26.x veya 2.x burada false. */
-function isLegacyOneDotSeries(versionId) {
-  return /^1\.\d+(\.\d+)?$/.test(String(versionId || ''));
-}
-
-function mcMinorAtLeast(versionId, minMinor) {
-  const m = String(versionId).match(/^1\.(\d+)/);
-  if (!m) return false;
-  return parseInt(m[1], 10) >= minMinor;
-}
-
-function shaderFpsSupported(versionId) {
-  const v = String(versionId || '').trim();
-  if (!v || v === 'Yükleniyor...') return true;
-  if (!isReleaseStyleVersionId(v)) return true;
-  if (!isLegacyOneDotSeries(v)) return true;
-  return mcMinorAtLeast(v, 16);
-}
-
-function embossedBlocksSupported(versionId) {
-  const v = String(versionId || '').trim();
-  if (!v || v === 'Yükleniyor...') return true;
-  if (!isReleaseStyleVersionId(v)) return true;
-  if (!isLegacyOneDotSeries(v)) return true;
-  return mcMinorAtLeast(v, 18);
-}
-
-function optifineSupported(versionId) {
-  return shaderFpsSupported(versionId);
-}
-
-// OptiFine'ın resmi olarak desteklediği en yeni Minecraft sürümü 1.21.9.
-// Klasik 1.x.y şeması dışı (örn. 26.1.2) sürümlerde OptiFine henüz yok.
-function forgeOptifineLikelySupported(versionId) {
-  const v = String(versionId || '').trim();
-  if (!v || v === 'Yükleniyor...') return true;
-  if (!/^1\.\d+(\.\d+)?$/.test(v)) return false;
-  const m = v.match(/^1\.(\d+)(?:\.(\d+))?$/);
-  if (!m) return false;
-  const minor = parseInt(m[1], 10);
-  const patch = m[2] ? parseInt(m[2], 10) : 0;
-  if (minor < 21) return true;
-  if (minor === 21 && patch <= 9) return true;
-  return false;
-}
+import {
+  shaderFpsSupported,
+  embossedBlocksSupported,
+  optifineSupported,
+  forgeOptifineLikelySupported,
+} from '../../shared/versionCompatibility.js';
 
 const LOADER_OPTIONS = [
   { value: 'vanilla', label: 'Vanilla', hint: 'Saf Minecraft — hiçbir loader veya mod yüklenmez. Mojang\'ın resmi sürümü olduğu gibi başlar.' },
