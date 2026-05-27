@@ -111,6 +111,8 @@ export function createModsPanel({ root, store }) {
   const embossedRow = root.querySelector('[data-role="row-embossed"]');
   const shaderLabel = root.querySelector('[data-role="label-shaderFps"]');
   const embossedLabel = root.querySelector('[data-role="label-embossed"]');
+  const shaderPickerField = root.querySelector('[data-role="shader-picker-field"]');
+  const shaderPicker = root.querySelector('[data-role="shader-picker"]');
   const modsTitle = root.querySelector('[data-role="mods-title"]');
   const modsOptionsBox = root.querySelector('[data-role="mods-options"]');
   const loaderWarning = root.querySelector('[data-role="loader-warning"]');
