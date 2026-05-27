@@ -129,7 +129,15 @@ export function createModsPanel({ root, store }) {
       modOptifine: optifineCb.checked,
       modShaderFps: shaderCb.checked,
       modEmbossedBlocks: embossedCb.checked,
+      selectedShader: shaderPicker.value || DEFAULT_SHADER_SLUG,
     });
+  }
+
+  function updateShaderPickerVisibility() {
+    // Shader picker yalnızca Shader+FPS açıkken VE shader satırı bu loader için
+    // görünür olduğunda anlamlı. OptiFine seçiliyken Shader+FPS otomatik kapanır.
+    const visible = shaderCb.checked && !shaderCb.disabled && shaderRow.style.display !== 'none';
+    shaderPickerField.style.display = visible ? '' : 'none';
   }
 
   function currentLoader() {
