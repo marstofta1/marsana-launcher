@@ -245,7 +245,7 @@ function createLaunchService({
     }
   }
 
-  async function buildForgeSpec({ version, includeOptifine, includeShader, includeEmbossed, javaPath, emit }) {
+  async function buildForgeSpec({ version, includeOptifine, includeShader, includeEmbossed, shaderSlug, javaPath, emit }) {
     // Mod ekosistemi (Embeddium, Oculus, Continuity) Minecraft'ın patch
     // sürümünü hedefler (örn. 1.20.1) ve onunla uyumlu Forge'u (47.x) ister.
     // Kullanıcı base seçti ise (örn. 1.20) bu, javafml sürüm uyumsuzluğuna yol
