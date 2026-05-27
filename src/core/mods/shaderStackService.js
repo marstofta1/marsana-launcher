@@ -43,6 +43,52 @@ function isModrinthNotFound(err) {
   return err instanceof LauncherError && err.code === Codes.MODRINTH_NOT_FOUND;
 }
 
+function extractMcVersionFromModMeta(version) {
+  if (!version) return null;
+  const file = (version.files && version.files[0]) || {};
+  const haystack = `${file.filename || ''} ${version.name || ''} ${version.version_number || ''}`;
+  const m = haystack.match(/mc(\d+\.\d+(?:\.\d+)?)/i);
+  return m ? m[1] : null;
+}
+
+// 26.1.2 gibi patch sürümlerde Modrinth bazen mc26.1.1 jar'ını da listeler;
+// NeoForge API değişince NoSuchMethodError ile dünya yüklenirken crash olur.
+function versionMatchesGamePatch(version, gameVersion) {
+  const gvs = version && version.game_versions;
+  if (!Array.isArray(gvs) || !gvs.includes(gameVersion)) return false;
+  if (!/^\d+\.\d+\.\d+$/.test(String(gameVersion))) return true;
+  const tagged = extractMcVersionFromModMeta(version);
+  if (!tagged) return true;
+  return tagged === gameVersion;
+}
+
+function pickNewestModrinthVersion(versions, { anchorTs, strictPatch = false, gameVersion } = {}) {
+  if (!Array.isArray(versions) || versions.length === 0) return null;
+  let eligible = versions.filter((v) =>
+    strictPatch
+      ? versionMatchesGamePatch(v, gameVersion)
+      : (v.game_versions || []).includes(gameVersion)
+  );
+  if (eligible.length === 0 && !strictPatch) {
+    eligible = versions.filter((v) => (v.game_versions || []).includes(gameVersion));
+  }
+  if (eligible.length === 0) return null;
+
+  const ts = typeof anchorTs === 'number' ? anchorTs : Date.now();
+  const dated = eligible
+    .filter((v) => !v.date_published || Date.parse(v.date_published) <= ts)
+    .sort((a, b) => {
+      const releaseRank = (v) => (v.version_type === 'release' ? 0 : 1);
+      const dr = releaseRank(a) - releaseRank(b);
+      if (dr !== 0) return dr;
+      return Date.parse(b.date_published || '') - Date.parse(a.date_published || '');
+    });
+  if (dated.length > 0) return dated[0];
+  return eligible.sort(
+    (a, b) => Date.parse(b.date_published || '') - Date.parse(a.date_published || '')
+  )[0];
+}
+
 function customIdFor(gameVersion, presets, shaderSlug) {
   if (presets.optifine) return `marsana-optifine-${gameVersion}`;
   if (presets.shaderFps && shaderSlug && KNOWN_SHADER_SLUGS.has(shaderSlug)) {
@@ -323,31 +369,27 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const downloadedVersionIds = new Set();
     const downloadedProjectIds = new Set();
 
-    function pickByDate(list, anchorTs) {
-      if (!Array.isArray(list) || list.length === 0) return null;
-      const eligible = list
-        .filter((v) => v.date_published && Date.parse(v.date_published) <= anchorTs)
-        .sort((a, b) => Date.parse(b.date_published) - Date.parse(a.date_published));
-      return eligible[0] || null;
-    }
-
-    // gameVersion için Modrinth'te bazen anchor'la uyumlu bağımlı sürüm yok
-    // (örn. Iris 1.6.11 "1.20" tag'inde, Sodium 0.5.3 "1.20.1" tag'inde). Önce
-    // sıkı filtreyle dene, bulamazsan gameVersion filtresini düşür ve aynı
-    // dönemden bir sürüm seç (1.20 ↔ 1.20.1 patch sürümleri genelde uyumlu).
-    async function findContemporaryVersion(projectId, anchorPublishedIso) {
+    async function findContemporaryVersion(projectId, anchorPublishedIso, { strictPatch = false } = {}) {
       const anchorTs = Date.parse(anchorPublishedIso || '') || Date.now();
       const strictList = await modrinthClient.listProjectVersions(projectId, {
         loaders: loaderFilter,
         gameVersions: expandGameVersion(gameVersion),
       });
-      const strictPick = pickByDate(strictList, anchorTs);
+      const strictPick = pickNewestModrinthVersion(strictList, {
+        anchorTs,
+        gameVersion,
+        strictPatch,
+      });
       if (strictPick) return strictPick;
+
+      if (/^\d+\.\d+\.\d+$/.test(String(gameVersion))) {
+        return null;
+      }
 
       const looseList = await modrinthClient.listProjectVersions(projectId, {
         loaders: loaderFilter,
       });
-      return pickByDate(looseList, anchorTs);
+      return pickNewestModrinthVersion(looseList, { anchorTs, gameVersion, strictPatch: false });
     }
 
     async function persistVersion(version) {
@@ -365,6 +407,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         let depVersion = null;
         if (dep.version_id) {
           depVersion = await modrinthClient.versionById(dep.version_id);
+          if (depVersion && !versionMatchesGamePatch(depVersion, gameVersion) && dep.project_id) {
+            const override = await findContemporaryVersion(dep.project_id, version.date_published, {
+              strictPatch: true,
+            });
+            if (override) depVersion = override;
+          }
         } else if (dep.project_id) {
           depVersion = await findContemporaryVersion(dep.project_id, version.date_published);
         }
@@ -375,10 +423,17 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     for (const slug of slugs) {
       let version;
       try {
-        version = await modrinthClient.latestVersion(slug, {
+        const versions = await modrinthClient.listProjectVersions(slug, {
           loaders: loaderFilter,
           gameVersions: expandGameVersion(gameVersion),
         });
+        version = pickNewestModrinthVersion(versions, { gameVersion, strictPatch: false });
+        if (!version) {
+          throw new LauncherError(
+            Codes.MODRINTH_NOT_FOUND,
+            `Modrinth: "${slug}" için uygun sürüm bulunamadı.`
+          );
+        }
       } catch (err) {
         if (err && err.code === Codes.MODRINTH_NOT_FOUND) {
           throw new LauncherError(
