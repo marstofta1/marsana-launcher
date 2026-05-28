@@ -3,7 +3,7 @@ const LINKS = [
     label: 'Marsana Web Sitesi',
     description: 'İndirme, kurulum rehberi ve SSS',
     url: 'https://marstofta1.github.io/marsana-launcher/',
-    icon: 'M',
+    iconImage: 'assets/logo-sm.png',
     accent: true,
   },
   {
@@ -60,7 +60,11 @@ export function createWebsiteLinksPanel({ root, openExternal }) {
             data-url="${escapeHtml(link.url)}"
             title="${escapeHtml(link.url)}"
           >
-            <span class="website-link-icon" aria-hidden="true">${escapeHtml(link.icon)}</span>
+            <span class="website-link-icon${link.iconImage ? ' has-img' : ''}" aria-hidden="true">${
+              link.iconImage
+                ? `<img class="website-link-icon-img" src="${escapeHtml(link.iconImage)}" alt="" width="28" height="28" />`
+                : escapeHtml(link.icon)
+            }</span>
             <span class="website-link-text">
               <span class="website-link-label">${escapeHtml(link.label)}</span>
               <span class="website-link-desc">${escapeHtml(link.description)}</span>
