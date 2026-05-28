@@ -7,7 +7,7 @@ const { LauncherError, Codes } = require('../infra/errors');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 5;
+const SHADER_BUNDLE_VERSION = 6;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -97,6 +97,38 @@ function pickNewestModrinthVersion(versions, { anchorTs, strictPatch = false, ga
   return eligible.sort(
     (a, b) => Date.parse(b.date_published || '') - Date.parse(a.date_published || '')
   )[0];
+}
+
+function glowingOresVariantLabel(version) {
+  const hay = `${version.name || ''} ${version.version_number || ''} ${(version.files && version.files[0] && version.files[0].filename) || ''}`.toLowerCase();
+  if (hay.includes('border') || hay.includes('[bv') || hay.includes('bv-')) return 'border';
+  if (hay.includes('default') || hay.includes('[dv') || hay.includes('dv-')) return 'default';
+  return 'unknown';
+}
+
+function glowingOresVersionMatchesGame(version, gameVersion) {
+  const gvs = version.game_versions || [];
+  if (gvs.includes(gameVersion)) return true;
+  const m = String(gameVersion).match(/^(\d+\.\d+)$/);
+  if (m && gvs.includes(`${m[1]}.1`)) return true;
+  return false;
+}
+
+// Modrinth'te en yeni sürüm "Border" (yalnızca Continuity); OptiFine yolu "Default" ister.
+function pickGlowingOresVersion(versions, { gameVersion, wantBorder }) {
+  if (!Array.isArray(versions) || versions.length === 0) return null;
+  let eligible = versions.filter((v) => glowingOresVersionMatchesGame(v, gameVersion));
+  if (eligible.length === 0) eligible = versions.slice();
+
+  const preferred = wantBorder ? 'border' : 'default';
+  let pool = eligible.filter((v) => glowingOresVariantLabel(v) === preferred);
+  if (pool.length === 0 && !wantBorder) {
+    pool = eligible.filter((v) => glowingOresVariantLabel(v) !== 'border');
+  }
+  if (pool.length === 0) pool = eligible;
+
+  pool.sort((a, b) => Date.parse(b.date_published || '') - Date.parse(a.date_published || ''));
+  return pool[0] || null;
 }
 
 function customIdFor(gameVersion, presets, shaderSlug, { loaderPrefix = 'marsana' } = {}) {
@@ -278,10 +310,24 @@ function ensureContinuityResourcePacks(gameRoot) {
 
 function ensureFileResourcePackInOptions(gameRoot, filename) {
   const optionsPath = path.join(gameRoot, 'options.txt');
-  if (!fs.existsSync(optionsPath)) return;
+  const entry = `file/${filename}`;
+
+  if (!fs.existsSync(optionsPath)) {
+    fs.writeFileSync(
+      optionsPath,
+      `resourcePacks:["vanilla","${entry}"]\n`,
+      'utf8'
+    );
+    return;
+  }
+
   const original = fs.readFileSync(optionsPath, 'utf8');
   const match = original.match(/^resourcePacks:(.*)$/m);
-  if (!match) return;
+  if (!match) {
+    const sep = original.endsWith('\n') || original.length === 0 ? '' : '\n';
+    fs.writeFileSync(optionsPath, `${original}${sep}resourcePacks:["vanilla","${entry}"]\n`, 'utf8');
+    return;
+  }
   let arr;
   try {
     arr = JSON.parse(match[1].trim());
@@ -289,7 +335,6 @@ function ensureFileResourcePackInOptions(gameRoot, filename) {
     return;
   }
   if (!Array.isArray(arr)) return;
-  const entry = `file/${filename}`;
   if (arr.includes(entry)) return;
   const vanillaIdx = arr.indexOf('vanilla');
   const insertAt = vanillaIdx >= 0 ? vanillaIdx + 1 : 0;
@@ -802,6 +847,39 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     );
   }
 
+  async function downloadGlowingOresResourcePack({ resourcepacksDir, gameVersion, onNotice, useContinuity = true }) {
+    const expanded = (function expand(v) {
+      const m = String(v).match(/^(\d+\.\d+)$/);
+      return m ? [v, `${v}.1`] : [v];
+    })(gameVersion);
+
+    let versions = await modrinthClient.listProjectVersions(GLOWING_ORES_SLUG, { gameVersions: expanded });
+    if (!versions.length) {
+      versions = await modrinthClient.listProjectVersions(GLOWING_ORES_SLUG, {});
+    }
+
+    const picked = pickGlowingOresVersion(versions, { gameVersion, wantBorder: !!useContinuity });
+    if (!picked) {
+      throw new LauncherError(
+        Codes.MODRINTH_NOT_FOUND,
+        `New Glowing Ores bu Minecraft sürümü (${gameVersion}) için Modrinth'te bulunamadı.`
+      );
+    }
+
+    const file = modrinthClient.primaryFileOf(picked);
+    if (!file || !file.url) {
+      throw new LauncherError(Codes.MODRINTH_NOT_FOUND, 'New Glowing Ores dosyası Modrinth\'te bulunamadı.');
+    }
+
+    await fs.promises.mkdir(resourcepacksDir, { recursive: true });
+    await httpClient.download(file.url, path.join(resourcepacksDir, GLOWING_ORES_PACK_LOCAL_NAME));
+
+    const variant = glowingOresVariantLabel(picked);
+    const variantLabel = variant === 'border' ? 'Border (Continuity)' : 'Default (OptiFine/Continuity)';
+    if (onNotice) onNotice(`New Glowing Ores ${variantLabel} hazır: ${GLOWING_ORES_PACK_LOCAL_NAME}`);
+    return [GLOWING_ORES_PACK_LOCAL_NAME];
+  }
+
   async function downloadFullbrightResourcePack({ resourcepacksDir, gameVersion, onNotice }) {
     return downloadModrinthResourcePack({
       slug: FULLBRIGHT_UB_SLUG,
@@ -824,15 +902,13 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     });
   }
 
-  async function downloadGlowingOresResourcePack({ resourcepacksDir, gameVersion, onNotice }) {
-    return downloadModrinthResourcePack({
-      slug: GLOWING_ORES_SLUG,
-      localName: GLOWING_ORES_PACK_LOCAL_NAME,
-      resourcepacksDir,
-      gameVersion,
-      label: 'New Glowing Ores',
-      onNotice,
-    });
+  function glowingOresUseContinuityPack({ includeOptifine = false, includeEmbossed = false, presets = null } = {}) {
+    if (presets) {
+      if (presets.optifine) return false;
+      return !!(presets.embossedBlocks || glowingOresNeedsContinuity(presets));
+    }
+    if (includeOptifine) return false;
+    return !!includeEmbossed;
   }
 
   async function installFullbrightForExternalLoader({
@@ -918,18 +994,23 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const resourcepacksDir = path.join(gameRoot, 'resourcepacks');
     const modsDir = path.join(gameRoot, 'mods');
     const status = statusEmitter(emit);
+    const modLoader = loader === 'forge-optifine' ? 'forge' : loader;
+    const willInstallContinuity =
+      !includeOptifine && !includeEmbossed && ['fabric', 'quilt', 'forge'].includes(modLoader);
+    const useContinuityPack = includeEmbossed || willInstallContinuity;
+
     status('New Glowing Ores kaynak paketi indiriliyor...');
     const resourcepacks = await downloadGlowingOresResourcePack({
       resourcepacksDir,
       gameVersion,
       onNotice: status,
+      useContinuity: useContinuityPack,
     });
     if (resourcepacks[0]) ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
 
-    const modLoader = loader === 'forge-optifine' ? 'forge' : loader;
     if (!includeOptifine && !includeEmbossed && modLoader === 'neoforge') {
-      status('Glowing Ores: NeoForge\'da Continuity sınırlı — maden parıltısı görünmeyebilir.');
-    } else if (!includeOptifine && !includeEmbossed && ['fabric', 'quilt', 'forge'].includes(modLoader)) {
+      status('Glowing Ores: NeoForge\'da Continuity + Connector gerekir — maden parıltısı görünmeyebilir.');
+    } else if (willInstallContinuity) {
       status('Glowing Ores için Continuity indiriliyor...');
       try {
         await downloadModsFromSlugs({
@@ -943,7 +1024,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         status('Continuity bulunamadı — OptiFine Emissive Textures veya Kabartmalı bloklar (Continuity) gerekir.');
       }
     } else if (includeOptifine) {
-      status('Glowing Ores: OptiFine\'da Video Ayarları → Kalite → Emissive Textures açın.');
+      status('Glowing Ores (Default): OptiFine\'da Video Ayarları → Kalite → Emissive Textures açın.');
+    } else if (loader === 'vanilla') {
+      status('Glowing Ores (Default): Vanilla\'da parıltı için Fabric+Continuity veya Forge+OptiFine kullanın.');
     }
     return { resourcepacks };
   }
@@ -1134,6 +1217,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         resourcepacksDir,
         gameVersion,
         onNotice: status,
+        useContinuity: glowingOresUseContinuityPack({ presets }),
       })));
       if (resourcepacks.includes(GLOWING_ORES_PACK_LOCAL_NAME)) {
         ensureFileResourcePackInOptions(gameRoot, GLOWING_ORES_PACK_LOCAL_NAME);
@@ -1211,10 +1295,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           : "Motschen's Better Leaves kuruldu. Kaynak paketi indirildi; OptiFine kullanıyorsanız Smart Leaves'i açın."
       );
     } else if (presets.glowingOres) {
+      const borderPack = glowingOresUseContinuityPack({ presets });
       status(
-        glowingOresNeedsContinuity(presets)
-          ? 'New Glowing Ores kuruldu. Kaynak paketi etkinleştirildi; parıltı için Continuity da yüklendi.'
-          : 'New Glowing Ores kuruldu. OptiFine kullanıyorsanız Emissive Textures açın; Kabartmalı bloklar Continuity sağlar.'
+        borderPack
+          ? 'New Glowing Ores (Border) kuruldu. Continuity ile parıltı ve bağlı çerçeve etkin.'
+          : 'New Glowing Ores (Default) kuruldu. OptiFine kullanıyorsanız Emissive Textures açın.'
       );
     } else {
       status('Kabartmalı blok / bağlı doku: Continuity + Sodium hazır.');
