@@ -2,12 +2,13 @@
 
 const path = require('path');
 const fs = require('fs');
+const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 6;
+const SHADER_BUNDLE_VERSION = 7;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -115,6 +116,73 @@ function glowingOresVersionMatchesGame(version, gameVersion) {
 }
 
 // Modrinth'te en yeni sürüm "Border" (yalnızca Continuity); OptiFine yolu "Default" ister.
+// 1.21.9+ ve 26.x: pack.mcmeta min_format/max_format zorunlu; Modrinth paketleri
+// eski pack_format + supported_formats ile gelince oyun başlangıçta paketi siliyor.
+function resourcePackFormatForGameVersion(gameVersion) {
+  const id = String(gameVersion || '').trim();
+  const m26 = id.match(/^26\.(\d+)(?:\.(\d+))?$/);
+  if (m26) {
+    const minor = parseInt(m26[1], 10);
+    if (minor <= 1) return 84;
+    if (minor === 2) return 88;
+    return 84 + (minor - 1) * 4;
+  }
+  const m121 = id.match(/^1\.21(?:\.(\d+))?$/);
+  if (m121) {
+    const patch = m121[1] ? parseInt(m121[1], 10) : 0;
+    if (patch <= 1) return 34;
+    if (patch === 2 || patch === 3) return 42;
+    if (patch === 4) return 46;
+    if (patch === 5) return 55;
+    if (patch === 6 || patch === 7) return 63;
+    if (patch === 8) return 64;
+    if (patch === 9 || patch === 10) return 69;
+    if (patch === 11) return 75;
+    return 69;
+  }
+  if (/^1\.22/.test(id)) return 88;
+  return null;
+}
+
+function gameUsesModernResourcePackFormat(gameVersion) {
+  const fmt = resourcePackFormatForGameVersion(gameVersion);
+  return fmt != null && fmt >= 65;
+}
+
+function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
+  if (!gameUsesModernResourcePackFormat(gameVersion)) return false;
+  const format = resourcePackFormatForGameVersion(gameVersion);
+  if (format == null || !fs.existsSync(zipPath)) return false;
+
+  const zip = new AdmZip(zipPath);
+  const entry = zip.getEntry('pack.mcmeta');
+  if (!entry) return false;
+
+  let meta;
+  try {
+    meta = JSON.parse(entry.getData().toString('utf8'));
+  } catch {
+    return false;
+  }
+
+  const pack = meta.pack || {};
+  if (pack.min_format === format && pack.max_format === format && !pack.supported_formats) {
+    return false;
+  }
+
+  const description = pack.description != null ? pack.description : 'Resource pack';
+  meta.pack = { description, min_format: format, max_format: format };
+
+  zip.updateFile('pack.mcmeta', Buffer.from(`${JSON.stringify(meta, null, 3)}\n`, 'utf8'));
+  zip.writeZip(zipPath);
+  return true;
+}
+
+function ensureResourcePackCompatibleForGame({ resourcepacksDir, localName, gameVersion }) {
+  if (!localName || !resourcepacksDir) return;
+  patchResourcePackZipForGameVersion(path.join(resourcepacksDir, localName), gameVersion);
+}
+
 function pickGlowingOresVersion(versions, { gameVersion, wantBorder }) {
   if (!Array.isArray(versions) || versions.length === 0) return null;
   let eligible = versions.filter((v) => glowingOresVersionMatchesGame(v, gameVersion));
@@ -834,6 +902,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         const file = await modrinthClient.latestPrimaryFile(slug, query);
         await fs.promises.mkdir(resourcepacksDir, { recursive: true });
         await httpClient.download(file.url, path.join(resourcepacksDir, localName));
+        ensureResourcePackCompatibleForGame({ resourcepacksDir, localName, gameVersion });
         if (onNotice) onNotice(`${label} hazır: ${localName}`);
         return [localName];
       } catch (err) {
@@ -873,6 +942,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
     await fs.promises.mkdir(resourcepacksDir, { recursive: true });
     await httpClient.download(file.url, path.join(resourcepacksDir, GLOWING_ORES_PACK_LOCAL_NAME));
+    ensureResourcePackCompatibleForGame({
+      resourcepacksDir,
+      localName: GLOWING_ORES_PACK_LOCAL_NAME,
+      gameVersion,
+    });
 
     const variant = glowingOresVariantLabel(picked);
     const variantLabel = variant === 'border' ? 'Border (Continuity)' : 'Default (OptiFine/Continuity)';
@@ -928,7 +1002,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       gameVersion,
       onNotice: status,
     });
-    if (resourcepacks[0]) ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
+    if (resourcepacks[0]) {
+      ensureResourcePackCompatibleForGame({ resourcepacksDir, localName: resourcepacks[0], gameVersion });
+      ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
+    }
 
     if (includeShader && !includeOptifine && (loader === 'fabric' || loader === 'quilt')) {
       status('Fullbright + Shader için PolyTone indiriliyor...');
@@ -964,7 +1041,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       gameVersion,
       onNotice: status,
     });
-    if (resourcepacks[0]) ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
+    if (resourcepacks[0]) {
+      ensureResourcePackCompatibleForGame({ resourcepacksDir, localName: resourcepacks[0], gameVersion });
+      ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
+    }
 
     const modLoader = loader === 'forge-optifine' ? 'forge' : loader;
     if (!includeOptifine && (includeShader || includeEmbossed) && ['fabric', 'quilt', 'forge', 'neoforge'].includes(modLoader)) {
@@ -1006,7 +1086,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       onNotice: status,
       useContinuity: useContinuityPack,
     });
-    if (resourcepacks[0]) ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
+    if (resourcepacks[0]) {
+      ensureResourcePackCompatibleForGame({ resourcepacksDir, localName: resourcepacks[0], gameVersion });
+      ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
+    }
 
     if (!includeOptifine && !includeEmbossed && modLoader === 'neoforge') {
       status('Glowing Ores: NeoForge\'da Continuity + Connector gerekir — maden parıltısı görünmeyebilir.');
@@ -1127,12 +1210,27 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename: cached.shaderpacks[0] });
       }
       if (presets.fullbrightUb) {
+        ensureResourcePackCompatibleForGame({
+          resourcepacksDir,
+          localName: FULLBRIGHT_PACK_LOCAL_NAME,
+          gameVersion,
+        });
         ensureFileResourcePackInOptions(gameRoot, FULLBRIGHT_PACK_LOCAL_NAME);
       }
       if (presets.betterLeaves) {
+        ensureResourcePackCompatibleForGame({
+          resourcepacksDir,
+          localName: BETTER_LEAVES_PACK_LOCAL_NAME,
+          gameVersion,
+        });
         ensureFileResourcePackInOptions(gameRoot, BETTER_LEAVES_PACK_LOCAL_NAME);
       }
       if (presets.glowingOres) {
+        ensureResourcePackCompatibleForGame({
+          resourcepacksDir,
+          localName: GLOWING_ORES_PACK_LOCAL_NAME,
+          gameVersion,
+        });
         ensureFileResourcePackInOptions(gameRoot, GLOWING_ORES_PACK_LOCAL_NAME);
       }
       status(`Mod profili (önbellek): ${resolvedShaderSlug} shader hazır, başlatılıyor...`);
@@ -1197,6 +1295,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         onNotice: status,
       })));
       if (resourcepacks.includes(FULLBRIGHT_PACK_LOCAL_NAME)) {
+        ensureResourcePackCompatibleForGame({
+          resourcepacksDir,
+          localName: FULLBRIGHT_PACK_LOCAL_NAME,
+          gameVersion,
+        });
         ensureFileResourcePackInOptions(gameRoot, FULLBRIGHT_PACK_LOCAL_NAME);
       }
     }
@@ -1208,6 +1311,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         onNotice: status,
       })));
       if (resourcepacks.includes(BETTER_LEAVES_PACK_LOCAL_NAME)) {
+        ensureResourcePackCompatibleForGame({
+          resourcepacksDir,
+          localName: BETTER_LEAVES_PACK_LOCAL_NAME,
+          gameVersion,
+        });
         ensureFileResourcePackInOptions(gameRoot, BETTER_LEAVES_PACK_LOCAL_NAME);
       }
     }
@@ -1220,6 +1328,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         useContinuity: glowingOresUseContinuityPack({ presets }),
       })));
       if (resourcepacks.includes(GLOWING_ORES_PACK_LOCAL_NAME)) {
+        ensureResourcePackCompatibleForGame({
+          resourcepacksDir,
+          localName: GLOWING_ORES_PACK_LOCAL_NAME,
+          gameVersion,
+        });
         ensureFileResourcePackInOptions(gameRoot, GLOWING_ORES_PACK_LOCAL_NAME);
       }
     }
