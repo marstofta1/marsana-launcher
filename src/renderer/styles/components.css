@@ -31,6 +31,16 @@
 }
 .btn.ghost:hover:not(:disabled) { color: var(--text-primary); border-color: var(--border-strong); }
 
+#update-trigger.has-update {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+#update-trigger.has-update:hover:not(:disabled) {
+  color: var(--accent-hover, var(--accent));
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+}
+
 .account .user {
   display: flex;
   align-items: center;

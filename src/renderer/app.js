@@ -62,6 +62,12 @@ async function bootstrap() {
   }
   const store = createStore({ ...seededState, settings: persistedSettings });
 
+  wireUpdateFlow({
+    button: $('update-trigger'),
+    overlay: $('update-overlay'),
+    updates: api.updates,
+  });
+
   // Store değişimlerini dinle: "Seçimleri hatırla" açıkken loader/preset
   // değiştiğinde otomatik kaydet; setting kapatıldığında saklananı temizle.
   // lastSerialized — aynı snapshot'u tekrar tekrar yazmamak için.
@@ -111,12 +117,6 @@ async function bootstrap() {
   ];
 
   for (const c of components) await c.mount();
-
-  wireUpdateFlow({
-    button: $('update-trigger'),
-    overlay: $('update-overlay'),
-    updates: api.updates,
-  });
 
   wireHowToPlayGuide({
     button: $('how-to-play-trigger'),

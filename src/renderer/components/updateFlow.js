@@ -1,9 +1,39 @@
+const LABEL_UPDATE = 'Güncelle';
+const LABEL_RESTART = 'Yeniden başlat';
+
 export function wireUpdateFlow({ button, overlay, updates }) {
   const titleEl = overlay.querySelector('[data-role="title"]');
   const messageEl = overlay.querySelector('[data-role="message"]');
   const barWrap = overlay.querySelector('[data-role="progress-wrap"]');
   const bar = overlay.querySelector('[data-role="bar"]');
   const dismiss = overlay.querySelector('[data-role="dismiss"]');
+
+  function setButtonMode({ available, version }) {
+    if (available) {
+      button.textContent = LABEL_UPDATE;
+      button.title = version
+        ? `Sürüm ${version} mevcut — indir ve kur`
+        : 'Güncellemeyi indir ve kur';
+      button.classList.add('has-update');
+      return;
+    }
+    button.textContent = LABEL_RESTART;
+    button.title = 'Launcher\'ı yeniden başlat';
+    button.classList.remove('has-update');
+  }
+
+  async function refreshUpdateButtonLabel() {
+    try {
+      const res = await updates.check();
+      if (res && res.ok) {
+        setButtonMode({ available: !!res.available, version: res.version });
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+    setButtonMode({ available: false });
+  }
 
   function applyPhase(payload) {
     if (!payload) return;
@@ -79,5 +109,9 @@ export function wireUpdateFlow({ button, overlay, updates }) {
 
     offPhase();
     closeOverlay();
+    refreshUpdateButtonLabel();
   });
+
+  setButtonMode({ available: false });
+  void refreshUpdateButtonLabel();
 }

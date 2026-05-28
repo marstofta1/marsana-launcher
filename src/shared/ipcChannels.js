@@ -32,6 +32,7 @@ const SYSTEM = Object.freeze({
 });
 
 const UPDATE = Object.freeze({
+  CHECK: 'update:check',
   RUN: 'update:run',
   PHASE: 'launcher:updatePhase',
 });

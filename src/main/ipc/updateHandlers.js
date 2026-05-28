@@ -5,6 +5,39 @@ const { app } = require('electron');
 const { isWin } = require('../../shared/platform');
 const { UPDATE } = require('../../shared/ipcChannels');
 
+const DEFAULT_UPDATES_BASE_URL =
+  'https://marstofta1.github.io/marsana-launcher/downloads';
+
+function parseVersionParts(version) {
+  return String(version)
+    .replace(/^v/i, '')
+    .split('.')
+    .map((part) => parseInt(part, 10) || 0);
+}
+
+function isRemoteVersionNewer(remoteVersion, currentVersion) {
+  const remote = parseVersionParts(remoteVersion);
+  const current = parseVersionParts(currentVersion);
+  const len = Math.max(remote.length, current.length);
+  for (let i = 0; i < len; i += 1) {
+    const rv = remote[i] || 0;
+    const cv = current[i] || 0;
+    if (rv > cv) return true;
+    if (rv < cv) return false;
+  }
+  return false;
+}
+
+function configureFeedUrl(autoUpdater) {
+  const envBase = process.env.MARSANA_UPDATES_BASE_URL;
+  const base =
+    envBase && String(envBase).trim() ? String(envBase).trim() : DEFAULT_UPDATES_BASE_URL;
+  autoUpdater.setFeedURL({
+    provider: 'generic',
+    url: base.replace(/\/$/, ''),
+  });
+}
+
 function sendPhase(getWindow, payload) {
   const win = getWindow();
   if (win && !win.isDestroyed()) win.webContents.send(UPDATE.PHASE, payload);
@@ -27,13 +60,33 @@ function registerUpdateHandlers({ ipcMain, getWindow }) {
     'Güncelleme sunucusuna ulaşılamadı. GitHub Pages etkin olmalı ve repo herkese açık olmalıdır. ' +
     'Manuel indirme: https://github.com/marstofta1/marsana-launcher (docs/downloads).';
 
-  const base = process.env.MARSANA_UPDATES_BASE_URL;
-  if (base && String(base).trim()) {
-    autoUpdater.setFeedURL({
-      provider: 'generic',
-      url: String(base).replace(/\/$/, ''),
-    });
+  configureFeedUrl(autoUpdater);
+
+  async function probeUpdateAvailability() {
+    if (!app.isPackaged) {
+      return { ok: true, available: false, devMode: true };
+    }
+
+    try {
+      const result = await autoUpdater.checkForUpdates();
+      const remoteVersion =
+        result && result.updateInfo && result.updateInfo.version
+          ? result.updateInfo.version
+          : null;
+      const available =
+        !!(result && result.isUpdateAvailable === true) &&
+        !!remoteVersion &&
+        isRemoteVersionNewer(remoteVersion, app.getVersion());
+      const version = available ? remoteVersion : undefined;
+      return { ok: true, available, version };
+    } catch (err) {
+      const raw = err && err.message ? err.message : String(err);
+      const message = /404|not found|latest\.yml/i.test(raw) ? MANUAL_UPDATE_HINT : raw;
+      return { ok: false, available: false, message };
+    }
   }
+
+  ipcMain.handle(UPDATE.CHECK, () => probeUpdateAvailability());
 
   ipcMain.handle(UPDATE.RUN, async () => {
     const emit = (patch) => sendPhase(getWindow, patch);
@@ -53,27 +106,14 @@ function registerUpdateHandlers({ ipcMain, getWindow }) {
 
       emit({ phase: 'checking', message: 'Güncellemeler kontrol ediliyor…', percent: null });
 
-      let result = null;
-      let checkFailed = false;
-      let checkErrorMessage = '';
-      try {
-        result = await autoUpdater.checkForUpdates();
-      } catch (err) {
-        checkFailed = true;
-        const raw = err && err.message ? err.message : String(err);
-        if (/404|not found|latest\.yml/i.test(raw)) {
-          checkErrorMessage = MANUAL_UPDATE_HINT;
-        } else {
-          checkErrorMessage = raw;
-        }
+      const probe = await probeUpdateAvailability();
+      if (!probe.ok) {
+        emit({ phase: 'error', message: probe.message || MANUAL_UPDATE_HINT, percent: null });
+        return { ok: false, message: probe.message || MANUAL_UPDATE_HINT };
       }
 
-      const hasUpdate = !checkFailed && result && result.isUpdateAvailable === true;
+      const hasUpdate = probe.available === true;
       if (!hasUpdate) {
-        if (checkFailed) {
-          emit({ phase: 'error', message: checkErrorMessage || MANUAL_UPDATE_HINT, percent: null });
-          return { ok: false, message: checkErrorMessage || MANUAL_UPDATE_HINT };
-        }
         emit({ phase: 'relaunching', message: 'Yeni sürüm yok. Launcher yeniden başlatılıyor…', percent: null });
         await sleep(450);
         setImmediate(() => {
@@ -83,7 +123,7 @@ function registerUpdateHandlers({ ipcMain, getWindow }) {
         return { ok: true, willRelaunch: true };
       }
 
-      const ver = result.updateInfo && result.updateInfo.version ? result.updateInfo.version : '';
+      const ver = probe.version || '';
       emit({
         phase: 'downloading',
         percent: 0,

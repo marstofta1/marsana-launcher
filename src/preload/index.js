@@ -30,6 +30,7 @@ const api = Object.freeze({
   launch: (opts) => ipcRenderer.invoke(LAUNCH.START, opts),
   openExternal: (url) => ipcRenderer.invoke(SYSTEM.OPEN_EXTERNAL, url),
   updates: Object.freeze({
+    check: () => ipcRenderer.invoke(UPDATE.CHECK),
     run: () => ipcRenderer.invoke(UPDATE.RUN),
     onPhase: (handler) => {
       const channel = UPDATE.PHASE;
