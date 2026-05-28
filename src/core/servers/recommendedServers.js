@@ -63,6 +63,18 @@ const SERVERS = Object.freeze([
     description:
       '7/24 çevrimiçi topluluk sunucusu. Farklı oyun modları ve etkinlikler.',
   }),
+  Object.freeze({
+    id: 'donutsmp',
+    name: 'Donut SMP',
+    host: 'donutsmp.net',
+    port: 25565,
+    provider: 'community',
+    providerDashboardUrl: null,
+    websiteUrl: 'https://donutsmp.net',
+    capacity: null,
+    description:
+      'Popüler hardcore survival SMP. Java ve Bedrock crossplay; ekonomi, PvP ve liderlik tablosu. (Bedrock port: 19132)',
+  }),
 ]);
 
 function addressOf(server) {

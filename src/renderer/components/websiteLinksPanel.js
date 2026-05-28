@@ -7,6 +7,18 @@ const LINKS = [
     accent: true,
   },
   {
+    label: 'Minecraft.net',
+    description: 'Resmi Minecraft sitesi',
+    url: 'https://www.minecraft.net/',
+    icon: 'N',
+  },
+  {
+    label: 'Minecraft Wiki',
+    description: 'Oyun rehberi, bloklar ve mekanikler',
+    url: 'https://minecraft.wiki/',
+    icon: 'W',
+  },
+  {
     label: 'GitHub',
     description: 'Kaynak kod ve sürüm notları',
     url: 'https://github.com/marstofta1/marsana-launcher',
