@@ -126,6 +126,19 @@ function createLaunchService({
     return m ? `${v}.1` : v;
   }
 
+  function syncModResourcePacks({ gameVersion, modPresets }) {
+    const presets = modPresets || {};
+    const hasResourceMods =
+      presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.embossedBlocks;
+    if (!hasResourceMods) return;
+    shaderStackService.applyModResourcePackPresets({
+      gameRoot: paths.gameRoot,
+      gameVersion,
+      presets,
+      resourcepacksDir: path.join(paths.gameRoot, 'resourcepacks'),
+    });
+  }
+
   async function writeMergedProfile({ merged, customId, version, loaderVersion, logLabel }) {
     merged.id = customId;
     const versionDir = path.join(paths.gameRoot, 'versions', customId);
@@ -517,6 +530,16 @@ function createLaunchService({
       });
     }
 
+    syncModResourcePacks({
+      gameVersion: effectiveVersion,
+      modPresets: {
+        fullbrightUb: includeFullbright,
+        betterLeaves: includeBetterLeaves,
+        glowingOres: includeGlowingOres,
+        embossedBlocks: includeEmbossed,
+      },
+    });
+
     return {
       spec: { number: effectiveVersion, type: 'release', custom: customId },
       overrides: { detached: false },
@@ -610,6 +633,15 @@ function createLaunchService({
         includeEmbossed: false,
       });
     }
+
+    syncModResourcePacks({
+      gameVersion: effectiveVersion,
+      modPresets: {
+        fullbrightUb: includeFullbright,
+        betterLeaves: includeBetterLeaves,
+        glowingOres: includeGlowingOres,
+      },
+    });
 
     const assetIndexId = (merged.assetIndex && merged.assetIndex.id) || effectiveVersion;
     return {
@@ -726,6 +758,16 @@ function createLaunchService({
       });
     }
 
+    syncModResourcePacks({
+      gameVersion: effectiveVersion,
+      modPresets: {
+        fullbrightUb: includeFullbright,
+        betterLeaves: includeBetterLeaves,
+        glowingOres: includeGlowingOres,
+        embossedBlocks: includeEmbossed,
+      },
+    });
+
     return {
       spec: { number: effectiveVersion, type: 'release', custom: customId },
       overrides: { detached: false },
@@ -841,6 +883,10 @@ function createLaunchService({
           includeEmbossed: false,
         });
       }
+      syncModResourcePacks({
+        gameVersion: version,
+        modPresets,
+      });
       return {
         spec: { number: version, type: 'release' },
         overrides: { detached: false },

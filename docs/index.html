@@ -247,8 +247,17 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v0.1.18</span>
+            <span class="release-version">v0.1.19</span>
             <span class="release-tag latest">En güncel</span>
+          </div>
+          <ul class="release-changes">
+            <li><strong>Kaynak paketi senkronizasyonu:</strong> Fabric + tüm modlar seçildiğinde paketler tek tek eklenmek yerine başlatmadan önce toplu etkinleştiriliyor (Fullbright, Better Leaves, Glowing Ores + Continuity).</li>
+            <li>26.x uyumsuzluğu nedeniyle boşalan <code>options.txt</code> listesi her launch'ta yeniden yazılıyor; eski <code>pack_format</code> paketleri otomatik yamalanıyor.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v0.1.18</span>
           </div>
           <ul class="release-changes">
             <li><strong>Glowing Ores (26.x düzeltmesi):</strong> Minecraft 26.1+ kaynak paketlerinde <code>min_format</code>/<code>max_format</code> zorunluluğu nedeniyle Modrinth paketi uyumsuz sayılıp devre dışı kalıyordu. İndirme sonrası <code>pack.mcmeta</code> otomatik düzeltiliyor.</li>
