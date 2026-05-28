@@ -1,3 +1,5 @@
+import { isOrnitheVersionBlocked } from '../../shared/versionCompatibility.js';
+
 const MAX_LOG_LINES = 500;
 
 export function createStatusPanel({ root, store, events }) {
@@ -45,8 +47,25 @@ export function createStatusPanel({ root, store, events }) {
     });
     events.onStdout((line) => appendLog(String(line)));
     events.onClose(({ code }) => {
+      const { selectedLoader, selectedVersion, lastLaunchLoader, lastLaunchVersion } = store.getState();
+      const loader = lastLaunchLoader || selectedLoader;
+      const version = lastLaunchVersion || selectedVersion;
+      const crashed = code === 4294967295 || code === -1;
+      let statusText = loader === 'bedrock'
+        ? 'Minecraft Bedrock başlatıldı.'
+        : `Oyun kapandı (kod: ${code}).`;
+      if (crashed && loader === 'ornithe') {
+        if (isOrnitheVersionBlocked(version)) {
+          statusText =
+            'Ornithe bu Minecraft sürümüyle çalışmıyor (1.13.x). Lütfen 1.12.2 seçin veya Legacy Fabric kullanın.';
+        } else {
+          statusText =
+            `Ornithe (${version}) dünya/sunucuya girerken çöktü — Ornithe 0.1.2 Calamus hatası (launcher kaynaklı değil). ` +
+            'Eski sürüm modları için Modlar bölümünden Legacy Fabric deneyin.';
+        }
+      }
       store.setState({
-        statusText: `Oyun kapandı (kod: ${code}).`,
+        statusText,
         progressPercent: 0,
       });
     });

@@ -2,11 +2,13 @@ import {
   shaderFpsSupported,
   embossedBlocksSupported,
   optifineSupported,
+  voiceChatSupported,
   forgeOptifineLikelySupported,
 } from '../../shared/versionCompatibility.js';
 
 const LOADER_OPTIONS = [
   { value: 'vanilla', label: 'Vanilla', hint: 'Saf Minecraft — hiçbir loader veya mod yüklenmez. Mojang\'ın resmi sürümü olduğu gibi başlar.' },
+  { value: 'bedrock', label: 'Bedrock (Windows)', hint: 'Minecraft for Windows (Microsoft Store). Marsana hesabı gerekmez; oyun açıldıktan sonra Microsoft/Xbox ile giriş yaparsınız. Java modları uygulanmaz.' },
   { value: 'fabric', label: 'Fabric', hint: 'Modrinth modları (Sodium, Iris, OptiFine for Fabric, vs.). Aşağıdaki seçenekler aktif olur.' },
   { value: 'fabric-beta', label: 'Fabric (Beta)', hint: 'Fabric\'in beta kanalı yükleyicisi. Mod seçenekleri Fabric ile aynıdır; kararlı sürüm yerine beta loader kullanılır.' },
   { value: 'forge', label: 'Forge', hint: 'Klasik Forge loader (boş profil). Modlarınızı mods/ klasörüne kendiniz eklersiniz.' },
@@ -16,8 +18,8 @@ const LOADER_OPTIONS = [
   { value: 'legacy-fabric', label: 'Legacy Fabric', hint: 'Eski Minecraft sürümleri (1.3 – 1.13.2) için Fabric çatalı. Sürüm listesi otomatik filtrelenir; boş profil olarak başlar.' },
   { value: 'liteloader', label: 'LiteLoader', hint: 'Klasik LiteLoader (1.6 – 1.12). Sürüm listesi desteklenen sürümlerle filtrelenir; modları mods/ klasörüne kendiniz eklersiniz.' },
   { value: 'nilloader', label: 'NilLoader', hint: 'Vanilla üzerine Java agent olarak eklenen hafif mod loader. Tüm vanilla sürümlerinde çalışır; modları mods/ klasörüne kendiniz eklersiniz.' },
-  { value: 'ornithe', label: 'Ornithe', hint: 'Eski Minecraft sürümleri için Fabric tabanlı loader. Sürüm listesi Ornithe meta API\'sine göre filtrelenir.' },
-  { value: 'rift', label: 'Rift', hint: 'Minecraft 1.13 ve 1.13.2 için hafif mod loader. Sürüm seçici yalnızca desteklenen sürümleri gösterir.' },
+  { value: 'ornithe', label: 'Ornithe (deneysel)', hint: 'Ornithe 0.1.2 şu an dünya/sunucuya girerken çökebiliyor. 1.12.2 modları için Legacy Fabric önerilir.' },
+  { value: 'rift', label: 'Rift (deneysel)', hint: 'Minecraft 1.13 / 1.13.2 için eski mod loader. dimdev.org kapalı; topluluk yansısı kullanılır. Fabric önerilir.' },
 ];
 
 const FABRIC_LOADERS = new Set(['fabric', 'fabric-beta']);
@@ -116,6 +118,16 @@ export function createModsPanel({ root, store }) {
               Cam ve benzeri bloklarda bağlı doku (CTM). <strong>1.18+</strong> klasik sürümlerde önerilir; OptiFine paketi açıkken ek modlar isteğe bağlı eklenir.
             </p>
           </div>
+
+          <div data-role="row-voiceChat">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="voiceChat" />
+              <span>Voice Chat (Simple Voice Chat)</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-voiceChat">
+              Proximity sesli sohbet; oyunda <strong>V</strong> ile ayarlanır. Çok oyunculu sunucuda mod gerekir.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -126,9 +138,11 @@ export function createModsPanel({ root, store }) {
   const optifineCb = root.querySelector('[data-role="optifine"]');
   const shaderCb = root.querySelector('[data-role="shaderFps"]');
   const embossedCb = root.querySelector('[data-role="embossed"]');
+  const voiceChatCb = root.querySelector('[data-role="voiceChat"]');
   const optifineRow = root.querySelector('[data-role="row-optifine"]');
   const shaderRow = root.querySelector('[data-role="row-shaderFps"]');
   const embossedRow = root.querySelector('[data-role="row-embossed"]');
+  const voiceChatRow = root.querySelector('[data-role="row-voiceChat"]');
   const shaderLabel = root.querySelector('[data-role="label-shaderFps"]');
   const embossedLabel = root.querySelector('[data-role="label-embossed"]');
   const shaderPickerBlock = root.querySelector('[data-role="shader-picker-block"]');
@@ -152,6 +166,7 @@ export function createModsPanel({ root, store }) {
       modOptifine: optifineCb.checked,
       modShaderFps: shaderCb.checked,
       modEmbossedBlocks: embossedCb.checked,
+      modVoiceChat: voiceChatCb.checked,
       selectedShader: shaderPicker.value || DEFAULT_SHADER_SLUG,
     });
   }
@@ -213,6 +228,7 @@ export function createModsPanel({ root, store }) {
     const opOk = !isSnapshot && optifineSupported(v);
     const shOk = !isSnapshot && shaderFpsSupported(v);
     const emOk = !isSnapshot && embossedBlocksSupported(v);
+    const vcOk = !isSnapshot && voiceChatSupported(v);
 
     if (isSnapshot) {
       const reason = 'Snapshot/eski sürümlerde mod ekosistemi (Iris, Sodium, Continuity) yayınlanmaz; stable bir sürüm seçin.';
@@ -228,17 +244,24 @@ export function createModsPanel({ root, store }) {
         embossedCb.checked = false;
         store.setState({ modEmbossedBlocks: false });
       }
+      if (voiceChatCb.checked) {
+        voiceChatCb.checked = false;
+        store.setState({ modVoiceChat: false });
+      }
       optifineCb.disabled = true;
       shaderCb.disabled = true;
       embossedCb.disabled = true;
+      voiceChatCb.disabled = true;
       optifineCb.title = reason;
       shaderCb.title = reason;
       embossedCb.title = reason;
+      voiceChatCb.title = reason;
       return;
     }
 
     optifineCb.disabled = !opOk;
     embossedCb.disabled = !emOk;
+    voiceChatCb.disabled = !vcOk;
 
     optifineCb.title = opOk
       ? ''
@@ -246,6 +269,9 @@ export function createModsPanel({ root, store }) {
     embossedCb.title = emOk
       ? ''
       : 'Bu seçenek için Minecraft 1.18 veya üstü bir sürüm seçin (Continuity uyumu).';
+    voiceChatCb.title = vcOk
+      ? ''
+      : 'Voice Chat için Minecraft 1.16 veya üstü bir sürüm seçin.';
 
     if (!opOk && optifineCb.checked) {
       optifineCb.checked = false;
@@ -255,6 +281,10 @@ export function createModsPanel({ root, store }) {
       embossedCb.checked = false;
       store.setState({ modEmbossedBlocks: false });
     }
+    if (!vcOk && voiceChatCb.checked) {
+      voiceChatCb.checked = false;
+      store.setState({ modVoiceChat: false });
+    }
 
     applyMutualExclusion();
     updateShaderPickerVisibility();
@@ -263,37 +293,37 @@ export function createModsPanel({ root, store }) {
   // Her loader için hangi mod row'ları görünür ve mods-title:
   const ROWS_BY_LOADER = {
     fabric: {
-      rows: ['shaderFps', 'optifine', 'embossed'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat'],
       title: 'Fabric Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
     },
     'fabric-beta': {
-      rows: ['shaderFps', 'optifine', 'embossed'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat'],
       title: 'Fabric (Beta) Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
     },
     quilt: {
-      rows: ['shaderFps'],
+      rows: ['shaderFps', 'voiceChat'],
       title: 'Quilt Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity)',
     },
     forge: {
-      rows: ['shaderFps', 'embossed'],
+      rows: ['shaderFps', 'embossed', 'voiceChat'],
       title: 'Forge Modları',
       shaderLabel: 'Shader + FPS (Embeddium + Oculus + seçilen shader paketi — ⚠ Mac\'te Oculus OpenGL 1282 hatası verebilir; NeoForge veya Fabric önerilir)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity Forge — sadece 1.20.1)',
     },
     'forge-optifine': {
-      rows: ['embossed'],
+      rows: ['embossed', 'voiceChat'],
       title: 'Forge + OptiFine Modları',
       shaderLabel: '',
       embossedLabel: "Kabartmalı / bağlı bloklar (OptiFine içeride zaten CTM destekler — ek mod gerek yok)",
     },
     neoforge: {
-      rows: ['shaderFps'],
+      rows: ['shaderFps', 'voiceChat'],
       title: 'NeoForge Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (NeoForge\'da native Continuity yok — desteklenmiyor)',
@@ -334,6 +364,12 @@ export function createModsPanel({ root, store }) {
       shaderLabel: '',
       embossedLabel: '',
     },
+    bedrock: {
+      rows: [],
+      title: 'Minecraft Bedrock',
+      shaderLabel: '',
+      embossedLabel: '',
+    },
   };
 
   function applyLoaderState() {
@@ -341,13 +377,20 @@ export function createModsPanel({ root, store }) {
     const config = ROWS_BY_LOADER[loader] || ROWS_BY_LOADER.fabric;
 
     // Row'ları göster/gizle
-    const allRows = { shaderFps: shaderRow, optifine: optifineRow, embossed: embossedRow };
+    const allRows = {
+      shaderFps: shaderRow,
+      optifine: optifineRow,
+      embossed: embossedRow,
+      voiceChat: voiceChatRow,
+    };
     for (const key of Object.keys(allRows)) {
       allRows[key].style.display = config.rows.includes(key) ? '' : 'none';
     }
 
     const rightColVisible =
-      config.rows.includes('optifine') || config.rows.includes('embossed');
+      config.rows.includes('optifine') ||
+      config.rows.includes('embossed') ||
+      config.rows.includes('voiceChat');
     if (modsOptionsColRight) {
       modsOptionsColRight.style.display = rightColVisible ? '' : 'none';
     }
@@ -367,6 +410,10 @@ export function createModsPanel({ root, store }) {
     if (!config.rows.includes('embossed') && embossedCb.checked) {
       embossedCb.checked = false;
       store.setState({ modEmbossedBlocks: false });
+    }
+    if (!config.rows.includes('voiceChat') && voiceChatCb.checked) {
+      voiceChatCb.checked = false;
+      store.setState({ modVoiceChat: false });
     }
 
     modsTitle.textContent = config.title;
@@ -391,22 +438,27 @@ export function createModsPanel({ root, store }) {
           'Quilt loader otomatik kurulacak. Shader + FPS Fabric ekosistemiyle çalışır (Iris + Sodium).';
       } else if (loader === 'legacy-fabric') {
         loaderWarning.textContent =
-          'Legacy Fabric otomatik kurulacak. Sürüm seçici yalnızca Legacy Fabric\'in desteklediği eski sürümleri (1.3 – 1.13.2 aralığı) gösterir. Modları mods/ klasörüne kendiniz eklersiniz.';
+          'Legacy Fabric otomatik kurulacak. Kayıtlar ve ayarlar profiles/legacy-fabric-<sürüm>/ altında tutulur. Modları mods/ klasörüne kendiniz eklersiniz.';
       } else if (loader === 'liteloader') {
         loaderWarning.textContent =
-          'LiteLoader otomatik kurulacak. Sürüm seçici yalnızca LiteLoader\'ın desteklediği sürümleri gösterir. Modları mods/ klasörüne kendiniz eklersiniz.';
+          'LiteLoader otomatik kurulacak. Kayıtlar ve ayarlar profiles/liteloader-<sürüm>/ altında tutulur. Modları mods/ klasörüne kendiniz eklersiniz.';
       } else if (loader === 'nilloader') {
         loaderWarning.textContent =
           'NilLoader Java agent olarak indirilir ve vanilla profil üzerinde çalışır. Modları mods/ klasörüne kendiniz eklersiniz.';
       } else if (loader === 'ornithe') {
         loaderWarning.textContent =
-          'Ornithe otomatik kurulacak. Sürüm seçici yalnızca Ornithe meta API\'sinin desteklediği sürümleri gösterir. Modları mods/ klasörüne kendiniz eklersiniz.';
+          'Ornithe deneysel: ana menü açılabilir ancak dünya/sunucuya girerken Calamus hatasıyla çökebilir. ' +
+          '1.12.2 modları için Legacy Fabric kullanmanız önerilir.';
       } else if (loader === 'rift') {
         loaderWarning.textContent =
-          'Rift otomatik kurulacak. Yalnızca Minecraft 1.13 ve 1.13.2 desteklenir. Modları mods/ klasörüne kendiniz eklersiniz.';
+          'Rift otomatik kurulacak. Kayıtlar ve ayarlar profiles/rift-<sürüm>/ altında tutulur. Yalnızca 1.13 ve 1.13.2 desteklenir.';
       } else if (loader === 'vanilla') {
         loaderWarning.textContent =
           'Vanilla seçili — Minecraft, Mojang\'ın resmi profiliyle başlar. Hiçbir loader/mod yüklenmez ve mods/ klasörü okunmaz.';
+      } else if (loader === 'bedrock') {
+        loaderWarning.textContent =
+          'Bedrock (Minecraft for Windows) Microsoft Store uygulaması olarak başlatılır. ' +
+          'Sürüm seçimi gerekmez; güncellemeler Store/Xbox üzerinden gelir. Yalnızca Windows desteklenir.';
       } else {
         // forge-optifine
         const v = store.getState().selectedVersion;
@@ -454,6 +506,7 @@ export function createModsPanel({ root, store }) {
   });
 
   embossedCb.addEventListener('change', publish);
+  voiceChatCb.addEventListener('change', publish);
   shaderPicker.addEventListener('change', publish);
 
   function renderFromStore(state) {
@@ -467,6 +520,7 @@ export function createModsPanel({ root, store }) {
     if (optifineCb.checked !== !!state.modOptifine) optifineCb.checked = !!state.modOptifine;
     if (shaderCb.checked !== !!state.modShaderFps) shaderCb.checked = !!state.modShaderFps;
     if (embossedCb.checked !== !!state.modEmbossedBlocks) embossedCb.checked = !!state.modEmbossedBlocks;
+    if (voiceChatCb.checked !== !!state.modVoiceChat) voiceChatCb.checked = !!state.modVoiceChat;
     const shader = state.selectedShader || DEFAULT_SHADER_SLUG;
     if (shaderPicker.value !== shader) shaderPicker.value = shader;
     applyLoaderState();

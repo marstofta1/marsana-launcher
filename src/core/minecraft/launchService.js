@@ -5,6 +5,10 @@ const os = require('os');
 const path = require('path');
 const { Client } = require('minecraft-launcher-core');
 const { isMac } = require('../../shared/platform');
+const {
+  isOrnitheVersionBlocked,
+  ornitheBlockedVersionMessage,
+} = require('../../shared/ornitheCompatibility');
 const { LauncherError, Codes } = require('../infra/errors');
 
 const MIN_MEM_MB = 1024;
@@ -64,11 +68,36 @@ function clampMemory(requestedMb) {
   return Math.max(MIN_MEM_MB, Math.min(requested, upperBound));
 }
 
+function isLegacyLoader(loader) {
+  return (
+    loader === 'ornithe' ||
+    loader === 'liteloader' ||
+    loader === 'legacy-fabric' ||
+    loader === 'rift'
+  );
+}
+
+function requiresStrictMojangJava(loader) {
+  return loader === 'forge' || loader === 'forge-optifine' || loader === 'neoforge';
+}
+
+function clearOrnitheRemapCache(gameDir) {
+  const cacheDir = path.join(gameDir, '.ornithe', 'remappedJars');
+  if (fs.existsSync(cacheDir)) {
+    fs.rmSync(cacheDir, { recursive: true, force: true });
+  }
+}
+
+function legacyProfileDir(gameRoot, loader, version) {
+  return path.join(gameRoot, 'profiles', `${loader}-${version}`);
+}
+
 function createLaunchService({
   paths,
   httpClient,
   authService,
   shaderStackService,
+  bedrockLaunchService,
   fabricInstaller,
   forgeInstaller,
   neoforgeInstaller,
@@ -113,8 +142,8 @@ function createLaunchService({
   }
 
   async function buildFabricBetaSpec({ version, modPresets, shaderSlug, emit }) {
-    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false };
-    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine);
+    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false };
+    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat);
     if (useMods) {
       const effectiveVersion = effectiveModGameVersion(version);
       if (effectiveVersion !== version && emit && emit.status) {
@@ -159,20 +188,20 @@ function createLaunchService({
     if (emit && emit.status) {
       emit.status({ text: `Ornithe yükleyici eşleştiriliyor (${version})...` });
     }
-    const { profile, loaderVersion, customId } = await ornitheInstaller.buildInheritedProfile(version, {
-      customIdPrefix: 'marsana-ornithe',
-    });
-    const versionDir = path.join(paths.gameRoot, 'versions', customId);
-    await fs.promises.mkdir(versionDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(versionDir, `${customId}.json`),
-      JSON.stringify(profile, null, 2),
-      'utf8'
-    );
+    const { loaderVersion, customId, assetIndexId, assetIndex } =
+      await ornitheInstaller.prepareMclcLaunch({
+        gameVersion: version,
+        gameRoot: paths.gameRoot,
+        emit,
+      });
+    await ensureAssetIndexOnDisk(assetIndex);
     logger.info('Ornithe profile ready', { version, loaderVersion, customId });
     return {
       spec: { number: version, type: 'release', custom: customId },
-      overrides: { detached: false },
+      overrides: {
+        detached: false,
+        assetIndex: assetIndexId,
+      },
       extra: {},
     };
   }
@@ -201,15 +230,15 @@ function createLaunchService({
     if (emit && emit.status) {
       emit.status({ text: `Rift yükleyici eşleştiriliyor (${version})...` });
     }
-    const { merged, loaderVersion } = await riftInstaller.buildMergedProfile(version);
-    const customId = `marsana-rift-${version}`;
-    const { assetIndexId } = await writeMergedProfile({
-      merged,
-      customId,
-      version,
-      loaderVersion,
-      logLabel: 'Rift',
-    });
+    await riftInstaller.ensureLibraries({ gameRoot: paths.gameRoot, gameVersion: version, emit });
+    const { loaderVersion, customId, assetIndexId, assetIndex } =
+      await riftInstaller.prepareMclcLaunch({
+        gameVersion: version,
+        gameRoot: paths.gameRoot,
+        emit,
+      });
+    await ensureAssetIndexOnDisk(assetIndex);
+    logger.info('Rift profile ready', { version, loaderVersion, customId });
     return {
       spec: { number: version, type: 'release', custom: customId },
       overrides: { detached: false, assetIndex: assetIndexId },
@@ -231,8 +260,8 @@ function createLaunchService({
   }
 
   async function buildFabricSpec({ version, modPresets, shaderSlug, emit }) {
-    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false };
-    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine);
+    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false };
+    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat);
     if (!useFabric) {
       return { spec: { number: version, type: 'release' }, overrides: { detached: false }, extra: {} };
     }
@@ -280,9 +309,9 @@ function createLaunchService({
   // Launcher ayarlarında verilen ses seviyelerini Minecraft `options.txt`'e
   // yansıt. Minecraft format: `soundCategory_master:0.75` (0.0-1.0).
   // Dosya yoksa oluşturulur; var olan diğer satırlar korunur.
-  function applyAudioSettingsToOptionsTxt(audio) {
+  function applyAudioSettingsToOptionsTxt(audio, gameDir = paths.gameRoot) {
     if (!audio) return;
-    const optionsPath = path.join(paths.gameRoot, 'options.txt');
+    const optionsPath = path.join(gameDir, 'options.txt');
     const updates = new Map();
     if (typeof audio.masterVolume === 'number') {
       updates.set('soundCategory_master', audio.masterVolume.toFixed(3));
@@ -383,13 +412,13 @@ function createLaunchService({
     }
   }
 
-  async function buildForgeSpec({ version, includeOptifine, includeShader, includeEmbossed, shaderSlug, javaPath, emit }) {
+  async function buildForgeSpec({ version, includeOptifine, includeShader, includeEmbossed, includeVoiceChat, shaderSlug, javaPath, emit }) {
     // Mod ekosistemi (Embeddium, Oculus, Continuity) Minecraft'ın patch
     // sürümünü hedefler (örn. 1.20.1) ve onunla uyumlu Forge'u (47.x) ister.
     // Kullanıcı base seçti ise (örn. 1.20) bu, javafml sürüm uyumsuzluğuna yol
     // açar. Mod aktifse patch'e upgrade et — protokol/saves uyumlu, sorunsuz.
     const effectiveVersion =
-      includeShader || includeOptifine || includeEmbossed
+      includeShader || includeOptifine || includeEmbossed || includeVoiceChat
         ? effectiveModGameVersion(version)
         : version;
     if (effectiveVersion !== version && emit && emit.status) {
@@ -445,6 +474,15 @@ function createLaunchService({
       });
     }
 
+    if (includeVoiceChat) {
+      await shaderStackService.installVoiceChatForExternalLoader({
+        loader: 'forge',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+      });
+    }
+
     return {
       spec: { number: effectiveVersion, type: 'release', custom: customId },
       overrides: { detached: false },
@@ -463,7 +501,7 @@ function createLaunchService({
     await httpClient.download(assetIndex.url, target);
   }
 
-  async function buildQuiltSpec({ version, includeShader, shaderSlug, emit }) {
+  async function buildQuiltSpec({ version, includeShader, includeVoiceChat, shaderSlug, emit }) {
     const effectiveVersion = effectiveModGameVersion(version);
     if (effectiveVersion !== version && emit && emit.status) {
       emit.status({
@@ -493,6 +531,15 @@ function createLaunchService({
         gameVersion: effectiveVersion,
         emit,
         shaderSlug,
+      });
+    }
+
+    if (includeVoiceChat) {
+      await shaderStackService.installVoiceChatForExternalLoader({
+        loader: 'quilt',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
       });
     }
 
@@ -533,9 +580,9 @@ function createLaunchService({
     };
   }
 
-  async function buildNeoForgeSpec({ version, includeShader, includeEmbossed, shaderSlug, javaPath, emit }) {
+  async function buildNeoForgeSpec({ version, includeShader, includeEmbossed, includeVoiceChat, shaderSlug, javaPath, emit }) {
     const effectiveVersion =
-      includeShader || includeEmbossed ? effectiveModGameVersion(version) : version;
+      includeShader || includeEmbossed || includeVoiceChat ? effectiveModGameVersion(version) : version;
     if (effectiveVersion !== version && emit && emit.status) {
       emit.status({
         text: `NeoForge mod uyumluluğu için Minecraft ${effectiveVersion} kullanılıyor (${version} base'i ile aynı dünya/protokol).`,
@@ -568,6 +615,15 @@ function createLaunchService({
       });
     }
 
+    if (includeVoiceChat) {
+      await shaderStackService.installVoiceChatForExternalLoader({
+        loader: 'neoforge',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+      });
+    }
+
     return {
       spec: { number: effectiveVersion, type: 'release', custom: customId },
       overrides: { detached: false },
@@ -582,6 +638,7 @@ function createLaunchService({
     // ailesi için install* dallarına yönlendirilir.
     const includeShader = !!(modPresets && modPresets.shaderFps);
     const includeEmbossed = !!(modPresets && modPresets.embossedBlocks);
+    const includeVoiceChat = !!(modPresets && modPresets.voiceChat);
 
     if (loader === 'forge' || loader === 'forge-optifine') {
       applyLoaderModsState('forge');
@@ -590,6 +647,7 @@ function createLaunchService({
         includeOptifine: loader === 'forge-optifine',
         includeShader,
         includeEmbossed,
+        includeVoiceChat,
         shaderSlug,
         javaPath,
         emit,
@@ -599,13 +657,21 @@ function createLaunchService({
       // NeoForge yapısı Forge ile aynı (Java installer + custom version profile),
       // dolayısıyla mod izolasyon stratejisi aynı.
       applyLoaderModsState('forge');
-      return buildNeoForgeSpec({ version, includeShader, includeEmbossed, shaderSlug, javaPath, emit });
+      return buildNeoForgeSpec({
+        version,
+        includeShader,
+        includeEmbossed,
+        includeVoiceChat,
+        shaderSlug,
+        javaPath,
+        emit,
+      });
     }
     if (loader === 'quilt') {
       // Quilt, Fabric'in çatalı: mod ekosistemi büyük oranda Fabric ile uyumlu,
       // o yüzden mods/ izolasyonu Fabric ile aynı kategoriye düşer.
       applyLoaderModsState('fabric');
-      return buildQuiltSpec({ version, includeShader, shaderSlug, emit });
+      return buildQuiltSpec({ version, includeShader, includeVoiceChat, shaderSlug, emit });
     }
     if (loader === 'legacy-fabric') {
       applyLoaderModsState('fabric');
@@ -653,8 +719,17 @@ function createLaunchService({
   }
 
   async function launch(opts, emit) {
+    const loaderId = (opts && opts.selectedLoader) || 'vanilla';
+
+    if (loaderId === 'bedrock') {
+      return bedrockLaunchService.launch(emit);
+    }
+
     if (!opts || !opts.version) {
       throw new LauncherError(Codes.VERSION_NOT_SELECTED, 'Sürüm seçilmedi.');
+    }
+    if (opts.selectedLoader === 'ornithe' && isOrnitheVersionBlocked(opts.version)) {
+      throw new LauncherError(Codes.UNSUPPORTED_VERSION, ornitheBlockedVersionMessage(opts.version));
     }
     ensureGameRoot();
 
@@ -668,16 +743,14 @@ function createLaunchService({
       optifine: false,
       shaderFps: !!opts.shaderStack,
       embossedBlocks: false,
+      voiceChat: false,
     };
 
     // Forge installer'ı subprocess olarak çalıştırmak için javaPath'i önceden çöz.
     // Forge için sistem Java'sı (JAVA_HOME) yerine Mojang'ın tam doğru sürümünü
     // kullan — Forge ASM yeni Java bytecode'unu okuyamayabilir (örn. Java 25).
     const loaderForJava = opts.selectedLoader || 'vanilla';
-    const strictJava =
-      loaderForJava === 'forge' ||
-      loaderForJava === 'forge-optifine' ||
-      loaderForJava === 'neoforge';
+    const strictJava = requiresStrictMojangJava(loaderForJava);
     let javaPath;
     try {
       javaPath = await javaRuntimeService.resolveForLaunch({
@@ -693,7 +766,7 @@ function createLaunchService({
       javaPath = resolveJavaPathSyncFallback();
     }
 
-    const { spec, overrides, extra } = await buildLaunchPlan({
+    const { spec, overrides: planOverrides, extra } = await buildLaunchPlan({
       version: opts.version,
       selectedLoader: opts.selectedLoader,
       modPresets,
@@ -701,6 +774,20 @@ function createLaunchService({
       javaPath,
       emit,
     });
+
+    const overrides = { ...planOverrides };
+    let optionsGameDir = paths.gameRoot;
+    if (isLegacyLoader(loaderId)) {
+      const profileDir = legacyProfileDir(paths.gameRoot, loaderId, opts.version);
+      fs.mkdirSync(profileDir, { recursive: true });
+      overrides.gameDirectory = profileDir;
+      optionsGameDir = profileDir;
+      if (loaderId === 'ornithe') {
+        clearOrnitheRemapCache(profileDir);
+        clearOrnitheRemapCache(paths.gameRoot);
+      }
+      logger.info('Legacy loader profile directory', { loader: loaderId, profileDir });
+    }
 
     // MCLC çıktısını ayrıca diske yaz; pencere açılmadan crash olduğunda
     // tek inceleyebileceğimiz şey bu log oluyor.
@@ -776,7 +863,7 @@ function createLaunchService({
     });
     // Launcher ayarları (ses) options.txt'e yansıt; Minecraft açılışta okur.
     try {
-      applyAudioSettingsToOptionsTxt(opts.audioSettings);
+      applyAudioSettingsToOptionsTxt(opts.audioSettings, optionsGameDir);
     } catch (e) {
       logger.warn('Ses ayarları options.txt yazımı başarısız', { err: e.message });
     }

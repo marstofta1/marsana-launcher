@@ -10,19 +10,22 @@ export function createPlayButton({ root, store, launchApi }) {
   async function handleClick() {
     if (isLaunching) return;
     const state = store.getState();
-    if (!state.user || !state.selectedVersion) return;
     const loader = state.selectedLoader || 'fabric';
+    if (loader !== 'bedrock' && !state.user) return;
+    if (loader !== 'bedrock' && !state.selectedVersion) return;
     isLaunching = true;
     btn.disabled = true;
     store.setState({
       statusText: 'Başlatılıyor...',
       logLines: [],
       progressPercent: 0,
+      lastLaunchLoader: loader,
+      lastLaunchVersion: state.selectedVersion,
     });
     try {
       const s = state.settings || {};
       await launchApi({
-        version: state.selectedVersion,
+        version: loader === 'bedrock' ? 'bedrock' : state.selectedVersion,
         memoryMb: state.memoryMb,
         offline: state.offline,
         offlineName: state.offlineName,
@@ -32,6 +35,7 @@ export function createPlayButton({ root, store, launchApi }) {
           optifine: !!state.modOptifine,
           shaderFps: !!state.modShaderFps,
           embossedBlocks: !!state.modEmbossedBlocks,
+          voiceChat: !!state.modVoiceChat,
         },
         audioSettings:
           typeof s.masterVolume === 'number' || typeof s.musicVolume === 'number'
@@ -54,7 +58,15 @@ export function createPlayButton({ root, store, launchApi }) {
       btn.disabled = true;
       return;
     }
-    btn.disabled = !state.user || !state.selectedVersion;
+    const loader = state.selectedLoader || 'fabric';
+    if (loader === 'bedrock') {
+      btn.disabled = false;
+      btn.title = 'Minecraft for Windows (Store) uygulamasını açar. Oyuna kendi Microsoft/Xbox hesabınızla giriş yaparsınız.';
+      return;
+    }
+    btn.title = '';
+    const needsVersion = true;
+    btn.disabled = !state.user || (needsVersion && !state.selectedVersion);
   }
 
   btn.addEventListener('click', handleClick);

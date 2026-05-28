@@ -13,6 +13,7 @@ const SHADER_BUNDLE_VERSION = 2;
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
 const SHADER_FPS_SLUGS = Object.freeze(['iris', 'sodium', 'fabric-api']);
 const EMBOSSED_SLUGS = Object.freeze(['continuity', 'sodium', 'fabric-api']);
+const VOICE_CHAT_SLUG = 'simple-voice-chat';
 const DEFAULT_SHADER_SLUG = 'complementary-reimagined';
 const OPTIFINE_PROJECT = 'optifine-for-fabric';
 
@@ -94,6 +95,12 @@ function customIdFor(gameVersion, presets, shaderSlug, { loaderPrefix = 'marsana
   if (presets.shaderFps && shaderSlug && KNOWN_SHADER_SLUGS.has(shaderSlug)) {
     return `${loaderPrefix}-shader-${gameVersion}-${shaderSlug}`;
   }
+  if (presets.voiceChat && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine) {
+    return `${loaderPrefix}-voice-${gameVersion}`;
+  }
+  if (presets.shaderFps || presets.embossedBlocks || presets.voiceChat) {
+    return `${loaderPrefix}-shader-${gameVersion}`;
+  }
   return `${loaderPrefix}-shader-${gameVersion}`;
 }
 
@@ -164,6 +171,7 @@ function normalizePresets(p) {
     shaderFps: !!(p && p.shaderFps),
     embossedBlocks: !!(p && p.embossedBlocks),
     optifine: !!(p && p.optifine),
+    voiceChat: !!(p && p.voiceChat),
   };
 }
 
@@ -181,6 +189,7 @@ function modrinthSlugsForPresets(p) {
   };
   if (p.shaderFps) SHADER_FPS_SLUGS.forEach(add);
   if (p.embossedBlocks) EMBOSSED_SLUGS.forEach(add);
+  if (p.voiceChat) add(VOICE_CHAT_SLUG);
   return out;
 }
 
@@ -236,14 +245,16 @@ function presetsMatch(saved, wanted) {
     !saved ||
     typeof saved.shaderFps !== 'boolean' ||
     typeof saved.embossedBlocks !== 'boolean' ||
-    typeof saved.optifine !== 'boolean'
+    typeof saved.optifine !== 'boolean' ||
+    typeof saved.voiceChat !== 'boolean'
   ) {
     return false;
   }
   return (
     saved.shaderFps === wanted.shaderFps &&
     saved.embossedBlocks === wanted.embossedBlocks &&
-    saved.optifine === wanted.optifine
+    saved.optifine === wanted.optifine &&
+    saved.voiceChat === wanted.voiceChat
   );
 }
 
@@ -609,15 +620,6 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
   }
 
-  // Forge ailesi loader'lar için (Forge, NeoForge, Forge+OptiFine) shader
-  // yığınını yükle. Profile yaratımı bu fonksiyonda DEĞİL — forgeInstaller /
-  // neoforgeInstaller bunu zaten yapıyor. Burada sadece modlar + shader pack
-  // + ilgili config aktivasyonu.
-  //
-  // loader değerleri:
-  //   'forge'           → oculus + rubidium + Complementary (eski sürümler)
-  //   'neoforge'        → iris + sodium (Modrinth NeoForge desteği) + Complementary
-  //   'forge-optifine'  → sadece Complementary shader pack (OptiFine kendi shader sistemini içerir)
   async function installShadersForExternalLoader({ loader, gameRoot, gameVersion, emit, shaderSlug }) {
     const modsDir = path.join(gameRoot, 'mods');
     const shaderpacksDir = path.join(gameRoot, 'shaderpacks');
@@ -696,6 +698,33 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { jars, shaderpacks: packs };
   }
 
+  function cleanupVoiceChatJars(modsDir) {
+    if (!fs.existsSync(modsDir)) return;
+    for (const entry of fs.readdirSync(modsDir)) {
+      const lower = entry.toLowerCase();
+      if (!lower.startsWith('voicechat-') && !lower.startsWith('voicechat_')) continue;
+      try {
+        fs.unlinkSync(path.join(modsDir, entry));
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  async function installVoiceChatForExternalLoader({ loader, gameRoot, gameVersion, emit }) {
+    const modsDir = path.join(gameRoot, 'mods');
+    const status = statusEmitter(emit);
+    cleanupVoiceChatJars(modsDir);
+    status(`Simple Voice Chat indiriliyor (${loader})...`);
+    const jars = await downloadModsFromSlugs({
+      modsDir,
+      gameVersion,
+      slugs: [VOICE_CHAT_SLUG],
+      modrinthLoaders: [loader],
+    });
+    return { jars };
+  }
+
   // Forge ailesi loader'lar için kabartmalı blok (CTM) modunu yükle.
   //   'forge'           → Continuity Forge (sadece 1.20.1; Modrinth'te tek sürüm)
   //   'neoforge'        → Continuity NeoForge (sadece 1.21.1; tek sürüm)
@@ -740,7 +769,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable' }) {
     const presets = normalizePresets(modPresets);
-    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine) {
+    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
     }
 
@@ -881,6 +910,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       status(
         'Shader + FPS profili hazır. Oyun içinde: Seçenekler → Video → Shader Packs; Complementary’de Performance profili önerilir.'
       );
+    } else if (presets.voiceChat) {
+      status(
+        'Simple Voice Chat kuruldu. Oyunda V tuşuna basarak veya ayarlardan mikrofonu yapılandırın; sunucuda da mod gerekir.'
+      );
     } else {
       status('Kabartmalı blok / bağlı doku: Continuity + Sodium hazır.');
     }
@@ -888,7 +921,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { customId, assetIndexId };
   }
 
-  return { ensure, installShadersForExternalLoader, installEmbossedForExternalLoader };
+  return { ensure, installShadersForExternalLoader, installEmbossedForExternalLoader, installVoiceChatForExternalLoader };
 }
 
 module.exports = { createShaderStackService };

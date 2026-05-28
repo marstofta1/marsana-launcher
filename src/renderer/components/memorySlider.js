@@ -2,6 +2,7 @@ const DEFAULTS = Object.freeze({ min: 1024, max: 8192, step: 256, initial: 2048 
 
 export function createMemorySlider({ root, store }) {
   root.innerHTML = `
+    <div data-role="memory-wrap">
     <label class="field">
       <span>RAM (MB): <strong data-role="value">${DEFAULTS.initial}</strong></span>
       <input type="range"
@@ -11,7 +12,10 @@ export function createMemorySlider({ root, store }) {
         step="${DEFAULTS.step}"
         value="${DEFAULTS.initial}" />
     </label>
+    </div>
   `;
+
+  const wrap = root.querySelector('[data-role="memory-wrap"]');
 
   const slider = root.querySelector('[data-role="slider"]');
   const valueLabel = root.querySelector('[data-role="value"]');
@@ -25,6 +29,10 @@ export function createMemorySlider({ root, store }) {
 
   function mount() {
     publish();
+    return store.subscribe((state) => {
+      const isBedrock = (state.selectedLoader || '') === 'bedrock';
+      if (wrap) wrap.style.display = isBedrock ? 'none' : '';
+    });
   }
 
   return { mount };

@@ -21,6 +21,11 @@ export function shaderFpsSupported(versionId) {
   return mcMinorAtLeast(v, 16);
 }
 
+/** Simple Voice Chat Modrinth'te 1.16+ klasik sürümlerde ve 26.x snapshot'larda yayınlanır. */
+export function voiceChatSupported(versionId) {
+  return shaderFpsSupported(versionId);
+}
+
 export function embossedBlocksSupported(versionId) {
   const v = String(versionId || '').trim();
   if (!v || v === 'Yükleniyor...') return true;
@@ -61,9 +66,16 @@ export const LOADERS_WITH_VERSION_FILTER = Object.freeze([
   'rift',
 ]);
 
+export const ORNITHE_BLOCKED_VERSIONS = Object.freeze(['1.13', '1.13.1', '1.13.2']);
+export const ORNITHE_SUGGESTED_VERSION = '1.12.2';
+
+export function isOrnitheVersionBlocked(versionId) {
+  return ORNITHE_BLOCKED_VERSIONS.includes(String(versionId || '').trim());
+}
+
 const LOADER_EMPTY_MESSAGES = Object.freeze({
   'legacy-fabric': 'Legacy Fabric uyumlu sürüm bulunamadı',
-  ornithe: 'Ornithe uyumlu sürüm bulunamadı',
+  ornithe: 'Ornithe uyumlu sürüm bulunamadı (1.13.x şu an destek dışı — 1.12.2 deneyin)',
   liteloader: 'LiteLoader uyumlu sürüm bulunamadı',
   rift: 'Rift uyumlu sürüm bulunamadı (1.13 ve 1.13.2)',
 });
@@ -73,9 +85,10 @@ export function selectionRequiresReleaseVersions({
   modOptifine,
   modShaderFps,
   modEmbossedBlocks,
+  modVoiceChat,
 }) {
   if (loader === 'forge-optifine') return true;
-  return !!(modOptifine || modShaderFps || modEmbossedBlocks);
+  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat);
 }
 
 export function isVersionAllowedForSelection({
@@ -85,6 +98,7 @@ export function isVersionAllowedForSelection({
   modOptifine,
   modShaderFps,
   modEmbossedBlocks,
+  modVoiceChat,
   legacyFabricSupportedSet = null,
   loaderSupportedSet = null,
 }) {
@@ -98,12 +112,15 @@ export function isVersionAllowedForSelection({
     if (!supportedSet || !supportedSet.has(id)) return false;
   }
 
+  if (loaderVal === 'ornithe' && isOrnitheVersionBlocked(id)) return false;
+
   if (
     selectionRequiresReleaseVersions({
       loader: loaderVal,
       modOptifine,
       modShaderFps,
       modEmbossedBlocks,
+      modVoiceChat,
     }) &&
     versionType !== 'release'
   ) {
@@ -114,6 +131,7 @@ export function isVersionAllowedForSelection({
 
   if (modOptifine && !optifineSupported(id)) return false;
   if (modShaderFps && !shaderFpsSupported(id)) return false;
+  if (modVoiceChat && !voiceChatSupported(id)) return false;
 
   if (modEmbossedBlocks) {
     if (loaderVal === 'forge') {
@@ -137,11 +155,12 @@ export function getVersionFilterEmptyMessage(state, { legacyFabric = false, load
     return LOADER_EMPTY_MESSAGES[loaderVal];
   }
 
-  const { loader, modOptifine, modShaderFps, modEmbossedBlocks } = state;
+  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat } = state;
   const labels = [];
   if (loader === 'forge-optifine' || modOptifine) labels.push('OptiFine');
   if (modShaderFps) labels.push('Shader + FPS');
   if (modEmbossedBlocks) labels.push('Kabartmalı bloklar');
+  if (modVoiceChat) labels.push('Voice Chat');
 
   if (labels.length > 0) {
     return `${labels.join(' ve ')} ile uyumlu sürüm bulunamadı`;

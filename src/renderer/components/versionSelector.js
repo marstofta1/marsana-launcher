@@ -2,6 +2,8 @@ import {
   isVersionAllowedForSelection,
   getVersionFilterEmptyMessage,
   LOADERS_WITH_VERSION_FILTER,
+  ORNITHE_SUGGESTED_VERSION,
+  isOrnitheVersionBlocked,
 } from '../../shared/versionCompatibility.js';
 
 export function createVersionSelector({ root, store, versionsApi }) {
@@ -11,7 +13,7 @@ export function createVersionSelector({ root, store, versionsApi }) {
   let lastFilterKey = null;
 
   root.innerHTML = `
-    <label class="field">
+    <label class="field" data-role="version-field">
       <span>Sürüm</span>
       <div class="row">
         <select data-role="type">
@@ -22,11 +24,16 @@ export function createVersionSelector({ root, store, versionsApi }) {
         <select data-role="version"><option>Yükleniyor...</option></select>
       </div>
     </label>
+    <p class="hint mods-hint" data-role="bedrock-version-hint" style="display:none;">
+      Bedrock sürümü Microsoft Store / Xbox uygulaması üzerinden otomatik güncellenir; sürüm seçimi gerekmez.
+    </p>
     <p class="hint mods-hint" data-role="filter-hint" style="display:none;"></p>
   `;
 
   const typeSelect = root.querySelector('[data-role="type"]');
   const versionSelect = root.querySelector('[data-role="version"]');
+  const versionField = root.querySelector('[data-role="version-field"]');
+  const bedrockVersionHint = root.querySelector('[data-role="bedrock-version-hint"]');
   const filterHint = root.querySelector('[data-role="filter-hint"]');
 
   function typeOf(versionId) {
@@ -54,6 +61,7 @@ export function createVersionSelector({ root, store, versionsApi }) {
       modOptifine: !!state.modOptifine,
       modShaderFps: !!state.modShaderFps,
       modEmbossedBlocks: !!state.modEmbossedBlocks,
+      modVoiceChat: !!state.modVoiceChat,
     };
   }
 
@@ -117,6 +125,9 @@ export function createVersionSelector({ root, store, versionsApi }) {
           : 'Kabartmalı blok uyumlu sürümler'
       );
     }
+    if (snap.modVoiceChat) {
+      parts.push('Voice Chat uyumlu sürümler');
+    }
     if (parts.length === 0) {
       filterHint.style.display = 'none';
       filterHint.textContent = '';
@@ -126,9 +137,26 @@ export function createVersionSelector({ root, store, versionsApi }) {
     filterHint.textContent = `Seçiminize göre filtreleniyor: ${parts.join(', ')}.`;
   }
 
+  function updateBedrockUi(state) {
+    const isBedrock = (state.selectedLoader || '') === 'bedrock';
+    if (versionField) versionField.style.display = isBedrock ? 'none' : '';
+    if (bedrockVersionHint) bedrockVersionHint.style.display = isBedrock ? '' : 'none';
+    if (filterHint && isBedrock) {
+      filterHint.style.display = 'none';
+      filterHint.textContent = '';
+    }
+  }
+
   function renderOptions() {
     if (!manifest) return;
     const state = store.getState();
+    updateBedrockUi(state);
+    if ((state.selectedLoader || '') === 'bedrock') {
+      if (state.selectedVersion !== null) {
+        store.setState({ selectedVersion: null, selectedVersionType: 'release' });
+      }
+      return;
+    }
     const loader = currentLoader();
     const filteredLoader = needsLoaderFilter(loader);
     const filter = typeSelect.value;
@@ -176,8 +204,10 @@ export function createVersionSelector({ root, store, versionsApi }) {
       versionSelect.appendChild(opt);
     }
 
-    if (prevSelected && list.some((v) => v.id === prevSelected)) {
+    if (prevSelected && list.some((v) => v.id === prevSelected) && !isOrnitheVersionBlocked(prevSelected)) {
       versionSelect.value = prevSelected;
+    } else if (loader === 'ornithe' && list.some((v) => v.id === ORNITHE_SUGGESTED_VERSION)) {
+      versionSelect.value = ORNITHE_SUGGESTED_VERSION;
     } else if (!filteredLoader && manifest.latest && filter === 'release') {
       const latestRelease = manifest.latest.release;
       if (list.some((v) => v.id === latestRelease)) {
@@ -215,7 +245,14 @@ export function createVersionSelector({ root, store, versionsApi }) {
     }
 
     store.subscribe((state) => {
+      updateBedrockUi(state);
       const nextKey = filterKey(state);
+      if ((state.selectedLoader || '') === 'bedrock') {
+        if (state.selectedVersion !== null) {
+          store.setState({ selectedVersion: null, selectedVersionType: 'release' });
+        }
+        return;
+      }
       if (nextKey === lastFilterKey) return;
       lastFilterKey = nextKey;
       if (needsLoaderFilter(state.selectedLoader)) {

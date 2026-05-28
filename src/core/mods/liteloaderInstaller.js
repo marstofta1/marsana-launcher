@@ -5,6 +5,52 @@ const { mergeProfileWithParent } = require('./metaLoaderInstaller');
 
 const LITELOADER_VERSIONS_URL = 'http://dl.liteloader.com/versions/versions.json';
 const LITELOADER_REPO = 'http://dl.liteloader.com/versions/';
+const MOJANG_LIBS = 'https://libraries.minecraft.net/';
+const MAVEN_CENTRAL = 'https://repo1.maven.org/maven2/';
+
+function resolveLibraryUrl(libName) {
+  if (!libName) return LITELOADER_REPO;
+  if (libName.startsWith('net.minecraft:launchwrapper:')) return MOJANG_LIBS;
+  if (libName.startsWith('org.ow2.asm:')) return MAVEN_CENTRAL;
+  if (libName.startsWith('org.spongepowered:mixin:')) {
+    return 'https://repo.spongepowered.org/maven/';
+  }
+  return LITELOADER_REPO;
+}
+
+function buildLiteLoaderLibraries(artefact, mcVersion) {
+  const libs = (artefact.libraries || []).map((lib) => ({
+    ...lib,
+    url: lib.url || resolveLibraryUrl(lib.name),
+  }));
+  const version = artefact.version || `${mcVersion}_01`;
+  libs.push({
+    name: `com.mumfrey:liteloader:${version}`,
+    url: LITELOADER_REPO,
+  });
+  return libs;
+}
+
+function applyTweakClass(merged, tweakClass) {
+  // 1.12.x profilleri minecraftArguments kullanır; boş arguments.game dizisi
+  // MCLC'nin tweakClass'ı yok saymasına yol açmasın diye önce legacy yolu tercih et.
+  if (merged.minecraftArguments) {
+    if (!merged.minecraftArguments.includes('--tweakClass')) {
+      merged.minecraftArguments = `${merged.minecraftArguments} --tweakClass ${tweakClass}`.trim();
+    }
+    delete merged.arguments;
+    return merged;
+  }
+  if (merged.arguments && Array.isArray(merged.arguments.game)) {
+    merged.arguments = {
+      ...merged.arguments,
+      game: ['--tweakClass', tweakClass, ...(merged.arguments.game || [])],
+    };
+    return merged;
+  }
+  merged.minecraftArguments = `--tweakClass ${tweakClass}`.trim();
+  return merged;
+}
 
 function pickLatestArtefact(mcEntry) {
   const bucket = mcEntry.artefacts || mcEntry.snapshots;
@@ -15,30 +61,6 @@ function pickLatestArtefact(mcEntry) {
   const keys = Object.keys(ll).filter((k) => k !== 'latest');
   if (keys.length === 0) return null;
   return ll[keys[0]];
-}
-
-function buildLiteLoaderLibraries(artefact, mcVersion) {
-  const libs = (artefact.libraries || []).map((lib) => ({ ...lib }));
-  const version = artefact.version || `${mcVersion}_01`;
-  libs.push({
-    name: `com.mumfrey:liteloader:${version}`,
-    url: LITELOADER_REPO,
-  });
-  return libs;
-}
-
-function applyTweakClass(parentJson, tweakClass) {
-  const merged = { ...parentJson };
-  if (merged.arguments && merged.arguments.game) {
-    merged.arguments = {
-      ...merged.arguments,
-      game: ['--tweakClass', tweakClass, ...(merged.arguments.game || [])],
-    };
-    return merged;
-  }
-  const base = merged.minecraftArguments || '';
-  merged.minecraftArguments = `${base} --tweakClass ${tweakClass}`.trim();
-  return merged;
 }
 
 function createLiteLoaderInstaller({ httpClient, versionService }) {

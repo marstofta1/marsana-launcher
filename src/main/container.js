@@ -12,6 +12,7 @@ const { createAuthService } = require('../core/auth/authService');
 const { createVersionService } = require('../core/minecraft/versionService');
 const { createJavaRuntimeService } = require('../core/minecraft/javaRuntimeService');
 const { createLaunchService } = require('../core/minecraft/launchService');
+const { createBedrockLaunchService } = require('../core/minecraft/bedrockLaunchService');
 
 const { createModrinthClient } = require('../core/mods/modrinthClient');
 const { createFabricInstaller } = require('../core/mods/fabricInstaller');
@@ -57,7 +58,7 @@ function buildContainer({ userDataDir }) {
   const legacyFabricInstaller = createLegacyFabricInstaller({ httpClient, versionService });
   const ornitheInstaller = createOrnitheInstaller({ httpClient, versionService });
   const liteloaderInstaller = createLiteLoaderInstaller({ httpClient, versionService });
-  const riftInstaller = createRiftInstaller({ versionService });
+  const riftInstaller = createRiftInstaller({ httpClient, versionService });
   const nilloaderInstaller = createNilLoaderInstaller({ httpClient, paths });
   const quiltInstaller = createQuiltInstaller({ httpClient, versionService });
   const forgeInstaller = createForgeInstaller({ httpClient, paths });
@@ -70,11 +71,14 @@ function buildContainer({ userDataDir }) {
     mrpackInstaller,
   });
 
+  const bedrockLaunchService = createBedrockLaunchService({ logger: logger.child('bedrock') });
+
   const launchService = createLaunchService({
     paths,
     httpClient,
     authService,
     shaderStackService,
+    bedrockLaunchService,
     fabricInstaller,
     forgeInstaller,
     neoforgeInstaller,

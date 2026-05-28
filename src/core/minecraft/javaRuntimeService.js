@@ -208,7 +208,7 @@ function createJavaRuntimeService({ httpClient, paths, logger }) {
       const pathJava = process.platform === 'win32' ? 'java.exe' : 'java';
       const pathMajor = await probeJavaMajor(pathJava);
       if (javaMeetsGameRequirement(pathMajor, requiredMajor)) {
-        return undefined;
+        return pathJava;
       }
     }
 
