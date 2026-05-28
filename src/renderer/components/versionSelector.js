@@ -1,12 +1,13 @@
 import {
   isVersionAllowedForSelection,
   getVersionFilterEmptyMessage,
+  LOADERS_WITH_VERSION_FILTER,
 } from '../../shared/versionCompatibility.js';
 
 export function createVersionSelector({ root, store, versionsApi }) {
   let manifest = null;
-  let legacyFabricSupported = null;
-  let legacyFabricFetching = null;
+  let loaderSupportedCache = {};
+  let loaderSupportedFetching = {};
   let lastFilterKey = null;
 
   root.innerHTML = `
@@ -39,8 +40,12 @@ export function createVersionSelector({ root, store, versionsApi }) {
     store.setState({ selectedVersion: id, selectedVersionType: typeOf(id) });
   }
 
-  function isLegacyFabric() {
-    return (store.getState().selectedLoader || '') === 'legacy-fabric';
+  function currentLoader() {
+    return store.getState().selectedLoader || 'vanilla';
+  }
+
+  function needsLoaderFilter(loader = currentLoader()) {
+    return LOADERS_WITH_VERSION_FILTER.includes(loader);
   }
 
   function selectionSnapshot(state = store.getState()) {
@@ -57,29 +62,41 @@ export function createVersionSelector({ root, store, versionsApi }) {
     return JSON.stringify(snap);
   }
 
-  function ensureLegacyFabricSupported() {
-    if (legacyFabricSupported || legacyFabricFetching) return legacyFabricFetching;
-    legacyFabricFetching = versionsApi
-      .legacyFabricSupported()
+  function ensureLoaderSupported(loader) {
+    if (loaderSupportedCache[loader] || loaderSupportedFetching[loader]) {
+      return loaderSupportedFetching[loader];
+    }
+    loaderSupportedFetching[loader] = versionsApi
+      .loaderSupported(loader)
       .then((list) => {
-        legacyFabricSupported = new Set(Array.isArray(list) ? list : []);
-        return legacyFabricSupported;
+        loaderSupportedCache[loader] = new Set(Array.isArray(list) ? list : []);
+        return loaderSupportedCache[loader];
       })
       .catch(() => {
-        legacyFabricSupported = new Set();
-        return legacyFabricSupported;
+        loaderSupportedCache[loader] = new Set();
+        return loaderSupportedCache[loader];
       })
       .finally(() => {
-        legacyFabricFetching = null;
+        loaderSupportedFetching[loader] = null;
       });
-    return legacyFabricFetching;
+    return loaderSupportedFetching[loader];
+  }
+
+  function loaderFilterLabel(loader) {
+    const labels = {
+      'legacy-fabric': 'Legacy Fabric destekli sürümler',
+      ornithe: 'Ornithe destekli sürümler',
+      liteloader: 'LiteLoader destekli sürümler',
+      rift: 'Rift destekli sürümler (1.13 / 1.13.2)',
+    };
+    return labels[loader] || `${loader} destekli sürümler`;
   }
 
   function updateFilterHint(state) {
     const snap = selectionSnapshot(state);
     const parts = [];
-    if (snap.loader === 'legacy-fabric') {
-      parts.push('Legacy Fabric destekli sürümler');
+    if (needsLoaderFilter(snap.loader)) {
+      parts.push(loaderFilterLabel(snap.loader));
     }
     if (snap.loader === 'forge-optifine' || snap.modOptifine) {
       parts.push('OptiFine uyumlu sürümler');
@@ -112,7 +129,8 @@ export function createVersionSelector({ root, store, versionsApi }) {
   function renderOptions() {
     if (!manifest) return;
     const state = store.getState();
-    const legacy = isLegacyFabric();
+    const loader = currentLoader();
+    const filteredLoader = needsLoaderFilter(loader);
     const filter = typeSelect.value;
     const snap = selectionSnapshot(state);
     const prevSelected = versionSelect.value;
@@ -123,10 +141,10 @@ export function createVersionSelector({ root, store, versionsApi }) {
       return v.type === 'release';
     });
 
-    if (legacy) {
-      if (!legacyFabricSupported) {
-        versionSelect.innerHTML = '<option>Legacy Fabric sürüm listesi alınıyor...</option>';
-        ensureLegacyFabricSupported().then(() => renderOptions());
+    if (filteredLoader) {
+      if (!loaderSupportedCache[loader]) {
+        versionSelect.innerHTML = `<option>${loaderFilterLabel(loader)} alınıyor...</option>`;
+        ensureLoaderSupported(loader).then(() => renderOptions());
         return;
       }
     }
@@ -136,7 +154,7 @@ export function createVersionSelector({ root, store, versionsApi }) {
         versionId: v.id,
         versionType: v.type,
         ...snap,
-        legacyFabricSupportedSet: legacy ? legacyFabricSupported : null,
+        loaderSupportedSet: filteredLoader ? loaderSupportedCache[loader] : null,
       })
     );
 
@@ -145,7 +163,7 @@ export function createVersionSelector({ root, store, versionsApi }) {
     if (list.length === 0) {
       const opt = document.createElement('option');
       opt.value = '';
-      opt.textContent = getVersionFilterEmptyMessage(snap, { legacyFabric: legacy });
+      opt.textContent = getVersionFilterEmptyMessage(snap, { loader });
       versionSelect.appendChild(opt);
       publishSelected();
       return;
@@ -160,14 +178,14 @@ export function createVersionSelector({ root, store, versionsApi }) {
 
     if (prevSelected && list.some((v) => v.id === prevSelected)) {
       versionSelect.value = prevSelected;
-    } else if (!legacy && manifest.latest && filter === 'release') {
+    } else if (!filteredLoader && manifest.latest && filter === 'release') {
       const latestRelease = manifest.latest.release;
       if (list.some((v) => v.id === latestRelease)) {
         versionSelect.value = latestRelease;
       } else {
         versionSelect.value = list[0].id;
       }
-    } else if (!legacy && manifest.latest && filter === 'snapshot' && manifest.latest.snapshot) {
+    } else if (!filteredLoader && manifest.latest && filter === 'snapshot' && manifest.latest.snapshot) {
       const latestSnapshot = manifest.latest.snapshot;
       if (list.some((v) => v.id === latestSnapshot)) {
         versionSelect.value = latestSnapshot;
@@ -189,7 +207,7 @@ export function createVersionSelector({ root, store, versionsApi }) {
     try {
       manifest = await versionsApi.list();
       lastFilterKey = filterKey(store.getState());
-      if (isLegacyFabric()) ensureLegacyFabricSupported();
+      if (needsLoaderFilter()) ensureLoaderSupported(currentLoader());
       renderOptions();
       store.setState({ statusText: 'Hazır.' });
     } catch (err) {
@@ -200,7 +218,9 @@ export function createVersionSelector({ root, store, versionsApi }) {
       const nextKey = filterKey(state);
       if (nextKey === lastFilterKey) return;
       lastFilterKey = nextKey;
-      if (state.selectedLoader === 'legacy-fabric') ensureLegacyFabricSupported();
+      if (needsLoaderFilter(state.selectedLoader)) {
+        ensureLoaderSupported(state.selectedLoader || 'legacy-fabric');
+      }
       renderOptions();
     });
   }

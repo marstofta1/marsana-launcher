@@ -16,6 +16,10 @@ const { createLaunchService } = require('../core/minecraft/launchService');
 const { createModrinthClient } = require('../core/mods/modrinthClient');
 const { createFabricInstaller } = require('../core/mods/fabricInstaller');
 const { createLegacyFabricInstaller } = require('../core/mods/legacyFabricInstaller');
+const { createOrnitheInstaller } = require('../core/mods/ornitheInstaller');
+const { createLiteLoaderInstaller } = require('../core/mods/liteloaderInstaller');
+const { createRiftInstaller } = require('../core/mods/riftInstaller');
+const { createNilLoaderInstaller } = require('../core/mods/nilloaderInstaller');
 const { createQuiltInstaller } = require('../core/mods/quiltInstaller');
 const { createForgeInstaller } = require('../core/mods/forgeInstaller');
 const { createNeoForgeInstaller } = require('../core/mods/neoforgeInstaller');
@@ -51,6 +55,10 @@ function buildContainer({ userDataDir }) {
   const mrpackInstaller = createMrpackInstaller({ httpClient, modrinthClient });
   const fabricInstaller = createFabricInstaller({ httpClient, versionService });
   const legacyFabricInstaller = createLegacyFabricInstaller({ httpClient, versionService });
+  const ornitheInstaller = createOrnitheInstaller({ httpClient, versionService });
+  const liteloaderInstaller = createLiteLoaderInstaller({ httpClient, versionService });
+  const riftInstaller = createRiftInstaller({ versionService });
+  const nilloaderInstaller = createNilLoaderInstaller({ httpClient, paths });
   const quiltInstaller = createQuiltInstaller({ httpClient, versionService });
   const forgeInstaller = createForgeInstaller({ httpClient, paths });
   const neoforgeInstaller = createNeoForgeInstaller({ httpClient, paths });
@@ -67,14 +75,26 @@ function buildContainer({ userDataDir }) {
     httpClient,
     authService,
     shaderStackService,
+    fabricInstaller,
     forgeInstaller,
     neoforgeInstaller,
     quiltInstaller,
     legacyFabricInstaller,
+    ornitheInstaller,
+    liteloaderInstaller,
+    riftInstaller,
+    nilloaderInstaller,
     optifineDownloader,
     versionService,
     javaRuntimeService,
     logger: logger.child('launch'),
+  });
+
+  const loaderSupport = Object.freeze({
+    'legacy-fabric': () => legacyFabricInstaller.listSupportedGameVersions(),
+    ornithe: () => ornitheInstaller.listSupportedGameVersions(),
+    liteloader: () => liteloaderInstaller.listSupportedGameVersions(),
+    rift: () => Promise.resolve(riftInstaller.listSupportedGameVersions()),
   });
 
   const recommendedServersService = createRecommendedServersService();
@@ -85,6 +105,7 @@ function buildContainer({ userDataDir }) {
     authService,
     versionService,
     legacyFabricInstaller,
+    loaderSupport,
     launchService,
     recommendedServersService,
   });

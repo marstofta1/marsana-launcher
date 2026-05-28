@@ -69,10 +69,15 @@ function createLaunchService({
   httpClient,
   authService,
   shaderStackService,
+  fabricInstaller,
   forgeInstaller,
   neoforgeInstaller,
   quiltInstaller,
   legacyFabricInstaller,
+  ornitheInstaller,
+  liteloaderInstaller,
+  riftInstaller,
+  nilloaderInstaller,
   optifineDownloader,
   versionService,
   javaRuntimeService,
@@ -90,6 +95,139 @@ function createLaunchService({
   function effectiveModGameVersion(v) {
     const m = String(v).match(/^(\d+\.\d+)$/);
     return m ? `${v}.1` : v;
+  }
+
+  async function writeMergedProfile({ merged, customId, version, loaderVersion, logLabel }) {
+    merged.id = customId;
+    const versionDir = path.join(paths.gameRoot, 'versions', customId);
+    await fs.promises.mkdir(versionDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(versionDir, `${customId}.json`),
+      JSON.stringify(merged, null, 2),
+      'utf8'
+    );
+    await ensureAssetIndexOnDisk(merged.assetIndex);
+    logger.info(`${logLabel} profile ready`, { version, loaderVersion, customId });
+    const assetIndexId = (merged.assetIndex && merged.assetIndex.id) || version;
+    return { assetIndexId };
+  }
+
+  async function buildFabricBetaSpec({ version, modPresets, shaderSlug, emit }) {
+    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false };
+    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine);
+    if (useMods) {
+      const effectiveVersion = effectiveModGameVersion(version);
+      if (effectiveVersion !== version && emit && emit.status) {
+        emit.status({
+          text: `Mod uyumluluğu için Minecraft ${effectiveVersion} kullanılıyor (${version} base'i ile aynı dünya/protokol).`,
+        });
+      }
+      const { customId, assetIndexId } = await shaderStackService.ensure({
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+        modPresets: presets,
+        shaderSlug,
+        fabricChannel: 'beta',
+      });
+      return {
+        spec: { number: effectiveVersion, type: 'release', custom: customId },
+        overrides: { detached: false, assetIndex: assetIndexId },
+        extra: {},
+      };
+    }
+    if (emit && emit.status) {
+      emit.status({ text: `Fabric (Beta) yükleyici eşleştiriliyor (${version})...` });
+    }
+    const { merged, loaderVersion } = await fabricInstaller.buildMergedProfile(version, { channel: 'beta' });
+    const customId = `marsana-fabric-beta-${version}`;
+    const { assetIndexId } = await writeMergedProfile({
+      merged,
+      customId,
+      version,
+      loaderVersion,
+      logLabel: 'Fabric Beta',
+    });
+    return {
+      spec: { number: version, type: 'release', custom: customId },
+      overrides: { detached: false, assetIndex: assetIndexId },
+      extra: {},
+    };
+  }
+
+  async function buildOrnitheSpec({ version, emit }) {
+    if (emit && emit.status) {
+      emit.status({ text: `Ornithe yükleyici eşleştiriliyor (${version})...` });
+    }
+    const { profile, loaderVersion, customId } = await ornitheInstaller.buildInheritedProfile(version, {
+      customIdPrefix: 'marsana-ornithe',
+    });
+    const versionDir = path.join(paths.gameRoot, 'versions', customId);
+    await fs.promises.mkdir(versionDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(versionDir, `${customId}.json`),
+      JSON.stringify(profile, null, 2),
+      'utf8'
+    );
+    logger.info('Ornithe profile ready', { version, loaderVersion, customId });
+    return {
+      spec: { number: version, type: 'release', custom: customId },
+      overrides: { detached: false },
+      extra: {},
+    };
+  }
+
+  async function buildLiteLoaderSpec({ version, emit }) {
+    if (emit && emit.status) {
+      emit.status({ text: `LiteLoader yükleyici eşleştiriliyor (${version})...` });
+    }
+    const { merged, loaderVersion } = await liteloaderInstaller.buildMergedProfile(version);
+    const customId = `marsana-liteloader-${version}`;
+    const { assetIndexId } = await writeMergedProfile({
+      merged,
+      customId,
+      version,
+      loaderVersion,
+      logLabel: 'LiteLoader',
+    });
+    return {
+      spec: { number: version, type: 'release', custom: customId },
+      overrides: { detached: false, assetIndex: assetIndexId },
+      extra: {},
+    };
+  }
+
+  async function buildRiftSpec({ version, emit }) {
+    if (emit && emit.status) {
+      emit.status({ text: `Rift yükleyici eşleştiriliyor (${version})...` });
+    }
+    const { merged, loaderVersion } = await riftInstaller.buildMergedProfile(version);
+    const customId = `marsana-rift-${version}`;
+    const { assetIndexId } = await writeMergedProfile({
+      merged,
+      customId,
+      version,
+      loaderVersion,
+      logLabel: 'Rift',
+    });
+    return {
+      spec: { number: version, type: 'release', custom: customId },
+      overrides: { detached: false, assetIndex: assetIndexId },
+      extra: {},
+    };
+  }
+
+  async function buildNilLoaderSpec({ version, emit }) {
+    if (emit && emit.status) {
+      emit.status({ text: `NilLoader hazırlanıyor (${version})...` });
+    }
+    const jarPath = await nilloaderInstaller.ensureAgentJar({ gameRoot: paths.gameRoot, emit });
+    logger.info('NilLoader agent ready', { version, jarPath });
+    return {
+      spec: { number: version, type: 'release' },
+      overrides: { detached: false },
+      extra: { jvmArgs: [nilloaderInstaller.javaAgentArg(jarPath)] },
+    };
   }
 
   async function buildFabricSpec({ version, modPresets, shaderSlug, emit }) {
@@ -473,6 +611,26 @@ function createLaunchService({
       applyLoaderModsState('fabric');
       return buildLegacyFabricSpec({ version, emit });
     }
+    if (loader === 'fabric-beta') {
+      applyLoaderModsState('fabric');
+      return buildFabricBetaSpec({ version, modPresets, shaderSlug, emit });
+    }
+    if (loader === 'ornithe') {
+      applyLoaderModsState('fabric');
+      return buildOrnitheSpec({ version, emit });
+    }
+    if (loader === 'liteloader') {
+      applyLoaderModsState('fabric');
+      return buildLiteLoaderSpec({ version, emit });
+    }
+    if (loader === 'rift') {
+      applyLoaderModsState('fabric');
+      return buildRiftSpec({ version, emit });
+    }
+    if (loader === 'nilloader') {
+      applyLoaderModsState('fabric');
+      return buildNilLoaderSpec({ version, emit });
+    }
     if (loader === 'vanilla') {
       applyLoaderModsState('fabric');
       return {
@@ -594,6 +752,7 @@ function createLaunchService({
     const extraJvmArgs = isForgeFamily(opts.selectedLoader || 'vanilla') && spec.custom
       ? readForgeFamilyJvmArgs({ gameRoot: paths.gameRoot, customId: spec.custom })
       : [];
+    const planJvmArgs = (extra && extra.jvmArgs) || [];
 
     const launchOpts = {
       authorization: profile,
@@ -604,10 +763,9 @@ function createLaunchService({
         min: `${Math.min(MIN_MEM_MB, memMb)}M`,
       },
       javaPath,
-      customArgs: [...platformJvmArgs(), ...extraJvmArgs],
+      customArgs: [...platformJvmArgs(), ...extraJvmArgs, ...planJvmArgs],
       overrides,
     };
-    void extra;
 
     logger.info('Launching Minecraft', {
       version: opts.version,

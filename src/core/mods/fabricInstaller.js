@@ -60,8 +60,27 @@ function createFabricInstaller({ httpClient, versionService }) {
     return (stable || list[0]).loader.version;
   }
 
-  async function buildMergedProfile(gameVersion) {
-    const loaderVersion = await pickStableLoader(gameVersion);
+  async function pickBetaLoader(gameVersion) {
+    try {
+      const list = await httpClient.fetchJson(loaderListUrl(gameVersion));
+      if (Array.isArray(list) && list.length > 0) {
+        const beta = list.find((e) => e.loader && e.loader.stable === false);
+        if (beta) return beta.loader.version;
+      }
+    } catch {
+      /* fall through */
+    }
+    const global = await httpClient.fetchJson(FABRIC_META);
+    if (Array.isArray(global)) {
+      const beta = global.find((e) => e.stable === false);
+      if (beta) return beta.version;
+    }
+    return pickStableLoader(gameVersion);
+  }
+
+  async function buildMergedProfile(gameVersion, { channel = 'stable' } = {}) {
+    const loaderVersion =
+      channel === 'beta' ? await pickBetaLoader(gameVersion) : await pickStableLoader(gameVersion);
     const [fabricProfile, parentJson] = await Promise.all([
       httpClient.fetchJson(profileJsonUrl(gameVersion, loaderVersion)),
       versionService.getVersionJson(gameVersion),
@@ -70,7 +89,7 @@ function createFabricInstaller({ httpClient, versionService }) {
     return { merged, loaderVersion };
   }
 
-  return { pickStableLoader, buildMergedProfile };
+  return { pickStableLoader, pickBetaLoader, buildMergedProfile };
 }
 
 module.exports = { createFabricInstaller };

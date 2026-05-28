@@ -12,7 +12,7 @@ function registerAllHandlers({ ipcMain, shell, container, getWindow }) {
   registerVersionHandlers({
     ipcMain,
     versionService: container.versionService,
-    legacyFabricInstaller: container.legacyFabricInstaller,
+    loaderSupport: container.loaderSupport,
   });
   registerLaunchHandlers({ ipcMain, launchService: container.launchService, getWindow });
   registerServerHandlers({

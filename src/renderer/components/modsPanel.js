@@ -8,14 +8,19 @@ import {
 const LOADER_OPTIONS = [
   { value: 'vanilla', label: 'Vanilla', hint: 'Saf Minecraft — hiçbir loader veya mod yüklenmez. Mojang\'ın resmi sürümü olduğu gibi başlar.' },
   { value: 'fabric', label: 'Fabric', hint: 'Modrinth modları (Sodium, Iris, OptiFine for Fabric, vs.). Aşağıdaki seçenekler aktif olur.' },
+  { value: 'fabric-beta', label: 'Fabric (Beta)', hint: 'Fabric\'in beta kanalı yükleyicisi. Mod seçenekleri Fabric ile aynıdır; kararlı sürüm yerine beta loader kullanılır.' },
   { value: 'forge', label: 'Forge', hint: 'Klasik Forge loader (boş profil). Modlarınızı mods/ klasörüne kendiniz eklersiniz.' },
   { value: 'forge-optifine', label: 'Forge + OptiFine', hint: 'Forge loader + optifine.net’ten klasik OptiFine.jar otomatik indirilir.' },
   { value: 'neoforge', label: 'NeoForge', hint: 'Forge’un modern çatalı (1.20.2+). Boş profil; modlarınızı mods/ klasörüne kendiniz eklersiniz.' },
   { value: 'quilt', label: 'Quilt', hint: 'Fabric’in çatalı; çoğu Fabric modu Quilt ile uyumludur. Boş profil olarak başlar.' },
   { value: 'legacy-fabric', label: 'Legacy Fabric', hint: 'Eski Minecraft sürümleri (1.3 – 1.13.2) için Fabric çatalı. Sürüm listesi otomatik filtrelenir; boş profil olarak başlar.' },
+  { value: 'liteloader', label: 'LiteLoader', hint: 'Klasik LiteLoader (1.6 – 1.12). Sürüm listesi desteklenen sürümlerle filtrelenir; modları mods/ klasörüne kendiniz eklersiniz.' },
+  { value: 'nilloader', label: 'NilLoader', hint: 'Vanilla üzerine Java agent olarak eklenen hafif mod loader. Tüm vanilla sürümlerinde çalışır; modları mods/ klasörüne kendiniz eklersiniz.' },
+  { value: 'ornithe', label: 'Ornithe', hint: 'Eski Minecraft sürümleri için Fabric tabanlı loader. Sürüm listesi Ornithe meta API\'sine göre filtrelenir.' },
+  { value: 'rift', label: 'Rift', hint: 'Minecraft 1.13 ve 1.13.2 için hafif mod loader. Sürüm seçici yalnızca desteklenen sürümleri gösterir.' },
 ];
 
-const FABRIC_LOADER = 'fabric';
+const FABRIC_LOADERS = new Set(['fabric', 'fabric-beta']);
 const DEFAULT_LOADER = 'fabric';
 
 // Modrinth slug → görünür isim. Shader+FPS preset'i seçildiğinde kullanıcı
@@ -153,6 +158,7 @@ export function createModsPanel({ root, store }) {
 
   const SHADER_PICKER_HINTS = {
     fabric: 'Fabric: Iris + Sodium ile seçilen paket otomatik kurulur ve oyunda etkinleştirilir.',
+    'fabric-beta': 'Fabric (Beta): Iris + Sodium ile seçilen paket otomatik kurulur ve oyunda etkinleştirilir.',
     quilt: 'Quilt: Iris + Sodium ile seçilen paket otomatik kurulur ve oyunda etkinleştirilir.',
     forge: 'Forge: Oculus + Rubidium ile seçilen paket otomatik kurulur (Oculus ayarlarına yazılır).',
     neoforge: 'NeoForge: Iris + Sodium ile seçilen paket otomatik kurulur.',
@@ -262,6 +268,12 @@ export function createModsPanel({ root, store }) {
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
     },
+    'fabric-beta': {
+      rows: ['shaderFps', 'optifine', 'embossed'],
+      title: 'Fabric (Beta) Modları',
+      shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
+      embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
+    },
     quilt: {
       rows: ['shaderFps'],
       title: 'Quilt Modları',
@@ -289,6 +301,30 @@ export function createModsPanel({ root, store }) {
     'legacy-fabric': {
       rows: [],
       title: 'Legacy Fabric',
+      shaderLabel: '',
+      embossedLabel: '',
+    },
+    liteloader: {
+      rows: [],
+      title: 'LiteLoader',
+      shaderLabel: '',
+      embossedLabel: '',
+    },
+    nilloader: {
+      rows: [],
+      title: 'NilLoader',
+      shaderLabel: '',
+      embossedLabel: '',
+    },
+    ornithe: {
+      rows: [],
+      title: 'Ornithe',
+      shaderLabel: '',
+      embossedLabel: '',
+    },
+    rift: {
+      rows: [],
+      title: 'Rift',
       shaderLabel: '',
       embossedLabel: '',
     },
@@ -339,7 +375,7 @@ export function createModsPanel({ root, store }) {
     modsOptionsBox.style.display = config.rows.length > 0 ? '' : 'none';
 
     // Loader hint metni
-    if (loader === FABRIC_LOADER) {
+    if (FABRIC_LOADERS.has(loader)) {
       loaderWarning.style.display = 'none';
       loaderWarning.textContent = '';
     } else {
@@ -356,6 +392,18 @@ export function createModsPanel({ root, store }) {
       } else if (loader === 'legacy-fabric') {
         loaderWarning.textContent =
           'Legacy Fabric otomatik kurulacak. Sürüm seçici yalnızca Legacy Fabric\'in desteklediği eski sürümleri (1.3 – 1.13.2 aralığı) gösterir. Modları mods/ klasörüne kendiniz eklersiniz.';
+      } else if (loader === 'liteloader') {
+        loaderWarning.textContent =
+          'LiteLoader otomatik kurulacak. Sürüm seçici yalnızca LiteLoader\'ın desteklediği sürümleri gösterir. Modları mods/ klasörüne kendiniz eklersiniz.';
+      } else if (loader === 'nilloader') {
+        loaderWarning.textContent =
+          'NilLoader Java agent olarak indirilir ve vanilla profil üzerinde çalışır. Modları mods/ klasörüne kendiniz eklersiniz.';
+      } else if (loader === 'ornithe') {
+        loaderWarning.textContent =
+          'Ornithe otomatik kurulacak. Sürüm seçici yalnızca Ornithe meta API\'sinin desteklediği sürümleri gösterir. Modları mods/ klasörüne kendiniz eklersiniz.';
+      } else if (loader === 'rift') {
+        loaderWarning.textContent =
+          'Rift otomatik kurulacak. Yalnızca Minecraft 1.13 ve 1.13.2 desteklenir. Modları mods/ klasörüne kendiniz eklersiniz.';
       } else if (loader === 'vanilla') {
         loaderWarning.textContent =
           'Vanilla seçili — Minecraft, Mojang\'ın resmi profiliyle başlar. Hiçbir loader/mod yüklenmez ve mods/ klasörü okunmaz.';

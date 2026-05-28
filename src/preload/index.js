@@ -23,6 +23,7 @@ const api = Object.freeze({
   versions: Object.freeze({
     list: () => ipcRenderer.invoke(VERSIONS.LIST),
     legacyFabricSupported: () => ipcRenderer.invoke(VERSIONS.LEGACY_FABRIC_SUPPORTED),
+    loaderSupported: (loaderId) => ipcRenderer.invoke(VERSIONS.LOADER_SUPPORTED, loaderId),
   }),
   servers: Object.freeze({
     list: () => ipcRenderer.invoke(SERVERS.LIST),

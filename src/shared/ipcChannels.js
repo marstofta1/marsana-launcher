@@ -10,6 +10,7 @@ const AUTH = Object.freeze({
 const VERSIONS = Object.freeze({
   LIST: 'versions:list',
   LEGACY_FABRIC_SUPPORTED: 'versions:legacyFabricSupported',
+  LOADER_SUPPORTED: 'versions:loaderSupported',
 });
 
 const LAUNCH = Object.freeze({

@@ -53,6 +53,21 @@ export function forgeEmbossedSupported(versionId) {
   return String(versionId || '').trim() === '1.20.1';
 }
 
+/** Sürüm seçicide API ile filtrelenen loader kimlikleri. */
+export const LOADERS_WITH_VERSION_FILTER = Object.freeze([
+  'legacy-fabric',
+  'ornithe',
+  'liteloader',
+  'rift',
+]);
+
+const LOADER_EMPTY_MESSAGES = Object.freeze({
+  'legacy-fabric': 'Legacy Fabric uyumlu sürüm bulunamadı',
+  ornithe: 'Ornithe uyumlu sürüm bulunamadı',
+  liteloader: 'LiteLoader uyumlu sürüm bulunamadı',
+  rift: 'Rift uyumlu sürüm bulunamadı (1.13 ve 1.13.2)',
+});
+
 export function selectionRequiresReleaseVersions({
   loader,
   modOptifine,
@@ -71,14 +86,16 @@ export function isVersionAllowedForSelection({
   modShaderFps,
   modEmbossedBlocks,
   legacyFabricSupportedSet = null,
+  loaderSupportedSet = null,
 }) {
   const id = String(versionId || '').trim();
   if (!id) return false;
 
   const loaderVal = loader || 'vanilla';
+  const supportedSet = loaderSupportedSet || legacyFabricSupportedSet;
 
-  if (loaderVal === 'legacy-fabric') {
-    if (!legacyFabricSupportedSet || !legacyFabricSupportedSet.has(id)) return false;
+  if (loaderVal === 'legacy-fabric' || loaderVal === 'ornithe' || loaderVal === 'liteloader' || loaderVal === 'rift') {
+    if (!supportedSet || !supportedSet.has(id)) return false;
   }
 
   if (
@@ -111,8 +128,14 @@ export function isVersionAllowedForSelection({
   return true;
 }
 
-export function getVersionFilterEmptyMessage(state, { legacyFabric = false } = {}) {
-  if (legacyFabric) return 'Legacy Fabric uyumlu sürüm bulunamadı';
+export function getVersionFilterEmptyMessage(state, { legacyFabric = false, loader: loaderOverride = null } = {}) {
+  const loaderVal = loaderOverride || state.loader;
+  if (legacyFabric || loaderVal === 'legacy-fabric') {
+    return LOADER_EMPTY_MESSAGES['legacy-fabric'];
+  }
+  if (loaderVal && LOADER_EMPTY_MESSAGES[loaderVal]) {
+    return LOADER_EMPTY_MESSAGES[loaderVal];
+  }
 
   const { loader, modOptifine, modShaderFps, modEmbossedBlocks } = state;
   const labels = [];

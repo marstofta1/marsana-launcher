@@ -89,12 +89,12 @@ function pickNewestModrinthVersion(versions, { anchorTs, strictPatch = false, ga
   )[0];
 }
 
-function customIdFor(gameVersion, presets, shaderSlug) {
-  if (presets.optifine) return `marsana-optifine-${gameVersion}`;
+function customIdFor(gameVersion, presets, shaderSlug, { loaderPrefix = 'marsana' } = {}) {
+  if (presets.optifine) return `${loaderPrefix}-optifine-${gameVersion}`;
   if (presets.shaderFps && shaderSlug && KNOWN_SHADER_SLUGS.has(shaderSlug)) {
-    return `marsana-shader-${gameVersion}-${shaderSlug}`;
+    return `${loaderPrefix}-shader-${gameVersion}-${shaderSlug}`;
   }
-  return `marsana-shader-${gameVersion}`;
+  return `${loaderPrefix}-shader-${gameVersion}`;
 }
 
 function cleanupStaleShaderPacks(shaderpacksDir, activeSlug) {
@@ -313,8 +313,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     };
   }
 
-  async function installFabricProfile({ gameVersion, customId, versionDir, versionJsonPath }) {
-    const { merged, loaderVersion } = await fabricInstaller.buildMergedProfile(gameVersion);
+  async function installFabricProfile({ gameVersion, customId, versionDir, versionJsonPath, fabricChannel = 'stable' }) {
+    const { merged, loaderVersion } = await fabricInstaller.buildMergedProfile(gameVersion, {
+      channel: fabricChannel,
+    });
     merged.id = customId;
     await fs.promises.mkdir(versionDir, { recursive: true });
     fs.writeFileSync(versionJsonPath, JSON.stringify(merged, null, 2), 'utf8');
@@ -736,15 +738,16 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { jars };
   }
 
-  async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug }) {
+  async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable' }) {
     const presets = normalizePresets(modPresets);
     if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
     }
 
+    const loaderPrefix = fabricChannel === 'beta' ? 'marsana-fabric-beta' : 'marsana';
     const resolvedShaderSlug = resolveShaderSlug(shaderSlug);
     const status = statusEmitter(emit);
-    const customId = customIdFor(gameVersion, presets, resolvedShaderSlug);
+    const customId = customIdFor(gameVersion, presets, resolvedShaderSlug, { loaderPrefix });
     const versionDir = path.join(gameRoot, 'versions', customId);
     const modsDir = path.join(gameRoot, 'mods');
     const shaderpacksDir = path.join(gameRoot, 'shaderpacks');
@@ -782,6 +785,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       customId,
       versionDir,
       versionJsonPath,
+      fabricChannel,
     });
     await ensureAssetIndexFile({ gameRoot, assetIndex: merged.assetIndex });
 
