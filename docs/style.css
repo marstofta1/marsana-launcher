@@ -25,6 +25,8 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
   line-height: 1.6;
   scroll-behavior: smooth;
+  /* Sabit üst menü anchor'a gidince bölüm başlığını örtmesin diye kaydırma boşluğu */
+  scroll-padding-top: 80px;
 }
 
 a { color: var(--accent); text-decoration: none; }
