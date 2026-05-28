@@ -513,6 +513,9 @@
 .website-link-icon.has-img {
   padding: 3px;
   overflow: hidden;
+  background: var(--bg-input);
+  border-color: var(--border);
+  color: inherit;
 }
 
 .website-link-icon-img {
@@ -521,6 +524,10 @@
   height: 100%;
   object-fit: contain;
   border-radius: 5px;
+}
+
+.website-link-icon-img.pixelated {
+  image-rendering: pixelated;
 }
 
 .website-link-tile.accent .website-link-icon.has-img {

@@ -10,31 +10,32 @@ const LINKS = [
     label: 'Minecraft.net',
     description: 'Resmi Minecraft sitesi',
     url: 'https://www.minecraft.net/',
-    icon: 'N',
+    iconImage: 'assets/sites/minecraft-net-icon.png',
+    iconPixelated: true,
   },
   {
     label: 'Minecraft Wiki',
     description: 'Oyun rehberi, bloklar ve mekanikler',
     url: 'https://minecraft.wiki/',
-    icon: 'W',
+    iconImage: 'assets/sites/minecraft-wiki.svg',
   },
   {
     label: 'GitHub',
     description: 'Kaynak kod ve sürüm notları',
     url: 'https://github.com/marstofta1/marsana-launcher',
-    icon: 'G',
+    iconImage: 'assets/sites/github-mark.png',
   },
   {
     label: 'Modrinth',
     description: 'Mod ve shader indir',
     url: 'https://modrinth.com',
-    icon: 'R',
+    iconImage: 'assets/sites/modrinth.svg',
   },
   {
     label: 'Forge',
     description: 'Forge mod yükleyici',
     url: 'https://files.minecraftforge.net/net/minecraftforge/forge/',
-    icon: 'F',
+    iconImage: 'assets/sites/forge.png',
   },
 ];
 
@@ -60,11 +61,9 @@ export function createWebsiteLinksPanel({ root, openExternal }) {
             data-url="${escapeHtml(link.url)}"
             title="${escapeHtml(link.url)}"
           >
-            <span class="website-link-icon${link.iconImage ? ' has-img' : ''}" aria-hidden="true">${
-              link.iconImage
-                ? `<img class="website-link-icon-img" src="${escapeHtml(link.iconImage)}" alt="" width="28" height="28" />`
-                : escapeHtml(link.icon)
-            }</span>
+            <span class="website-link-icon has-img" aria-hidden="true">
+              <img class="website-link-icon-img${link.iconPixelated ? ' pixelated' : ''}" src="${escapeHtml(link.iconImage)}" alt="" width="28" height="28" />
+            </span>
             <span class="website-link-text">
               <span class="website-link-label">${escapeHtml(link.label)}</span>
               <span class="website-link-desc">${escapeHtml(link.description)}</span>

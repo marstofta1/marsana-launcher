@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Minecraft Wiki">
+  <rect width="64" height="64" rx="8" fill="#1f2933"/>
+  <rect x="10" y="38" width="44" height="8" rx="1" fill="#7a4b2a"/>
+  <rect x="12" y="46" width="40" height="6" rx="1" fill="#6a3f22"/>
+  <rect x="14" y="52" width="36" height="4" rx="1" fill="#5a341c"/>
+  <g transform="translate(16 8)">
+    <polygon points="16,4 30,12 16,20 2,12" fill="#5ea032"/>
+    <polygon points="2,12 16,20 16,34 2,26" fill="#8b6b41"/>
+    <polygon points="16,20 30,12 30,26 16,34" fill="#6d542f"/>
+    <polygon points="16,4 30,12 16,16 2,12" fill="#73b83d"/>
+  </g>
+</svg>
