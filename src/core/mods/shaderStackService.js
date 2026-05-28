@@ -7,13 +7,22 @@ const { LauncherError, Codes } = require('../infra/errors');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 2;
+const SHADER_BUNDLE_VERSION = 5;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
 const SHADER_FPS_SLUGS = Object.freeze(['iris', 'sodium', 'fabric-api']);
 const EMBOSSED_SLUGS = Object.freeze(['continuity', 'sodium', 'fabric-api']);
 const VOICE_CHAT_SLUG = 'simple-voice-chat';
+const FULLBRIGHT_UB_SLUG = 'fullbright-ub';
+const POLYTONE_SLUG = 'polytone';
+const FULLBRIGHT_PACK_LOCAL_NAME = 'fullbright-ub.zip';
+const BETTER_LEAVES_SLUG = 'better-leaves';
+const BETTER_LEAVES_PACK_LOCAL_NAME = 'better-leaves.zip';
+const CULL_LEAVES_SLUG = 'cull-leaves';
+const GLOWING_ORES_SLUG = 'new-glowing-ores';
+const GLOWING_ORES_PACK_LOCAL_NAME = 'new-glowing-ores.zip';
+const CONTINUITY_SLUG = 'continuity';
 const DEFAULT_SHADER_SLUG = 'complementary-reimagined';
 const OPTIFINE_PROJECT = 'optifine-for-fabric';
 
@@ -95,10 +104,19 @@ function customIdFor(gameVersion, presets, shaderSlug, { loaderPrefix = 'marsana
   if (presets.shaderFps && shaderSlug && KNOWN_SHADER_SLUGS.has(shaderSlug)) {
     return `${loaderPrefix}-shader-${gameVersion}-${shaderSlug}`;
   }
-  if (presets.voiceChat && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine) {
+  if (presets.voiceChat && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres) {
     return `${loaderPrefix}-voice-${gameVersion}`;
   }
-  if (presets.shaderFps || presets.embossedBlocks || presets.voiceChat) {
+  if (presets.fullbrightUb && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.betterLeaves && !presets.glowingOres) {
+    return `${loaderPrefix}-fullbright-${gameVersion}`;
+  }
+  if (presets.betterLeaves && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.glowingOres) {
+    return `${loaderPrefix}-betterleaves-${gameVersion}`;
+  }
+  if (presets.glowingOres && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves) {
+    return `${loaderPrefix}-glowingores-${gameVersion}`;
+  }
+  if (presets.shaderFps || presets.embossedBlocks || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres) {
     return `${loaderPrefix}-shader-${gameVersion}`;
   }
   return `${loaderPrefix}-shader-${gameVersion}`;
@@ -172,7 +190,22 @@ function normalizePresets(p) {
     embossedBlocks: !!(p && p.embossedBlocks),
     optifine: !!(p && p.optifine),
     voiceChat: !!(p && p.voiceChat),
+    fullbrightUb: !!(p && p.fullbrightUb),
+    betterLeaves: !!(p && p.betterLeaves),
+    glowingOres: !!(p && p.glowingOres),
   };
+}
+
+function fullbrightNeedsPolytone(p) {
+  return !!(p.fullbrightUb && p.shaderFps && !p.optifine);
+}
+
+function betterLeavesNeedsCullLeaves(p) {
+  return !!(p.betterLeaves && !p.optifine && (p.shaderFps || p.embossedBlocks));
+}
+
+function glowingOresNeedsContinuity(p) {
+  return !!(p.glowingOres && !p.optifine && !p.embossedBlocks);
 }
 
 function modrinthSlugsForPresets(p) {
@@ -190,6 +223,9 @@ function modrinthSlugsForPresets(p) {
   if (p.shaderFps) SHADER_FPS_SLUGS.forEach(add);
   if (p.embossedBlocks) EMBOSSED_SLUGS.forEach(add);
   if (p.voiceChat) add(VOICE_CHAT_SLUG);
+  if (fullbrightNeedsPolytone(p)) add(POLYTONE_SLUG);
+  if (betterLeavesNeedsCullLeaves(p)) add(CULL_LEAVES_SLUG);
+  if (glowingOresNeedsContinuity(p)) add(CONTINUITY_SLUG);
   return out;
 }
 
@@ -240,13 +276,38 @@ function ensureContinuityResourcePacks(gameRoot) {
   fs.writeFileSync(optionsPath, updated, 'utf8');
 }
 
+function ensureFileResourcePackInOptions(gameRoot, filename) {
+  const optionsPath = path.join(gameRoot, 'options.txt');
+  if (!fs.existsSync(optionsPath)) return;
+  const original = fs.readFileSync(optionsPath, 'utf8');
+  const match = original.match(/^resourcePacks:(.*)$/m);
+  if (!match) return;
+  let arr;
+  try {
+    arr = JSON.parse(match[1].trim());
+  } catch {
+    return;
+  }
+  if (!Array.isArray(arr)) return;
+  const entry = `file/${filename}`;
+  if (arr.includes(entry)) return;
+  const vanillaIdx = arr.indexOf('vanilla');
+  const insertAt = vanillaIdx >= 0 ? vanillaIdx + 1 : 0;
+  arr.splice(insertAt, 0, entry);
+  const updated = original.replace(/^resourcePacks:.*$/m, `resourcePacks:${JSON.stringify(arr)}`);
+  fs.writeFileSync(optionsPath, updated, 'utf8');
+}
+
 function presetsMatch(saved, wanted) {
   if (
     !saved ||
     typeof saved.shaderFps !== 'boolean' ||
     typeof saved.embossedBlocks !== 'boolean' ||
     typeof saved.optifine !== 'boolean' ||
-    typeof saved.voiceChat !== 'boolean'
+    typeof saved.voiceChat !== 'boolean' ||
+    typeof saved.fullbrightUb !== 'boolean' ||
+    typeof saved.betterLeaves !== 'boolean' ||
+    typeof saved.glowingOres !== 'boolean'
   ) {
     return false;
   }
@@ -254,7 +315,10 @@ function presetsMatch(saved, wanted) {
     saved.shaderFps === wanted.shaderFps &&
     saved.embossedBlocks === wanted.embossedBlocks &&
     saved.optifine === wanted.optifine &&
-    saved.voiceChat === wanted.voiceChat
+    saved.voiceChat === wanted.voiceChat &&
+    saved.fullbrightUb === wanted.fullbrightUb &&
+    saved.betterLeaves === wanted.betterLeaves &&
+    saved.glowingOres === wanted.glowingOres
   );
 }
 
@@ -290,7 +354,7 @@ function statusEmitter(emit) {
 }
 
 function createShaderStackService({ httpClient, fabricInstaller, modrinthClient, mrpackInstaller }) {
-  function cachedReady({ versionDir, modsDir, shaderpacksDir, gameVersion, versionJsonPath, readyPath, modPresets, shaderSlug }) {
+  function cachedReady({ versionDir, modsDir, shaderpacksDir, resourcepacksDir, gameVersion, versionJsonPath, readyPath, modPresets, shaderSlug }) {
     const existing = readBundle(modsDir);
     const expectedPack = modPresets.shaderFps && !modPresets.optifine ? shaderPackLocalName(shaderSlug) : null;
     if (
@@ -304,6 +368,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       (expectedPack && (existing.shaderpacks || [])[0] !== expectedPack) ||
       !allFilesExist(modsDir, existing.jars) ||
       !allFilesExist(shaderpacksDir, existing.shaderpacks || []) ||
+      !allFilesExist(resourcepacksDir, existing.resourcepacks || []) ||
       (existing.shaderpacks || []).some((name) => /§/.test(String(name)))
     ) {
       return null;
@@ -347,11 +412,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     await httpClient.download(assetIndex.url, targetPath);
   }
 
-  function cleanupPreviousBundle({ modsDir, shaderpacksDir }) {
+  function cleanupPreviousBundle({ modsDir, shaderpacksDir, resourcepacksDir }) {
     const prev = readBundle(modsDir);
     if (!prev) return;
     for (const jar of prev.jars || []) removeIfExists(path.join(modsDir, jar));
     for (const pack of prev.shaderpacks || []) removeIfExists(path.join(shaderpacksDir, pack));
+    for (const pack of prev.resourcepacks || []) removeIfExists(path.join(resourcepacksDir, pack));
   }
 
   // Mojang'ın base sürümleri (1.20, 1.21, 1.19) için mod ekosistemi genelde
@@ -711,6 +777,177 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
   }
 
+  async function downloadModrinthResourcePack({ slug, localName, resourcepacksDir, gameVersion, label, onNotice }) {
+    const expanded = (function expand(v) {
+      const m = String(v).match(/^(\d+\.\d+)$/);
+      return m ? [v, `${v}.1`] : [v];
+    })(gameVersion);
+    const queryAttempts = [{ gameVersions: expanded }, {}];
+    let lastErr = null;
+    for (const query of queryAttempts) {
+      try {
+        const file = await modrinthClient.latestPrimaryFile(slug, query);
+        await fs.promises.mkdir(resourcepacksDir, { recursive: true });
+        await httpClient.download(file.url, path.join(resourcepacksDir, localName));
+        if (onNotice) onNotice(`${label} hazır: ${localName}`);
+        return [localName];
+      } catch (err) {
+        lastErr = err;
+        if (!isModrinthNotFound(err)) break;
+      }
+    }
+    throw lastErr || new LauncherError(
+      Codes.MODRINTH_NOT_FOUND,
+      `${label} bu Minecraft sürümü (${gameVersion}) için Modrinth'te bulunamadı.`
+    );
+  }
+
+  async function downloadFullbrightResourcePack({ resourcepacksDir, gameVersion, onNotice }) {
+    return downloadModrinthResourcePack({
+      slug: FULLBRIGHT_UB_SLUG,
+      localName: FULLBRIGHT_PACK_LOCAL_NAME,
+      resourcepacksDir,
+      gameVersion,
+      label: 'Fullbright UB',
+      onNotice,
+    });
+  }
+
+  async function downloadBetterLeavesResourcePack({ resourcepacksDir, gameVersion, onNotice }) {
+    return downloadModrinthResourcePack({
+      slug: BETTER_LEAVES_SLUG,
+      localName: BETTER_LEAVES_PACK_LOCAL_NAME,
+      resourcepacksDir,
+      gameVersion,
+      label: "Motschen's Better Leaves",
+      onNotice,
+    });
+  }
+
+  async function downloadGlowingOresResourcePack({ resourcepacksDir, gameVersion, onNotice }) {
+    return downloadModrinthResourcePack({
+      slug: GLOWING_ORES_SLUG,
+      localName: GLOWING_ORES_PACK_LOCAL_NAME,
+      resourcepacksDir,
+      gameVersion,
+      label: 'New Glowing Ores',
+      onNotice,
+    });
+  }
+
+  async function installFullbrightForExternalLoader({
+    loader,
+    gameRoot,
+    gameVersion,
+    emit,
+    includeShader = false,
+    includeOptifine = false,
+  }) {
+    const resourcepacksDir = path.join(gameRoot, 'resourcepacks');
+    const modsDir = path.join(gameRoot, 'mods');
+    const status = statusEmitter(emit);
+    status('Fullbright UB kaynak paketi indiriliyor...');
+    const resourcepacks = await downloadFullbrightResourcePack({
+      resourcepacksDir,
+      gameVersion,
+      onNotice: status,
+    });
+    if (resourcepacks[0]) ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
+
+    if (includeShader && !includeOptifine && (loader === 'fabric' || loader === 'quilt')) {
+      status('Fullbright + Shader için PolyTone indiriliyor...');
+      try {
+        await downloadModsFromSlugs({
+          modsDir,
+          gameVersion,
+          slugs: [POLYTONE_SLUG],
+          modrinthLoaders: [loader],
+        });
+      } catch {
+        status('PolyTone bulunamadı — Fullbright Sodium/Iris ile çalışmayabilir.');
+      }
+    }
+    return { resourcepacks };
+  }
+
+  async function installBetterLeavesForExternalLoader({
+    loader,
+    gameRoot,
+    gameVersion,
+    emit,
+    includeShader = false,
+    includeEmbossed = false,
+    includeOptifine = false,
+  }) {
+    const resourcepacksDir = path.join(gameRoot, 'resourcepacks');
+    const modsDir = path.join(gameRoot, 'mods');
+    const status = statusEmitter(emit);
+    status("Motschen's Better Leaves kaynak paketi indiriliyor...");
+    const resourcepacks = await downloadBetterLeavesResourcePack({
+      resourcepacksDir,
+      gameVersion,
+      onNotice: status,
+    });
+    if (resourcepacks[0]) ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
+
+    const modLoader = loader === 'forge-optifine' ? 'forge' : loader;
+    if (!includeOptifine && (includeShader || includeEmbossed) && ['fabric', 'quilt', 'forge', 'neoforge'].includes(modLoader)) {
+      status('Better Leaves performansı için Cull Leaves indiriliyor...');
+      try {
+        await downloadModsFromSlugs({
+          modsDir,
+          gameVersion,
+          slugs: [CULL_LEAVES_SLUG],
+          modrinthLoaders: [modLoader],
+        });
+      } catch {
+        status('Cull Leaves bulunamadı — OptiFine Smart Leaves veya vanilla yapraklar kullanılabilir.');
+      }
+    }
+    return { resourcepacks };
+  }
+
+  async function installGlowingOresForExternalLoader({
+    loader,
+    gameRoot,
+    gameVersion,
+    emit,
+    includeOptifine = false,
+    includeEmbossed = false,
+  }) {
+    const resourcepacksDir = path.join(gameRoot, 'resourcepacks');
+    const modsDir = path.join(gameRoot, 'mods');
+    const status = statusEmitter(emit);
+    status('New Glowing Ores kaynak paketi indiriliyor...');
+    const resourcepacks = await downloadGlowingOresResourcePack({
+      resourcepacksDir,
+      gameVersion,
+      onNotice: status,
+    });
+    if (resourcepacks[0]) ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
+
+    const modLoader = loader === 'forge-optifine' ? 'forge' : loader;
+    if (!includeOptifine && !includeEmbossed && modLoader === 'neoforge') {
+      status('Glowing Ores: NeoForge\'da Continuity sınırlı — maden parıltısı görünmeyebilir.');
+    } else if (!includeOptifine && !includeEmbossed && ['fabric', 'quilt', 'forge'].includes(modLoader)) {
+      status('Glowing Ores için Continuity indiriliyor...');
+      try {
+        await downloadModsFromSlugs({
+          modsDir,
+          gameVersion,
+          slugs: [CONTINUITY_SLUG],
+          modrinthLoaders: [modLoader],
+        });
+        ensureContinuityResourcePacks(gameRoot);
+      } catch {
+        status('Continuity bulunamadı — OptiFine Emissive Textures veya Kabartmalı bloklar (Continuity) gerekir.');
+      }
+    } else if (includeOptifine) {
+      status('Glowing Ores: OptiFine\'da Video Ayarları → Kalite → Emissive Textures açın.');
+    }
+    return { resourcepacks };
+  }
+
   async function installVoiceChatForExternalLoader({ loader, gameRoot, gameVersion, emit }) {
     const modsDir = path.join(gameRoot, 'mods');
     const status = statusEmitter(emit);
@@ -769,7 +1006,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable' }) {
     const presets = normalizePresets(modPresets);
-    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat) {
+    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
     }
 
@@ -780,6 +1017,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const versionDir = path.join(gameRoot, 'versions', customId);
     const modsDir = path.join(gameRoot, 'mods');
     const shaderpacksDir = path.join(gameRoot, 'shaderpacks');
+    const resourcepacksDir = path.join(gameRoot, 'resourcepacks');
     const versionJsonPath = path.join(versionDir, `${customId}.json`);
     const readyPath = path.join(versionDir, READY_FILE);
 
@@ -794,6 +1032,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       versionDir,
       modsDir,
       shaderpacksDir,
+      resourcepacksDir,
       gameVersion,
       versionJsonPath,
       readyPath,
@@ -803,6 +1042,15 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (cached) {
       if (presets.shaderFps && !presets.optifine && cached.shaderpacks[0]) {
         activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename: cached.shaderpacks[0] });
+      }
+      if (presets.fullbrightUb) {
+        ensureFileResourcePackInOptions(gameRoot, FULLBRIGHT_PACK_LOCAL_NAME);
+      }
+      if (presets.betterLeaves) {
+        ensureFileResourcePackInOptions(gameRoot, BETTER_LEAVES_PACK_LOCAL_NAME);
+      }
+      if (presets.glowingOres) {
+        ensureFileResourcePackInOptions(gameRoot, GLOWING_ORES_PACK_LOCAL_NAME);
       }
       status(`Mod profili (önbellek): ${resolvedShaderSlug} shader hazır, başlatılıyor...`);
       return { customId: cached.customId, assetIndexId: cached.assetIndexId };
@@ -819,7 +1067,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     await ensureAssetIndexFile({ gameRoot, assetIndex: merged.assetIndex });
 
     status('Mod profili: seçilen modlar indiriliyor...');
-    cleanupPreviousBundle({ modsDir, shaderpacksDir });
+    cleanupPreviousBundle({ modsDir, shaderpacksDir, resourcepacksDir });
 
     let optifineMeta = null;
     if (presets.optifine) {
@@ -853,8 +1101,43 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       }
     }
 
-    if (presets.embossedBlocks) {
+    if (presets.embossedBlocks || glowingOresNeedsContinuity(presets)) {
       ensureContinuityResourcePacks(gameRoot);
+    }
+
+    let resourcepacks = [];
+    if (presets.fullbrightUb) {
+      status('Mod profili: Fullbright UB kaynak paketi indiriliyor...');
+      resourcepacks.push(...(await downloadFullbrightResourcePack({
+        resourcepacksDir,
+        gameVersion,
+        onNotice: status,
+      })));
+      if (resourcepacks.includes(FULLBRIGHT_PACK_LOCAL_NAME)) {
+        ensureFileResourcePackInOptions(gameRoot, FULLBRIGHT_PACK_LOCAL_NAME);
+      }
+    }
+    if (presets.betterLeaves) {
+      status("Mod profili: Motschen's Better Leaves kaynak paketi indiriliyor...");
+      resourcepacks.push(...(await downloadBetterLeavesResourcePack({
+        resourcepacksDir,
+        gameVersion,
+        onNotice: status,
+      })));
+      if (resourcepacks.includes(BETTER_LEAVES_PACK_LOCAL_NAME)) {
+        ensureFileResourcePackInOptions(gameRoot, BETTER_LEAVES_PACK_LOCAL_NAME);
+      }
+    }
+    if (presets.glowingOres) {
+      status('Mod profili: New Glowing Ores kaynak paketi indiriliyor...');
+      resourcepacks.push(...(await downloadGlowingOresResourcePack({
+        resourcepacksDir,
+        gameVersion,
+        onNotice: status,
+      })));
+      if (resourcepacks.includes(GLOWING_ORES_PACK_LOCAL_NAME)) {
+        ensureFileResourcePackInOptions(gameRoot, GLOWING_ORES_PACK_LOCAL_NAME);
+      }
     }
 
     let shaderpacks = [];
@@ -888,6 +1171,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       loader: loaderVersion,
       jars,
       shaderpacks,
+      resourcepacks,
       assetIndexId,
       presets,
       optifineMeta,
@@ -914,6 +1198,24 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       status(
         'Simple Voice Chat kuruldu. Oyunda V tuşuna basarak veya ayarlardan mikrofonu yapılandırın; sunucuda da mod gerekir.'
       );
+    } else if (presets.fullbrightUb) {
+      status(
+        fullbrightNeedsPolytone(presets)
+          ? 'Fullbright UB kuruldu. Kaynak paketi etkinleştirildi; Sodium/Iris ile PolyTone da yüklendi.'
+          : 'Fullbright UB kuruldu. Kaynak paketi indirildi ve Seçenekler → Kaynak paketleri bölümünde etkinleştirildi.'
+      );
+    } else if (presets.betterLeaves) {
+      status(
+        betterLeavesNeedsCullLeaves(presets)
+          ? "Motschen's Better Leaves kuruldu. Kaynak paketi etkinleştirildi; Sodium/Embeddium ile Cull Leaves da yüklendi."
+          : "Motschen's Better Leaves kuruldu. Kaynak paketi indirildi; OptiFine kullanıyorsanız Smart Leaves'i açın."
+      );
+    } else if (presets.glowingOres) {
+      status(
+        glowingOresNeedsContinuity(presets)
+          ? 'New Glowing Ores kuruldu. Kaynak paketi etkinleştirildi; parıltı için Continuity da yüklendi.'
+          : 'New Glowing Ores kuruldu. OptiFine kullanıyorsanız Emissive Textures açın; Kabartmalı bloklar Continuity sağlar.'
+      );
     } else {
       status('Kabartmalı blok / bağlı doku: Continuity + Sodium hazır.');
     }
@@ -921,7 +1223,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { customId, assetIndexId };
   }
 
-  return { ensure, installShadersForExternalLoader, installEmbossedForExternalLoader, installVoiceChatForExternalLoader };
+  return { ensure, installShadersForExternalLoader, installEmbossedForExternalLoader, installVoiceChatForExternalLoader, installFullbrightForExternalLoader, installBetterLeavesForExternalLoader, installGlowingOresForExternalLoader };
 }
 
 module.exports = { createShaderStackService };

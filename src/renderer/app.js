@@ -38,6 +38,9 @@ const initialState = Object.freeze({
   modShaderFps: true,
   modEmbossedBlocks: false,
   modVoiceChat: false,
+  modFullbrightUb: false,
+  modBetterLeaves: false,
+  modGlowingOres: false,
   statusText: 'Hazır.',
   progressPercent: 0,
   logLines: [],
@@ -90,6 +93,9 @@ async function bootstrap() {
       modShaderFps: !!state.modShaderFps,
       modEmbossedBlocks: !!state.modEmbossedBlocks,
       modVoiceChat: !!state.modVoiceChat,
+      modFullbrightUb: !!state.modFullbrightUb,
+      modBetterLeaves: !!state.modBetterLeaves,
+      modGlowingOres: !!state.modGlowingOres,
     };
     const ser = JSON.stringify(snap);
     if (ser !== lastSerialized) {

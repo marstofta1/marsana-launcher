@@ -62,6 +62,9 @@ export function createVersionSelector({ root, store, versionsApi }) {
       modShaderFps: !!state.modShaderFps,
       modEmbossedBlocks: !!state.modEmbossedBlocks,
       modVoiceChat: !!state.modVoiceChat,
+      modFullbrightUb: !!state.modFullbrightUb,
+      modBetterLeaves: !!state.modBetterLeaves,
+      modGlowingOres: !!state.modGlowingOres,
     };
   }
 
@@ -127,6 +130,15 @@ export function createVersionSelector({ root, store, versionsApi }) {
     }
     if (snap.modVoiceChat) {
       parts.push('Voice Chat uyumlu sürümler');
+    }
+    if (snap.modFullbrightUb) {
+      parts.push('Fullbright UB uyumlu sürümler');
+    }
+    if (snap.modBetterLeaves) {
+      parts.push('Better Leaves uyumlu sürümler');
+    }
+    if (snap.modGlowingOres) {
+      parts.push('Glowing Ores uyumlu sürümler (1.17+)');
     }
     if (parts.length === 0) {
       filterHint.style.display = 'none';

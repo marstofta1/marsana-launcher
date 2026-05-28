@@ -142,8 +142,8 @@ function createLaunchService({
   }
 
   async function buildFabricBetaSpec({ version, modPresets, shaderSlug, emit }) {
-    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false };
-    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat);
+    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false };
+    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres);
     if (useMods) {
       const effectiveVersion = effectiveModGameVersion(version);
       if (effectiveVersion !== version && emit && emit.status) {
@@ -260,8 +260,8 @@ function createLaunchService({
   }
 
   async function buildFabricSpec({ version, modPresets, shaderSlug, emit }) {
-    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false };
-    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat);
+    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false };
+    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres);
     if (!useFabric) {
       return { spec: { number: version, type: 'release' }, overrides: { detached: false }, extra: {} };
     }
@@ -412,13 +412,13 @@ function createLaunchService({
     }
   }
 
-  async function buildForgeSpec({ version, includeOptifine, includeShader, includeEmbossed, includeVoiceChat, shaderSlug, javaPath, emit }) {
+  async function buildForgeSpec({ version, includeOptifine, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, shaderSlug, javaPath, emit }) {
     // Mod ekosistemi (Embeddium, Oculus, Continuity) Minecraft'ın patch
     // sürümünü hedefler (örn. 1.20.1) ve onunla uyumlu Forge'u (47.x) ister.
     // Kullanıcı base seçti ise (örn. 1.20) bu, javafml sürüm uyumsuzluğuna yol
     // açar. Mod aktifse patch'e upgrade et — protokol/saves uyumlu, sorunsuz.
     const effectiveVersion =
-      includeShader || includeOptifine || includeEmbossed || includeVoiceChat
+      includeShader || includeOptifine || includeEmbossed || includeVoiceChat || includeFullbright || includeBetterLeaves || includeGlowingOres
         ? effectiveModGameVersion(version)
         : version;
     if (effectiveVersion !== version && emit && emit.status) {
@@ -483,6 +483,40 @@ function createLaunchService({
       });
     }
 
+    if (includeFullbright) {
+      await shaderStackService.installFullbrightForExternalLoader({
+        loader: includeOptifine ? 'forge-optifine' : 'forge',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+        includeShader,
+        includeOptifine,
+      });
+    }
+
+    if (includeBetterLeaves) {
+      await shaderStackService.installBetterLeavesForExternalLoader({
+        loader: includeOptifine ? 'forge-optifine' : 'forge',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+        includeShader,
+        includeEmbossed,
+        includeOptifine,
+      });
+    }
+
+    if (includeGlowingOres) {
+      await shaderStackService.installGlowingOresForExternalLoader({
+        loader: includeOptifine ? 'forge-optifine' : 'forge',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+        includeOptifine,
+        includeEmbossed,
+      });
+    }
+
     return {
       spec: { number: effectiveVersion, type: 'release', custom: customId },
       overrides: { detached: false },
@@ -501,7 +535,7 @@ function createLaunchService({
     await httpClient.download(assetIndex.url, target);
   }
 
-  async function buildQuiltSpec({ version, includeShader, includeVoiceChat, shaderSlug, emit }) {
+  async function buildQuiltSpec({ version, includeShader, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, shaderSlug, emit }) {
     const effectiveVersion = effectiveModGameVersion(version);
     if (effectiveVersion !== version && emit && emit.status) {
       emit.status({
@@ -543,6 +577,40 @@ function createLaunchService({
       });
     }
 
+    if (includeFullbright) {
+      await shaderStackService.installFullbrightForExternalLoader({
+        loader: 'quilt',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+        includeShader,
+        includeOptifine: false,
+      });
+    }
+
+    if (includeBetterLeaves) {
+      await shaderStackService.installBetterLeavesForExternalLoader({
+        loader: 'quilt',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+        includeShader,
+        includeEmbossed: false,
+        includeOptifine: false,
+      });
+    }
+
+    if (includeGlowingOres) {
+      await shaderStackService.installGlowingOresForExternalLoader({
+        loader: 'quilt',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+        includeOptifine: false,
+        includeEmbossed: false,
+      });
+    }
+
     const assetIndexId = (merged.assetIndex && merged.assetIndex.id) || effectiveVersion;
     return {
       spec: { number: effectiveVersion, type: 'release', custom: customId },
@@ -580,9 +648,9 @@ function createLaunchService({
     };
   }
 
-  async function buildNeoForgeSpec({ version, includeShader, includeEmbossed, includeVoiceChat, shaderSlug, javaPath, emit }) {
+  async function buildNeoForgeSpec({ version, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, shaderSlug, javaPath, emit }) {
     const effectiveVersion =
-      includeShader || includeEmbossed || includeVoiceChat ? effectiveModGameVersion(version) : version;
+      includeShader || includeEmbossed || includeVoiceChat || includeFullbright || includeBetterLeaves || includeGlowingOres ? effectiveModGameVersion(version) : version;
     if (effectiveVersion !== version && emit && emit.status) {
       emit.status({
         text: `NeoForge mod uyumluluğu için Minecraft ${effectiveVersion} kullanılıyor (${version} base'i ile aynı dünya/protokol).`,
@@ -624,6 +692,40 @@ function createLaunchService({
       });
     }
 
+    if (includeFullbright) {
+      await shaderStackService.installFullbrightForExternalLoader({
+        loader: 'neoforge',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+        includeShader,
+        includeOptifine: false,
+      });
+    }
+
+    if (includeBetterLeaves) {
+      await shaderStackService.installBetterLeavesForExternalLoader({
+        loader: 'neoforge',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+        includeShader,
+        includeEmbossed,
+        includeOptifine: false,
+      });
+    }
+
+    if (includeGlowingOres) {
+      await shaderStackService.installGlowingOresForExternalLoader({
+        loader: 'neoforge',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+        includeOptifine: false,
+        includeEmbossed,
+      });
+    }
+
     return {
       spec: { number: effectiveVersion, type: 'release', custom: customId },
       overrides: { detached: false },
@@ -639,6 +741,9 @@ function createLaunchService({
     const includeShader = !!(modPresets && modPresets.shaderFps);
     const includeEmbossed = !!(modPresets && modPresets.embossedBlocks);
     const includeVoiceChat = !!(modPresets && modPresets.voiceChat);
+    const includeFullbright = !!(modPresets && modPresets.fullbrightUb);
+    const includeBetterLeaves = !!(modPresets && modPresets.betterLeaves);
+    const includeGlowingOres = !!(modPresets && modPresets.glowingOres);
 
     if (loader === 'forge' || loader === 'forge-optifine') {
       applyLoaderModsState('forge');
@@ -648,6 +753,9 @@ function createLaunchService({
         includeShader,
         includeEmbossed,
         includeVoiceChat,
+        includeFullbright,
+        includeBetterLeaves,
+        includeGlowingOres,
         shaderSlug,
         javaPath,
         emit,
@@ -662,6 +770,9 @@ function createLaunchService({
         includeShader,
         includeEmbossed,
         includeVoiceChat,
+        includeFullbright,
+        includeBetterLeaves,
+        includeGlowingOres,
         shaderSlug,
         javaPath,
         emit,
@@ -671,7 +782,7 @@ function createLaunchService({
       // Quilt, Fabric'in çatalı: mod ekosistemi büyük oranda Fabric ile uyumlu,
       // o yüzden mods/ izolasyonu Fabric ile aynı kategoriye düşer.
       applyLoaderModsState('fabric');
-      return buildQuiltSpec({ version, includeShader, includeVoiceChat, shaderSlug, emit });
+      return buildQuiltSpec({ version, includeShader, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, shaderSlug, emit });
     }
     if (loader === 'legacy-fabric') {
       applyLoaderModsState('fabric');
@@ -699,6 +810,37 @@ function createLaunchService({
     }
     if (loader === 'vanilla') {
       applyLoaderModsState('fabric');
+      if (includeFullbright) {
+        await shaderStackService.installFullbrightForExternalLoader({
+          loader: 'vanilla',
+          gameRoot: paths.gameRoot,
+          gameVersion: version,
+          emit,
+          includeShader: false,
+          includeOptifine: false,
+        });
+      }
+      if (includeBetterLeaves) {
+        await shaderStackService.installBetterLeavesForExternalLoader({
+          loader: 'vanilla',
+          gameRoot: paths.gameRoot,
+          gameVersion: version,
+          emit,
+          includeShader: false,
+          includeEmbossed: false,
+          includeOptifine: false,
+        });
+      }
+      if (includeGlowingOres) {
+        await shaderStackService.installGlowingOresForExternalLoader({
+          loader: 'vanilla',
+          gameRoot: paths.gameRoot,
+          gameVersion: version,
+          emit,
+          includeOptifine: false,
+          includeEmbossed: false,
+        });
+      }
       return {
         spec: { number: version, type: 'release' },
         overrides: { detached: false },
@@ -744,6 +886,9 @@ function createLaunchService({
       shaderFps: !!opts.shaderStack,
       embossedBlocks: false,
       voiceChat: false,
+      fullbrightUb: false,
+      betterLeaves: false,
+      glowingOres: false,
     };
 
     // Forge installer'ı subprocess olarak çalıştırmak için javaPath'i önceden çöz.

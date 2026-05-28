@@ -26,6 +26,28 @@ export function voiceChatSupported(versionId) {
   return shaderFpsSupported(versionId);
 }
 
+/** Fullbright UB kaynak paketi; Vanilla, OptiFine ve Sodium yollarında geniş sürüm desteği. */
+export function fullbrightUbSupported(versionId) {
+  const v = String(versionId || '').trim();
+  if (!v || v === 'Yükleniyor...') return true;
+  if (!isReleaseStyleVersionId(v)) return true;
+  return true;
+}
+
+/** Motschen's Better Leaves kaynak paketi; geniş sürüm desteği. */
+export function betterLeavesSupported(versionId) {
+  return fullbrightUbSupported(versionId);
+}
+
+/** New Glowing Ores; emissive özellikler için 1.17+ önerilir. */
+export function glowingOresSupported(versionId) {
+  const v = String(versionId || '').trim();
+  if (!v || v === 'Yükleniyor...') return true;
+  if (!isReleaseStyleVersionId(v)) return true;
+  if (!isLegacyOneDotSeries(v)) return true;
+  return mcMinorAtLeast(v, 17);
+}
+
 export function embossedBlocksSupported(versionId) {
   const v = String(versionId || '').trim();
   if (!v || v === 'Yükleniyor...') return true;
@@ -86,9 +108,12 @@ export function selectionRequiresReleaseVersions({
   modShaderFps,
   modEmbossedBlocks,
   modVoiceChat,
+  modFullbrightUb,
+  modBetterLeaves,
+  modGlowingOres,
 }) {
   if (loader === 'forge-optifine') return true;
-  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat);
+  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat || modFullbrightUb || modBetterLeaves || modGlowingOres);
 }
 
 export function isVersionAllowedForSelection({
@@ -99,6 +124,9 @@ export function isVersionAllowedForSelection({
   modShaderFps,
   modEmbossedBlocks,
   modVoiceChat,
+  modFullbrightUb,
+  modBetterLeaves,
+  modGlowingOres,
   legacyFabricSupportedSet = null,
   loaderSupportedSet = null,
 }) {
@@ -121,6 +149,9 @@ export function isVersionAllowedForSelection({
       modShaderFps,
       modEmbossedBlocks,
       modVoiceChat,
+      modFullbrightUb,
+      modBetterLeaves,
+      modGlowingOres,
     }) &&
     versionType !== 'release'
   ) {
@@ -132,6 +163,9 @@ export function isVersionAllowedForSelection({
   if (modOptifine && !optifineSupported(id)) return false;
   if (modShaderFps && !shaderFpsSupported(id)) return false;
   if (modVoiceChat && !voiceChatSupported(id)) return false;
+  if (modFullbrightUb && !fullbrightUbSupported(id)) return false;
+  if (modBetterLeaves && !betterLeavesSupported(id)) return false;
+  if (modGlowingOres && !glowingOresSupported(id)) return false;
 
   if (modEmbossedBlocks) {
     if (loaderVal === 'forge') {
@@ -155,12 +189,15 @@ export function getVersionFilterEmptyMessage(state, { legacyFabric = false, load
     return LOADER_EMPTY_MESSAGES[loaderVal];
   }
 
-  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat } = state;
+  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat, modFullbrightUb, modBetterLeaves, modGlowingOres } = state;
   const labels = [];
   if (loader === 'forge-optifine' || modOptifine) labels.push('OptiFine');
   if (modShaderFps) labels.push('Shader + FPS');
   if (modEmbossedBlocks) labels.push('Kabartmalı bloklar');
   if (modVoiceChat) labels.push('Voice Chat');
+  if (modFullbrightUb) labels.push('Fullbright UB');
+  if (modBetterLeaves) labels.push('Better Leaves');
+  if (modGlowingOres) labels.push('Glowing Ores');
 
   if (labels.length > 0) {
     return `${labels.join(' ve ')} ile uyumlu sürüm bulunamadı`;

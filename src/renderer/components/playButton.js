@@ -36,6 +36,9 @@ export function createPlayButton({ root, store, launchApi }) {
           shaderFps: !!state.modShaderFps,
           embossedBlocks: !!state.modEmbossedBlocks,
           voiceChat: !!state.modVoiceChat,
+          fullbrightUb: !!state.modFullbrightUb,
+          betterLeaves: !!state.modBetterLeaves,
+          glowingOres: !!state.modGlowingOres,
         },
         audioSettings:
           typeof s.masterVolume === 'number' || typeof s.musicVolume === 'number'

@@ -3,6 +3,9 @@ import {
   embossedBlocksSupported,
   optifineSupported,
   voiceChatSupported,
+  fullbrightUbSupported,
+  betterLeavesSupported,
+  glowingOresSupported,
   forgeOptifineLikelySupported,
 } from '../../shared/versionCompatibility.js';
 
@@ -128,6 +131,36 @@ export function createModsPanel({ root, store }) {
               Proximity sesli sohbet; oyunda <strong>V</strong> ile ayarlanır. Çok oyunculu sunucuda mod gerekir.
             </p>
           </div>
+
+          <div data-role="row-fullbrightUb">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="fullbrightUb" />
+              <span>Fullbright UB</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-fullbrightUb">
+              Karanlıkta tam parlaklık kaynak paketi; <strong>Vanilla</strong>, <strong>OptiFine</strong> ve <strong>Sodium/Iris</strong> ile uyumludur. Shader + Sodium seçiliyken PolyTone otomatik eklenir.
+            </p>
+          </div>
+
+          <div data-role="row-betterLeaves">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="betterLeaves" />
+              <span>Motschen's Better Leaves</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-betterLeaves">
+              Yaprakları daha gür ve doğal gösterir; yüksek mod uyumluluğu ve performans. <strong>Sodium/Embeddium</strong> ile birlikte <strong>Cull Leaves</strong> otomatik eklenir; OptiFine'da <strong>Smart Leaves</strong> önerilir.
+            </p>
+          </div>
+
+          <div data-role="row-glowingOres">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="glowingOres" />
+              <span>New Glowing Ores</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-glowingOres">
+              Madenleri parlatır ve bağlı çerçeve ekler; mod desteği mevcuttur. Fabric/Quilt/Forge için <strong>Continuity</strong> otomatik eklenir; OptiFine'da <strong>Emissive Textures</strong> açın.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -139,10 +172,16 @@ export function createModsPanel({ root, store }) {
   const shaderCb = root.querySelector('[data-role="shaderFps"]');
   const embossedCb = root.querySelector('[data-role="embossed"]');
   const voiceChatCb = root.querySelector('[data-role="voiceChat"]');
+  const fullbrightUbCb = root.querySelector('[data-role="fullbrightUb"]');
+  const betterLeavesCb = root.querySelector('[data-role="betterLeaves"]');
+  const glowingOresCb = root.querySelector('[data-role="glowingOres"]');
   const optifineRow = root.querySelector('[data-role="row-optifine"]');
   const shaderRow = root.querySelector('[data-role="row-shaderFps"]');
   const embossedRow = root.querySelector('[data-role="row-embossed"]');
   const voiceChatRow = root.querySelector('[data-role="row-voiceChat"]');
+  const fullbrightUbRow = root.querySelector('[data-role="row-fullbrightUb"]');
+  const betterLeavesRow = root.querySelector('[data-role="row-betterLeaves"]');
+  const glowingOresRow = root.querySelector('[data-role="row-glowingOres"]');
   const shaderLabel = root.querySelector('[data-role="label-shaderFps"]');
   const embossedLabel = root.querySelector('[data-role="label-embossed"]');
   const shaderPickerBlock = root.querySelector('[data-role="shader-picker-block"]');
@@ -167,6 +206,9 @@ export function createModsPanel({ root, store }) {
       modShaderFps: shaderCb.checked,
       modEmbossedBlocks: embossedCb.checked,
       modVoiceChat: voiceChatCb.checked,
+      modFullbrightUb: fullbrightUbCb.checked,
+      modBetterLeaves: betterLeavesCb.checked,
+      modGlowingOres: glowingOresCb.checked,
       selectedShader: shaderPicker.value || DEFAULT_SHADER_SLUG,
     });
   }
@@ -229,6 +271,9 @@ export function createModsPanel({ root, store }) {
     const shOk = !isSnapshot && shaderFpsSupported(v);
     const emOk = !isSnapshot && embossedBlocksSupported(v);
     const vcOk = !isSnapshot && voiceChatSupported(v);
+    const fbOk = !isSnapshot && fullbrightUbSupported(v);
+    const blOk = !isSnapshot && betterLeavesSupported(v);
+    const goOk = !isSnapshot && glowingOresSupported(v);
 
     if (isSnapshot) {
       const reason = 'Snapshot/eski sürümlerde mod ekosistemi (Iris, Sodium, Continuity) yayınlanmaz; stable bir sürüm seçin.';
@@ -248,20 +293,41 @@ export function createModsPanel({ root, store }) {
         voiceChatCb.checked = false;
         store.setState({ modVoiceChat: false });
       }
+      if (fullbrightUbCb.checked) {
+        fullbrightUbCb.checked = false;
+        store.setState({ modFullbrightUb: false });
+      }
+      if (betterLeavesCb.checked) {
+        betterLeavesCb.checked = false;
+        store.setState({ modBetterLeaves: false });
+      }
+      if (glowingOresCb.checked) {
+        glowingOresCb.checked = false;
+        store.setState({ modGlowingOres: false });
+      }
       optifineCb.disabled = true;
       shaderCb.disabled = true;
       embossedCb.disabled = true;
       voiceChatCb.disabled = true;
+      fullbrightUbCb.disabled = true;
+      betterLeavesCb.disabled = true;
+      glowingOresCb.disabled = true;
       optifineCb.title = reason;
       shaderCb.title = reason;
       embossedCb.title = reason;
       voiceChatCb.title = reason;
+      fullbrightUbCb.title = reason;
+      betterLeavesCb.title = reason;
+      glowingOresCb.title = reason;
       return;
     }
 
     optifineCb.disabled = !opOk;
     embossedCb.disabled = !emOk;
     voiceChatCb.disabled = !vcOk;
+    fullbrightUbCb.disabled = !fbOk;
+    betterLeavesCb.disabled = !blOk;
+    glowingOresCb.disabled = !goOk;
 
     optifineCb.title = opOk
       ? ''
@@ -272,6 +338,15 @@ export function createModsPanel({ root, store }) {
     voiceChatCb.title = vcOk
       ? ''
       : 'Voice Chat için Minecraft 1.16 veya üstü bir sürüm seçin.';
+    fullbrightUbCb.title = fbOk
+      ? ''
+      : 'Fullbright UB bu sürüm için desteklenmiyor.';
+    betterLeavesCb.title = blOk
+      ? ''
+      : 'Better Leaves bu sürüm için desteklenmiyor.';
+    glowingOresCb.title = goOk
+      ? ''
+      : 'Glowing Ores için Minecraft 1.17 veya üstü bir sürüm seçin.';
 
     if (!opOk && optifineCb.checked) {
       optifineCb.checked = false;
@@ -285,6 +360,18 @@ export function createModsPanel({ root, store }) {
       voiceChatCb.checked = false;
       store.setState({ modVoiceChat: false });
     }
+    if (!fbOk && fullbrightUbCb.checked) {
+      fullbrightUbCb.checked = false;
+      store.setState({ modFullbrightUb: false });
+    }
+    if (!blOk && betterLeavesCb.checked) {
+      betterLeavesCb.checked = false;
+      store.setState({ modBetterLeaves: false });
+    }
+    if (!goOk && glowingOresCb.checked) {
+      glowingOresCb.checked = false;
+      store.setState({ modGlowingOres: false });
+    }
 
     applyMutualExclusion();
     updateShaderPickerVisibility();
@@ -293,37 +380,37 @@ export function createModsPanel({ root, store }) {
   // Her loader için hangi mod row'ları görünür ve mods-title:
   const ROWS_BY_LOADER = {
     fabric: {
-      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
       title: 'Fabric Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
     },
     'fabric-beta': {
-      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
       title: 'Fabric (Beta) Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
     },
     quilt: {
-      rows: ['shaderFps', 'voiceChat'],
+      rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
       title: 'Quilt Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity)',
     },
     forge: {
-      rows: ['shaderFps', 'embossed', 'voiceChat'],
+      rows: ['shaderFps', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
       title: 'Forge Modları',
       shaderLabel: 'Shader + FPS (Embeddium + Oculus + seçilen shader paketi — ⚠ Mac\'te Oculus OpenGL 1282 hatası verebilir; NeoForge veya Fabric önerilir)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity Forge — sadece 1.20.1)',
     },
     'forge-optifine': {
-      rows: ['embossed', 'voiceChat'],
+      rows: ['embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
       title: 'Forge + OptiFine Modları',
       shaderLabel: '',
       embossedLabel: "Kabartmalı / bağlı bloklar (OptiFine içeride zaten CTM destekler — ek mod gerek yok)",
     },
     neoforge: {
-      rows: ['shaderFps', 'voiceChat'],
+      rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
       title: 'NeoForge Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (NeoForge\'da native Continuity yok — desteklenmiyor)',
@@ -359,8 +446,8 @@ export function createModsPanel({ root, store }) {
       embossedLabel: '',
     },
     vanilla: {
-      rows: [],
-      title: 'Vanilla',
+      rows: ['fullbrightUb', 'betterLeaves', 'glowingOres'],
+      title: 'Vanilla Modları',
       shaderLabel: '',
       embossedLabel: '',
     },
@@ -382,6 +469,9 @@ export function createModsPanel({ root, store }) {
       optifine: optifineRow,
       embossed: embossedRow,
       voiceChat: voiceChatRow,
+      fullbrightUb: fullbrightUbRow,
+      betterLeaves: betterLeavesRow,
+      glowingOres: glowingOresRow,
     };
     for (const key of Object.keys(allRows)) {
       allRows[key].style.display = config.rows.includes(key) ? '' : 'none';
@@ -390,7 +480,10 @@ export function createModsPanel({ root, store }) {
     const rightColVisible =
       config.rows.includes('optifine') ||
       config.rows.includes('embossed') ||
-      config.rows.includes('voiceChat');
+      config.rows.includes('voiceChat') ||
+      config.rows.includes('fullbrightUb') ||
+      config.rows.includes('betterLeaves') ||
+      config.rows.includes('glowingOres');
     if (modsOptionsColRight) {
       modsOptionsColRight.style.display = rightColVisible ? '' : 'none';
     }
@@ -414,6 +507,18 @@ export function createModsPanel({ root, store }) {
     if (!config.rows.includes('voiceChat') && voiceChatCb.checked) {
       voiceChatCb.checked = false;
       store.setState({ modVoiceChat: false });
+    }
+    if (!config.rows.includes('fullbrightUb') && fullbrightUbCb.checked) {
+      fullbrightUbCb.checked = false;
+      store.setState({ modFullbrightUb: false });
+    }
+    if (!config.rows.includes('betterLeaves') && betterLeavesCb.checked) {
+      betterLeavesCb.checked = false;
+      store.setState({ modBetterLeaves: false });
+    }
+    if (!config.rows.includes('glowingOres') && glowingOresCb.checked) {
+      glowingOresCb.checked = false;
+      store.setState({ modGlowingOres: false });
     }
 
     modsTitle.textContent = config.title;
@@ -454,7 +559,7 @@ export function createModsPanel({ root, store }) {
           'Rift otomatik kurulacak. Kayıtlar ve ayarlar profiles/rift-<sürüm>/ altında tutulur. Yalnızca 1.13 ve 1.13.2 desteklenir.';
       } else if (loader === 'vanilla') {
         loaderWarning.textContent =
-          'Vanilla seçili — Minecraft, Mojang\'ın resmi profiliyle başlar. Hiçbir loader/mod yüklenmez ve mods/ klasörü okunmaz.';
+          'Vanilla seçili — Minecraft resmi profille başlar. Kaynak paketi modları (Fullbright, Better Leaves, Glowing Ores) seçiliyse otomatik indirilir; parıltı için Fabric+Continuity veya OptiFine gerekir.';
       } else if (loader === 'bedrock') {
         loaderWarning.textContent =
           'Bedrock (Minecraft for Windows) Microsoft Store uygulaması olarak başlatılır. ' +
@@ -507,6 +612,9 @@ export function createModsPanel({ root, store }) {
 
   embossedCb.addEventListener('change', publish);
   voiceChatCb.addEventListener('change', publish);
+  fullbrightUbCb.addEventListener('change', publish);
+  betterLeavesCb.addEventListener('change', publish);
+  glowingOresCb.addEventListener('change', publish);
   shaderPicker.addEventListener('change', publish);
 
   function renderFromStore(state) {
@@ -521,6 +629,9 @@ export function createModsPanel({ root, store }) {
     if (shaderCb.checked !== !!state.modShaderFps) shaderCb.checked = !!state.modShaderFps;
     if (embossedCb.checked !== !!state.modEmbossedBlocks) embossedCb.checked = !!state.modEmbossedBlocks;
     if (voiceChatCb.checked !== !!state.modVoiceChat) voiceChatCb.checked = !!state.modVoiceChat;
+    if (fullbrightUbCb.checked !== !!state.modFullbrightUb) fullbrightUbCb.checked = !!state.modFullbrightUb;
+    if (betterLeavesCb.checked !== !!state.modBetterLeaves) betterLeavesCb.checked = !!state.modBetterLeaves;
+    if (glowingOresCb.checked !== !!state.modGlowingOres) glowingOresCb.checked = !!state.modGlowingOres;
     const shader = state.selectedShader || DEFAULT_SHADER_SLUG;
     if (shaderPicker.value !== shader) shaderPicker.value = shader;
     applyLoaderState();
