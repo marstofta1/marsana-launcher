@@ -33,11 +33,17 @@ function createModrinthClient({ httpClient }) {
         `Modrinth: "${slug}" için uygun sürüm bulunamadı.`
       );
     }
-    const file = primaryFile(versions[0].files);
+    const sorted = versions.slice().sort((a, b) => {
+      const releaseRank = (v) => (v.version_type === 'release' ? 0 : 1);
+      const dr = releaseRank(a) - releaseRank(b);
+      if (dr !== 0) return dr;
+      return Date.parse(b.date_published || '') - Date.parse(a.date_published || '');
+    });
+    const file = primaryFile(sorted[0].files);
     if (!file) {
       throw new LauncherError(Codes.MODRINTH_NOT_FOUND, `Modrinth: ${slug} dosyası yok.`);
     }
-    return { url: file.url, filename: file.filename };
+    return { url: file.url, filename: file.filename, version: sorted[0] };
   }
 
   async function latestVersion(slug, opts) {

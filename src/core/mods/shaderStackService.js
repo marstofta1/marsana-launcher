@@ -8,7 +8,7 @@ const { LauncherError, Codes } = require('../infra/errors');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 8;
+const SHADER_BUNDLE_VERSION = 9;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -100,6 +100,22 @@ function pickNewestModrinthVersion(versions, { anchorTs, strictPatch = false, ga
   )[0];
 }
 
+function expandResourcePackGameVersions(gameVersion) {
+  const id = String(gameVersion || '').trim();
+  const out = [id];
+  const patch = id.match(/^(\d+\.\d+)\.\d+$/);
+  if (patch) out.push(patch[1]);
+  const base = id.match(/^(\d+\.\d+)$/);
+  if (base) out.push(`${base[1]}.1`);
+  return [...new Set(out)];
+}
+
+function versionListsGame(versions, gameVersion) {
+  const gvs = versions || [];
+  const expanded = expandResourcePackGameVersions(gameVersion);
+  return expanded.some((gv) => gvs.includes(gv));
+}
+
 function glowingOresVariantLabel(version) {
   const hay = `${version.name || ''} ${version.version_number || ''} ${(version.files && version.files[0] && version.files[0].filename) || ''}`.toLowerCase();
   if (hay.includes('border') || hay.includes('[bv') || hay.includes('bv-')) return 'border';
@@ -149,6 +165,22 @@ function gameUsesModernResourcePackFormat(gameVersion) {
   return fmt != null && fmt >= 65;
 }
 
+function packFormatScalar(fmt) {
+  if (fmt == null) return null;
+  if (Array.isArray(fmt)) return fmt[0];
+  return fmt;
+}
+
+function packAlreadySupportsGameFormat(pack, format) {
+  const min = packFormatScalar(pack.min_format);
+  const max = packFormatScalar(pack.max_format);
+  if (min == null || max == null) return false;
+  if (min <= format && max >= format && pack.pack_format == null && pack.supported_formats == null) {
+    return true;
+  }
+  return pack.min_format === format && pack.max_format === format && pack.pack_format == null;
+}
+
 function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
   if (!gameUsesModernResourcePackFormat(gameVersion)) return false;
   const format = resourcePackFormatForGameVersion(gameVersion);
@@ -166,12 +198,7 @@ function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
   }
 
   const pack = meta.pack || {};
-  const alreadyPatched =
-    pack.min_format === format &&
-    pack.max_format === format &&
-    pack.pack_format == null &&
-    pack.supported_formats == null;
-  if (alreadyPatched) return false;
+  if (packAlreadySupportsGameFormat(pack, format)) return false;
 
   const description = pack.description != null ? pack.description : 'Resource pack';
   meta.pack = { description, min_format: format, max_format: format };
@@ -1037,14 +1064,37 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   }
 
   async function downloadFullbrightResourcePack({ resourcepacksDir, gameVersion, onNotice }) {
-    return downloadModrinthResourcePack({
-      slug: FULLBRIGHT_UB_SLUG,
-      localName: FULLBRIGHT_PACK_LOCAL_NAME,
+    const expanded = expandResourcePackGameVersions(gameVersion);
+    let versions = await modrinthClient.listProjectVersions(FULLBRIGHT_UB_SLUG, { gameVersions: expanded });
+    if (!versions.length) {
+      versions = (await modrinthClient.listProjectVersions(FULLBRIGHT_UB_SLUG, {}))
+        .filter((v) => versionListsGame(v.game_versions, gameVersion));
+    }
+
+    const picked = pickNewestModrinthVersion(versions, { gameVersion });
+    if (!picked) {
+      throw new LauncherError(
+        Codes.MODRINTH_NOT_FOUND,
+        `Fullbright UB bu Minecraft sürümü (${gameVersion}) için Modrinth/CurseForge'ta bulunamadı.`
+      );
+    }
+
+    const file = modrinthClient.primaryFileOf(picked);
+    if (!file || !file.url) {
+      throw new LauncherError(Codes.MODRINTH_NOT_FOUND, 'Fullbright UB dosyası Modrinth\'te bulunamadı.');
+    }
+
+    await fs.promises.mkdir(resourcepacksDir, { recursive: true });
+    await httpClient.download(file.url, path.join(resourcepacksDir, FULLBRIGHT_PACK_LOCAL_NAME));
+    ensureResourcePackCompatibleForGame({
       resourcepacksDir,
+      localName: FULLBRIGHT_PACK_LOCAL_NAME,
       gameVersion,
-      label: 'Fullbright UB',
-      onNotice,
     });
+
+    const label = picked.name || picked.version_number || 'Fullbright UB';
+    if (onNotice) onNotice(`Fullbright UB ${label} hazır: ${FULLBRIGHT_PACK_LOCAL_NAME}`);
+    return [FULLBRIGHT_PACK_LOCAL_NAME];
   }
 
   async function downloadBetterLeavesResourcePack({ resourcepacksDir, gameVersion, onNotice }) {
