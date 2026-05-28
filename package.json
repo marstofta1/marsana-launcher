@@ -1,6 +1,6 @@
 {
   "name": "marsana-launcher",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "description": "Marsana Minecraft Launcher",
   "private": true,
   "main": "src/main/index.js",
@@ -10,7 +10,8 @@
     "pack:mac": "electron-builder --mac",
     "pack:win": "node scripts/embed-logo.js && electron-builder --win",
     "pack:linux": "electron-builder --linux",
-    "pack:desktop": "electron-builder --mac --win"
+    "pack:desktop": "electron-builder --mac --win",
+    "verify:release": "node scripts/verify-release-docs.js"
   },
   "build": {
     "appId": "com.marsana.launcher",

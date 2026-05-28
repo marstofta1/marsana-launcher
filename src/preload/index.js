@@ -30,6 +30,9 @@ const api = Object.freeze({
   }),
   launch: (opts) => ipcRenderer.invoke(LAUNCH.START, opts),
   openExternal: (url) => ipcRenderer.invoke(SYSTEM.OPEN_EXTERNAL, url),
+  app: Object.freeze({
+    getVersion: () => ipcRenderer.invoke(SYSTEM.GET_VERSION),
+  }),
   updates: Object.freeze({
     check: () => ipcRenderer.invoke(UPDATE.CHECK),
     run: () => ipcRenderer.invoke(UPDATE.RUN),

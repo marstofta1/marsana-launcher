@@ -9,6 +9,7 @@ export const versions = api.versions;
 export const servers = api.servers;
 export const launch = api.launch;
 export const openExternal = api.openExternal;
+export const app = api.app;
 export const updates = api.updates;
 
 export const events = {

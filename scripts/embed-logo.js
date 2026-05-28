@@ -3,9 +3,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const rendererDir = path.join(__dirname, '..', 'src', 'renderer');
+const rootDir = path.join(__dirname, '..');
+const rendererDir = path.join(rootDir, 'src', 'renderer');
 const logoPath = path.join(rendererDir, 'assets', 'logo.png');
 const htmlPath = path.join(rendererDir, 'index.html');
+const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 
 const b64 = fs.readFileSync(logoPath).toString('base64');
 let html = fs.readFileSync(htmlPath, 'utf8');
@@ -18,9 +20,15 @@ html = html.replace(
 if (!html.includes('app-version')) {
   html = html.replace(
     '<span class="brand-name">Marsana Launcher</span>',
-    '<span class="brand-name">Marsana Launcher <small class="app-version">v0.1.4</small></span>'
+    `<span class="brand-name">Marsana Launcher <small class="app-version">v${pkg.version}</small></span>`
+  );
+} else {
+  html = html.replace(
+    /<small class="app-version">[^<]*<\/small>/,
+    `<small class="app-version">v${pkg.version}</small>`
   );
 }
 
 fs.writeFileSync(htmlPath, html);
 console.log('Logo embedded:', b64.length, 'base64 chars');
+console.log('App version label synced:', pkg.version);

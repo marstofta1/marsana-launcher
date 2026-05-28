@@ -30,6 +30,7 @@ const EVENTS = Object.freeze({
 
 const SYSTEM = Object.freeze({
   OPEN_EXTERNAL: 'system:openExternal',
+  GET_VERSION: 'system:getVersion',
 });
 
 const UPDATE = Object.freeze({

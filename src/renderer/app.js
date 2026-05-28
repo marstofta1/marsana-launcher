@@ -57,6 +57,16 @@ async function bootstrap() {
   const persistedSettings = loadSettings();
   applyAmbientSettings(persistedSettings);
 
+  const verEl = document.querySelector('.app-version');
+  if (verEl && api.app && typeof api.app.getVersion === 'function') {
+    try {
+      const v = await api.app.getVersion();
+      if (v) verEl.textContent = `v${v}`;
+    } catch {
+      /* ignore */
+    }
+  }
+
   // "Seçimleri hatırla" açıkken son kayıtlı loader/mod snapshot'unu initial
   // state'e enjekte et. Kapalıyken (default) Fabric + Shader + FPS seçili gelir.
   const seededState = { ...initialState };
