@@ -2,13 +2,14 @@
 
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 10;
+const SHADER_BUNDLE_VERSION = 11;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -150,19 +151,13 @@ function pickNewestModrinthVersion(versions, { anchorTs, strictPatch = false, ga
 }
 
 function expandResourcePackGameVersions(gameVersion) {
-  const id = String(gameVersion || '').trim();
-  const out = [id];
-  const patch = id.match(/^(\d+\.\d+)\.\d+$/);
-  if (patch) out.push(patch[1]);
-  const base = id.match(/^(\d+\.\d+)$/);
-  if (base) out.push(`${base[1]}.1`);
-  return [...new Set(out)];
+  return modrinthGameVersionCandidates(gameVersion);
 }
 
-function versionListsGame(versions, gameVersion) {
-  const gvs = versions || [];
-  const expanded = expandResourcePackGameVersions(gameVersion);
-  return expanded.some((gv) => gvs.includes(gv));
+function versionListsGame(versionGameVersions, gameVersion) {
+  const gvs = versionGameVersions || [];
+  const candidates = modrinthGameVersionCandidates(gameVersion);
+  return candidates.some((gv) => gvs.includes(gv));
 }
 
 function glowingOresVariantLabel(version) {
@@ -250,11 +245,37 @@ function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
   if (packAlreadySupportsGameFormat(pack, format)) return false;
 
   const description = pack.description != null ? pack.description : 'Resource pack';
-  meta.pack = { description, min_format: format, max_format: format };
+  const legacyFmt = packFormatScalar(pack.pack_format) ?? packFormatScalar(pack.min_format);
+  const minFmt = legacyFmt != null ? Math.min(legacyFmt, format) : format;
+  const maxFmt = legacyFmt != null ? Math.max(legacyFmt, format) : format;
+  meta.pack = { description, min_format: minFmt, max_format: maxFmt };
 
-  zip.updateFile('pack.mcmeta', Buffer.from(`${JSON.stringify(meta, null, 3)}\n`, 'utf8'));
-  zip.writeZip(zipPath);
-  return true;
+  // adm-zip writeZip() mevcut arşivi yerinde güncellerken bazı paketleri (3D crops vb.)
+  // bozabiliyor; çıkar → pack.mcmeta yaz → yeniden zip'le akışı güvenli.
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'marsana-rp-'));
+  const tmpOut = `${zipPath}.marsana-patch.tmp`;
+  try {
+    zip.extractAllTo(tmpRoot, true);
+    fs.writeFileSync(path.join(tmpRoot, 'pack.mcmeta'), `${JSON.stringify(meta, null, 3)}\n`, 'utf8');
+    const newZip = new AdmZip();
+    newZip.addLocalFolder(tmpRoot);
+    newZip.writeZip(tmpOut);
+    fs.renameSync(tmpOut, zipPath);
+    return true;
+  } catch {
+    try {
+      if (fs.existsSync(tmpOut)) fs.unlinkSync(tmpOut);
+    } catch {
+      /* ignore */
+    }
+    return false;
+  } finally {
+    try {
+      fs.rmSync(tmpRoot, { recursive: true, force: true });
+    } catch {
+      /* ignore */
+    }
+  }
 }
 
 function ensureResourcePackCompatibleForGame({ resourcepacksDir, localName, gameVersion }) {
@@ -1072,14 +1093,14 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   }
 
   async function downloadModrinthResourcePack({ slug, localName, resourcepacksDir, gameVersion, label, onNotice }) {
-    const expanded = expandResourcePackGameVersions(gameVersion);
-    let versions = await modrinthClient.listProjectVersions(slug, { gameVersions: expanded });
+    const candidates = expandResourcePackGameVersions(gameVersion);
+    let versions = await modrinthClient.listProjectVersions(slug, { gameVersions: candidates });
     if (!versions.length) {
       versions = (await modrinthClient.listProjectVersions(slug, {}))
         .filter((v) => versionListsGame(v.game_versions, gameVersion));
     }
 
-    const picked = pickNewestModrinthVersion(versions, { gameVersion });
+    const picked = pickNewestModrinthVersion(versions, { gameVersion, gameVersionCandidates: candidates });
     if (!picked) {
       throw new LauncherError(
         Codes.MODRINTH_NOT_FOUND,
