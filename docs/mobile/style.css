@@ -214,6 +214,16 @@ a { color: var(--accent); text-decoration: none; font-weight: 600; }
   text-align: left;
 }
 
+.ios-card {
+  margin-top: 16px;
+  background: linear-gradient(145deg, #1a2430, var(--bg-card));
+  border-color: rgba(120, 170, 255, 0.35);
+}
+
+.btn-ios {
+  background: linear-gradient(180deg, #8eb8ff, #5b8def);
+}
+
 .btn-download {
   display: inline-flex;
   align-items: center;

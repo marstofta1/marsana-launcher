@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#4caf50" />
-  <meta name="description" content="Marsana Launcher Mobile — Android için indirilebilir Bedrock başlatıcı." />
-  <title>Marsana Launcher — Android İndir</title>
+  <meta name="description" content="Marsana Launcher Mobile — Android ve iOS için indirilebilir Bedrock başlatıcı." />
+  <title>Marsana Launcher — Mobil İndir</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -14,44 +14,57 @@
       <img src="../assets/logo.png" width="48" height="48" alt="" aria-hidden="true" />
       <div>
         <h1>Marsana Launcher</h1>
-        <p>Android · yalnızca Bedrock</p>
+        <p>Android & iOS · yalnızca Bedrock</p>
         <span class="badge">İNDİRİLEBİLİR UYGULAMA</span>
       </div>
     </header>
 
     <section class="play-card download-card" aria-label="Android indir">
-      <h2>Android APK İndir</h2>
+      <h2>Android APK</h2>
       <p>
         Telefonuna <strong>Marsana Launcher</strong> uygulamasını kur. Kurulumdan sonra uygulamayı açıp
-        <strong>OYNA</strong> ile Minecraft Bedrock'u başlat. Java modları ve shader bu sürümde yoktur.
+        <strong>OYNA</strong> ile Minecraft Bedrock'u başlat.
       </p>
       <a
         class="btn-play btn-download"
-        id="apk-download"
         href="https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.23/Marsana.Launcher-0.1.23-android.apk"
         download="Marsana-Launcher-0.1.23-android.apk"
       >APK İNDİR</a>
-      <p class="status" id="apk-status">v0.1.23 · Android 7+</p>
+      <p class="status">v0.1.23 · Android 7+</p>
+    </section>
+
+    <section class="play-card download-card ios-card" aria-label="iOS indir">
+      <h2>iPhone / iPad (IPA)</h2>
+      <p>
+        iOS sürümünü indirip <strong>AltStore</strong> veya <strong>Sideloadly</strong> ile kur.
+        Kurulumdan sonra ana ekrandan Marsana Launcher'ı aç.
+      </p>
+      <a
+        class="btn-play btn-download btn-ios"
+        href="https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.23/Marsana.Launcher-0.1.23-ios.ipa"
+        download="Marsana-Launcher-0.1.23-ios.ipa"
+      >IPA İNDİR</a>
+      <p class="status">v0.1.23 · iOS 14+</p>
     </section>
 
     <section class="install-steps" aria-label="Kurulum adımları">
-      <h2 class="section-title">Kurulum</h2>
+      <h2 class="section-title">Android kurulum</h2>
       <ol class="steps">
         <li><strong>APK'yı indir</strong> — yukarıdaki düğmeye bas.</li>
-        <li><strong>Bilinmeyen kaynaklara izin ver</strong> — Android ayarlarında tarayıcı veya Dosyalar uygulamasına APK kurma izni ver.</li>
+        <li><strong>Bilinmeyen kaynaklara izin ver</strong> — tarayıcı veya Dosyalar uygulamasına kurulum izni ver.</li>
         <li><strong>APK'yı aç ve kur</strong> — indirilen dosyaya dokun, <em>Kur</em> de.</li>
-        <li><strong>Marsana Launcher'ı aç</strong> — ana ekrandan uygulamayı başlat, <em>OYNA</em> ile Minecraft Bedrock açılır.</li>
+        <li><strong>Marsana Launcher'ı aç</strong> — <em>OYNA</em> ile Minecraft Bedrock açılır.</li>
+      </ol>
+      <h2 class="section-title">iOS kurulum</h2>
+      <ol class="steps">
+        <li><strong>IPA'yı indir</strong> — bilgisayara veya iPhone'a aktar.</li>
+        <li><strong>AltStore / Sideloadly kur</strong> — ücretsiz Apple ID ile imzalama yapılır (7 günde bir yenileme gerekebilir).</li>
+        <li><strong>IPA'yı yükle</strong> — araca sürükle bırak veya <em>Install</em> de.</li>
+        <li><strong>Güven</strong> — Ayarlar → Genel → VPN ve Cihaz Yönetimi'nden geliştiriciye güven.</li>
       </ol>
       <p class="hint warn">
-        Uygulama henüz Google Play'de değil; APK doğrudan bu siteden indirilir. İlk kurulumda Play Protect uyarısı çıkabilir — kaynak kodu
-        <a href="https://github.com/marstofta1/marsana-launcher" target="_blank" rel="noopener">GitHub'da açık</a>.
-      </p>
-    </section>
-
-    <section aria-label="iOS bilgisi">
-      <h2 class="section-title">iPhone / iPad</h2>
-      <p class="hint">
-        Apple cihazlarda APK kurulamaz. iOS için App Store sürümü şu an yok; Bedrock oynamak için resmi Minecraft uygulamasını kullan.
+        Uygulama henüz App Store / Play Store'da değil; paketler GitHub Releases üzerinden dağıtılır.
+        Kaynak kodu <a href="https://github.com/marstofta1/marsana-launcher" target="_blank" rel="noopener">GitHub'da açık</a>.
       </p>
     </section>
 

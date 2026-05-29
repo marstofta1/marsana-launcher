@@ -18,8 +18,30 @@ function bedrockJoinUrl(name, host, port) {
   return `minecraft://?addExternalServer=${label}|${host}:${port}`;
 }
 
-function openBedrockWithFallback(primaryUrl, fallbackUrl) {
+async function openNativeUrl(primaryUrl, fallbackUrl) {
+  const plugin = window.Capacitor?.Plugins?.MarsanaLauncher;
+  if (!plugin?.openUrl) return false;
+  try {
+    await plugin.openUrl({ url: primaryUrl });
+    return true;
+  } catch {
+    if (!fallbackUrl) return false;
+    try {
+      await plugin.openUrl({ url: fallbackUrl });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
+async function openBedrockWithFallback(primaryUrl, fallbackUrl) {
   const isNative = window.Capacitor?.isNativePlatform?.() === true;
+
+  if (isNative) {
+    const opened = await openNativeUrl(primaryUrl, fallbackUrl);
+    if (opened) return;
+  }
 
   if (isNative) {
     window.location.href = primaryUrl;
