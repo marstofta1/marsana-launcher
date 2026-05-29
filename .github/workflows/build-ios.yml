@@ -43,7 +43,7 @@ jobs:
 
       - name: Read package version
         id: pkg
-        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(node -p "require('./mobile-app/package.json').version")" >> "$GITHUB_OUTPUT"
 
       - name: Publish IPA to GitHub Releases
         uses: softprops/action-gh-release@v2
