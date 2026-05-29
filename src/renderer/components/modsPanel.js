@@ -150,7 +150,8 @@ export function createModsPanel({ root, store }) {
               <span>Motschen's Better Leaves</span>
             </label>
             <p class="hint mods-hint" data-role="hint-betterLeaves">
-              Yaprakları daha gür ve doğal gösterir; yüksek mod uyumluluğu ve performans. <strong>Sodium/Embeddium</strong> ile birlikte <strong>Cull Leaves</strong> otomatik eklenir; OptiFine'da <strong>Smart Leaves</strong> önerilir.
+              Yaprakları daha gür ve doğal gösterir. <strong>Fabric/Forge/NeoForge</strong> ile <strong>Cull Leaves</strong> otomatik eklenir;
+              yalnızca <strong>Vanilla</strong> seçiliyse etki sınırlıdır. OptiFine'da <strong>Smart Leaves</strong> açın.
             </p>
           </div>
 

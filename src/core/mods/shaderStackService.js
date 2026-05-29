@@ -9,7 +9,7 @@ const { LauncherError, Codes } = require('../infra/errors');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 11;
+const SHADER_BUNDLE_VERSION = 13;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -219,10 +219,14 @@ function packAlreadySupportsGameFormat(pack, format) {
   const min = packFormatScalar(pack.min_format);
   const max = packFormatScalar(pack.max_format);
   if (min == null || max == null) return false;
-  if (min <= format && max >= format && pack.pack_format == null && pack.supported_formats == null) {
-    return true;
-  }
-  return pack.min_format === format && pack.max_format === format && pack.pack_format == null;
+  // 1.21.9+ oyunları geniş min/max aralığını (ör. 55–84) reddedip options.txt'ten
+  // silebiliyor; hedef sürümle birebir eşleşme gerekir.
+  return (
+    min === format &&
+    max === format &&
+    pack.pack_format == null &&
+    pack.supported_formats == null
+  );
 }
 
 function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
@@ -245,10 +249,7 @@ function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
   if (packAlreadySupportsGameFormat(pack, format)) return false;
 
   const description = pack.description != null ? pack.description : 'Resource pack';
-  const legacyFmt = packFormatScalar(pack.pack_format) ?? packFormatScalar(pack.min_format);
-  const minFmt = legacyFmt != null ? Math.min(legacyFmt, format) : format;
-  const maxFmt = legacyFmt != null ? Math.max(legacyFmt, format) : format;
-  meta.pack = { description, min_format: minFmt, max_format: maxFmt };
+  meta.pack = { description, min_format: format, max_format: format };
 
   // adm-zip writeZip() mevcut arşivi yerinde güncellerken bazı paketleri (3D crops vb.)
   // bozabiliyor; çıkar → pack.mcmeta yaz → yeniden zip'le akışı güvenli.
@@ -409,7 +410,8 @@ function fullbrightNeedsPolytone(p) {
 }
 
 function betterLeavesNeedsCullLeaves(p) {
-  return !!(p.betterLeaves && !p.optifine && (p.shaderFps || p.embossedBlocks));
+  // Better Leaves kaynak paketi tek başına yetmez; Cull Leaves (veya OptiFine Smart Leaves) gerekir.
+  return !!(p.betterLeaves && !p.optifine);
 }
 
 function glowingOresNeedsContinuity(p) {
@@ -546,8 +548,12 @@ function applyModResourcePackPresets({ gameRoot, gameVersion, presets, resourcep
   const needContinuity = continuityResourcePacksNeeded(p);
   if (files.length === 0 && !needContinuity) return;
 
+  const enabledFiles = [];
   for (const localName of files) {
+    const zipPath = path.join(resourcepacksDir, localName);
+    if (!fs.existsSync(zipPath)) continue;
     ensureResourcePackCompatibleForGame({ resourcepacksDir, localName, gameVersion });
+    enabledFiles.push(localName);
   }
 
   const optionsPath = path.join(gameRoot, 'options.txt');
@@ -558,7 +564,7 @@ function applyModResourcePackPresets({ gameRoot, gameVersion, presets, resourcep
       if (!entries.includes(pack)) entries.push(pack);
     }
   }
-  for (const localName of files) {
+  for (const localName of enabledFiles) {
     const entry = `file/${localName}`;
     if (!entries.includes(entry)) entries.push(entry);
   }
@@ -1321,8 +1327,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
 
     const modLoader = loader === 'forge-optifine' ? 'forge' : loader;
-    if (!includeOptifine && (includeShader || includeEmbossed) && ['fabric', 'quilt', 'forge', 'neoforge'].includes(modLoader)) {
-      status('Better Leaves performansı için Cull Leaves indiriliyor...');
+    if (!includeOptifine && ['fabric', 'quilt', 'forge', 'neoforge'].includes(modLoader)) {
+      status('Better Leaves için Cull Leaves indiriliyor (Sodium/Embeddium bağımlılıkları otomatik)...');
       try {
         await downloadModsFromSlugs({
           modsDir,
@@ -1331,8 +1337,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           modrinthLoaders: [modLoader],
         });
       } catch {
-        status('Cull Leaves bulunamadı — OptiFine Smart Leaves veya vanilla yapraklar kullanılabilir.');
+        status('Cull Leaves bulunamadı — OptiFine Smart Leaves veya Fabric yükleyici deneyin.');
       }
+    } else if (loader === 'vanilla') {
+      status(
+        "Better Leaves: Vanilla'da tam etki için Fabric + Cull Leaves veya Forge/OptiFine + Smart Leaves kullanın."
+      );
     }
     return { resourcepacks };
   }
@@ -1645,8 +1655,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     } else if (presets.betterLeaves) {
       status(
         betterLeavesNeedsCullLeaves(presets)
-          ? "Motschen's Better Leaves kuruldu. Kaynak paketi etkinleştirildi; Sodium/Embeddium ile Cull Leaves da yüklendi."
-          : "Motschen's Better Leaves kuruldu. Kaynak paketi indirildi; OptiFine kullanıyorsanız Smart Leaves'i açın."
+          ? presets.optifine
+            ? "Motschen's Better Leaves kuruldu. OptiFine → Video Ayarları → Kalite → Smart Leaves açın."
+            : "Motschen's Better Leaves kuruldu. Kaynak paketi ve Cull Leaves yüklendi."
+          : "Motschen's Better Leaves kuruldu. Kaynak paketi etkinleştirildi."
       );
     } else if (presets.glowingOres) {
       const borderPack = glowingOresUseContinuityPack({ presets });

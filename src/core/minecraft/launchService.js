@@ -126,17 +126,18 @@ function createLaunchService({
     return m ? `${v}.1` : v;
   }
 
-  function syncModResourcePacks({ gameVersion, modPresets }) {
+  function syncModResourcePacks({ gameRoot, gameVersion, modPresets }) {
     const presets = modPresets || {};
     const hasResourceMods =
       presets.fullbrightUb || presets.betterLeaves || presets.glowingOres ||
       presets.roundTrees || presets.crops3d || presets.embossedBlocks;
     if (!hasResourceMods) return;
+    const root = gameRoot || paths.gameRoot;
     shaderStackService.applyModResourcePackPresets({
-      gameRoot: paths.gameRoot,
+      gameRoot: root,
       gameVersion,
       presets,
-      resourcepacksDir: path.join(paths.gameRoot, 'resourcepacks'),
+      resourcepacksDir: path.join(root, 'resourcepacks'),
     });
   }
 
@@ -1108,6 +1109,17 @@ function createLaunchService({
       offline: !!opts.offline,
     });
     // Launcher ayarları (ses) options.txt'e yansıt; Minecraft açılışta okur.
+    // Kaynak paketlerini oyun başlamadan hemen önce yeniden yaz — MC çıkışta
+    // geçersiz formatlı paketleri options.txt'ten siliyor.
+    try {
+      syncModResourcePacks({
+        gameRoot: optionsGameDir,
+        gameVersion: effectiveModGameVersion(opts.version),
+        modPresets,
+      });
+    } catch (e) {
+      logger.warn('Kaynak paketi ön ayarları yazılamadı', { err: e.message });
+    }
     try {
       applyAudioSettingsToOptionsTxt(opts.audioSettings, optionsGameDir);
     } catch (e) {
