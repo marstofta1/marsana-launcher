@@ -191,7 +191,8 @@
         <li>
           <strong>Kur.</strong>
           Windows'ta <code>.exe</code> kurucusunu çift tıkla;
-          macOS'ta <code>.dmg</code>'yi açıp uygulamayı <code>Applications</code> klasörüne sürükle;
+          macOS'ta <code>.dmg</code>'yi açıp uygulamayı <code>Applications</code> klasörüne sürükle
+          (ilk açılışta Gatekeeper uyarısı normal — aşağıdaki SSS'ye bak);
           Linux'ta <code>.AppImage</code> dosyasına çalıştırma izni verip çift tıkla
           (<code>chmod +x Marsana*.AppImage</code>).
         </li>
@@ -497,6 +498,30 @@
           yönetir ama JAVA_HOME tanımlıysa çakışabilir), bozuk mod jar'ı. Hala çözemezsen
           GitHub Issues sayfasında log'larla birlikte sorun aç.
         </p>
+      </details>
+      <details class="faq">
+        <summary>macOS “zarar verebilecek yazılım” / Gatekeeper uyarısı veriyor</summary>
+        <p>
+          Bu bir virüs uyarısı değildir. Marsana Launcher henüz Apple Developer ile imzalanmadığı
+          için macOS her indirilen uygulamada bu mesajı gösterir. Kaynak kod
+          <a href="https://github.com/marstofta1/marsana-launcher" target="_blank" rel="noopener">GitHub'da açık</a>
+          ve inceleyebilirsin.
+        </p>
+        <p><strong>Yöntem 1 — Sağ tıkla Aç (en kolay):</strong></p>
+        <ol>
+          <li><code>Applications</code> (Uygulamalar) klasöründe <strong>Marsana Launcher</strong>'a sağ tıkla (veya Control+tık).</li>
+          <li><strong>Aç</strong> (Open) seç — normal çift tıklama değil.</li>
+          <li>Çıkan pencerede tekrar <strong>Aç</strong> de.</li>
+        </ol>
+        <p><strong>Yöntem 2 — Sistem Ayarları:</strong></p>
+        <ol>
+          <li>Önce uygulamayı normal çift tıkla (engellensin).</li>
+          <li><strong>Sistem Ayarları → Gizlilik ve Güvenlik</strong> aç.</li>
+          <li>Aşağı kaydır; <em>“Marsana Launcher engellendi”</em> satırında <strong>Yine de Aç</strong> (Open Anyway) tıkla.</li>
+        </ol>
+        <p><strong>Yöntem 3 — Terminal:</strong></p>
+        <p><code>xattr -cr "/Applications/Marsana Launcher.app"</code></p>
+        <p>Ardından uygulamayı normal şekilde açabilirsin. İlk başarılı açılıştan sonra uyarı genelde bir daha çıkmaz.</p>
       </details>
       <details class="faq">
         <summary>Verilerim nerede saklanır?</summary>
