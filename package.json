@@ -47,7 +47,7 @@
     "linux": {
       "target": "AppImage",
       "category": "Game",
-      "artifactName": "${productName}-${version}-linux-${arch}.AppImage"
+      "artifactName": "${productName}-${version}-linux.AppImage"
     }
   },
   "dependencies": {
