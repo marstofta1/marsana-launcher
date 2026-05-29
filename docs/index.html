@@ -15,6 +15,7 @@
     </a>
     <nav class="topnav">
       <a href="#indir">İndir</a>
+      <a href="mobile/index.html">Mobil (Bedrock)</a>
       <a href="#hakkinda">Hakkında</a>
       <a href="#premium">Premium</a>
       <a href="#kurulum">Kurulum</a>
@@ -96,7 +97,10 @@
       </div>
       <p class="download-note">
         Windows kurucusu bu siteden doğrudan indirilir. macOS ve Linux paketleri GitHub Releases
-        üzerinden sunulur (dosya boyutu nedeniyle). macOS'ta ilk açılışta Gatekeeper uyarısı çıkarsa
+        üzerinden sunulur (dosya boyutu nedeniyle).
+        <strong>Telefon/tablet:</strong>
+        <a href="mobile/index.html">Mobil Bedrock sürümü</a> — kurulum gerekmez; tarayıcıdan aç veya ana ekrana ekle.
+        macOS'ta ilk açılışta Gatekeeper uyarısı çıkarsa
         <strong>Sistem Ayarları → Gizlilik ve Güvenlik</strong> üzerinden izin ver.
         Linux'ta gerekirse <code>chmod +x Marsana*.AppImage</code> ile çalıştırma izni ver.
         Windows kurucusu henüz dijital olarak imzalı değil; SmartScreen ilk açılışta
@@ -250,8 +254,18 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
+            <span class="release-version">Mobil Bedrock</span>
+            <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li><strong>Telefon sürümü:</strong> <a href="mobile/index.html">Mobil Bedrock launcher</a> — yalnızca Minecraft Bedrock açar; Java modları ve sürüm seçimi yok.</li>
+            <li>Önerilen sunucular, adres kopyalama ve bilinen Bedrock portlarıyla tek tık sunucuya katılma (Donut SMP vb.).</li>
+            <li>Ana ekrana eklenebilir (PWA); Android ve iOS’ta <code>minecraft://</code> ile oyunu başlatır.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
             <span class="release-version">v0.1.23</span>
-            <span class="release-tag latest">En güncel</span>
           </div>
           <ul class="release-changes">
             <li><strong>Yeni kaynak paketleri:</strong> Mod Seçenekleri'ne <strong>Round Trees</strong> ve <strong>3D crops Revamped</strong> eklendi; seçildiğinde Modrinth'ten indirilip otomatik etkinleştiriliyor.</li>
