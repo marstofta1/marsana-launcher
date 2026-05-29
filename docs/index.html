@@ -15,11 +15,8 @@
       <img class="brand-logo" src="assets/logo.png" width="40" height="40" alt="" aria-hidden="true" />
       <span class="brand-text">Marsana Launcher</span>
     </a>
-    <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menüyü aç">
-      <span></span><span></span><span></span>
-    </button>
     <nav class="topnav" id="site-nav">
-      <a href="#mobil">Telefon & Tablet</a>
+      <a href="mobile/index.html">Telefon & Tablet</a>
       <a href="#indir">İndir</a>
       <a href="#hakkinda">Hakkında</a>
       <a href="#premium">Premium</a>
@@ -61,46 +58,17 @@
     <section class="hero" data-tts-section>
       <div class="hero-inner">
         <h1 class="hero-title">Minecraft için <span class="accent">modern</span> ve <span class="accent">Türkçe</span> başlatıcı</h1>
-        <p class="hero-sub hero-sub-desktop">
+        <p class="hero-sub">
           Marsana Launcher; Microsoft hesabınla giriş yap, sürümünü ve mod yükleyicini seç, tek tıkla oyna.
           Fabric, Forge, NeoForge, Quilt ve Legacy Fabric tek arayüzde — Java otomatik kurulur, mod yığınları
           (Iris + Sodium + Complementary) hazır gelir.
         </p>
-        <p class="hero-sub hero-sub-mobile">
-          Bilgisayarda tam launcher: Java, modlar ve shader. Telefon veya tablette
-          <a href="#mobil">Bedrock bölümünü</a> kullan — kurulum gerekmez, yalnızca Minecraft Bedrock açılır.
-        </p>
         <div class="hero-cta">
-          <a class="btn primary hero-cta-desktop" href="#indir">Hemen İndir</a>
-          <a class="btn primary hero-cta-mobile" href="#mobil">Bedrock Oyna</a>
+          <a class="btn primary" href="#indir">Hemen İndir</a>
+          <a class="btn ghost" href="mobile/index.html">Telefon & Tablet (Bedrock)</a>
           <a class="btn ghost" href="#premium">Önce şunu oku: Premium gerekli</a>
         </div>
-        <p class="hero-meta">Windows · macOS · Linux · Telefon & Tablet (Bedrock)</p>
-      </div>
-    </section>
-
-    <section id="mobil" class="section section-mobile" data-tts-section>
-      <h2>Telefon & Tablet — Bedrock</h2>
-      <p>
-        Bu bölüm telefon ve tablet için tasarlandı. Java Edition, modlar ve shader
-        <strong>mobilde desteklenmez</strong>; Marsana’nın mobil deneyimi yalnızca
-        <strong>Minecraft Bedrock</strong> uygulamasını açar.
-      </p>
-      <div class="mobile-play-card">
-        <h3>Minecraft Bedrock</h3>
-        <p class="mobile-play-desc">
-          OYNA’ya basınca telefonundaki Minecraft açılır. Yüklü değilse mağaza sayfasına yönlendirilirsin.
-          Oyuna girdikten sonra Microsoft / Xbox hesabınla giriş yap.
-        </p>
-        <button type="button" class="btn-play-mobile" id="bedrock-play-btn">OYNA</button>
-        <p class="mobile-status" id="bedrock-status" aria-live="polite"></p>
-        <p class="mobile-hint">
-          Ana ekrana eklemek için tarayıcı menüsünden <strong>Ana Ekrana Ekle</strong> kullanabilirsin.
-        </p>
-      </div>
-      <h3 class="mobile-servers-title">Önerilen Sunucular</h3>
-      <div class="mobile-server-list" id="mobile-server-list">
-        <p class="mobile-hint">Sunucular yükleniyor…</p>
+        <p class="hero-meta">Windows · macOS · Linux · <a href="mobile/index.html">Mobil Bedrock</a></p>
       </div>
     </section>
 
@@ -129,12 +97,18 @@
           <p><code>.AppImage</code> · v0.1.23 · x86_64 (Ubuntu, Fedora, Arch, …)</p>
           <span class="dl-badge ready">Şimdi indir</span>
         </a>
+        <a class="download-card available" href="mobile/index.html">
+          <div class="download-icon">📱</div>
+          <h3>Telefon & Tablet</h3>
+          <p>Bedrock başlatıcı · kurulum yok · tarayıcıdan aç · PWA destekli</p>
+          <span class="dl-badge ready">Mobil sürümü aç</span>
+        </a>
       </div>
       <p class="download-note">
         Windows kurucusu bu siteden doğrudan indirilir. macOS ve Linux paketleri GitHub Releases
         üzerinden sunulur (dosya boyutu nedeniyle).
-        Telefon ve tablet kullanıcıları için
-        <a href="#mobil">Bedrock bölümüne</a> bak — ayrı kurulum gerekmez.
+        Telefon ve tablet için ayrı
+        <a href="mobile/index.html">mobil Bedrock launcher</a> sayfasını kullan — indirme gerekmez.
         macOS'ta ilk açılışta Gatekeeper uyarısı çıkarsa
         <strong>Sistem Ayarları → Gizlilik ve Güvenlik</strong> üzerinden izin ver.
         Linux'ta gerekirse <code>chmod +x Marsana*.AppImage</code> ile çalıştırma izni ver.
@@ -289,13 +263,13 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">Site — Telefon & Tablet</span>
+            <span class="release-version">Site — Mobil Bedrock Launcher</span>
             <span class="release-tag latest">Yeni</span>
           </div>
           <ul class="release-changes">
-            <li><strong>Telefon/tablet sürümü:</strong> Ana siteye entegre <a href="#mobil">Bedrock bölümü</a> — responsive menü, mobil düzen, tek tıkla Bedrock açma.</li>
+            <li><strong>Ayrı mobil sürüm:</strong> <a href="mobile/index.html">mobile/</a> altında bağımsız Bedrock başlatıcı — OYNA, sunucu listesi, PWA (Ana Ekrana Ekle).</li>
             <li>Önerilen sunucular, adres kopyalama ve bilinen Bedrock portlarıyla sunucuya katılma (Donut SMP vb.).</li>
-            <li>Masaüstü indirme kartları ve Java launcher bilgileri telefonda da erişilebilir; mobilde öncelik Bedrock’tadır.</li>
+            <li>Ana site masaüstü launcher’a odaklı; telefon/tablet kullanıcıları doğrudan mobil sayfaya yönlendirilir.</li>
           </ul>
         </li>
         <li class="release">
@@ -619,6 +593,5 @@
   </footer>
 
   <script src="script.js"></script>
-  <script src="mobile-bedrock.js"></script>
 </body>
 </html>

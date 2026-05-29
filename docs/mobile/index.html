@@ -2,11 +2,56 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=../index.html#mobil" />
-  <title>Yönlendiriliyor…</title>
-  <script>location.replace('../index.html#mobil');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#4caf50" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Marsana Launcher Mobile — telefonda Minecraft Bedrock başlatıcı. Yalnızca Bedrock; Java modları yok." />
+  <title>Marsana Launcher — Mobil (Bedrock)</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="../assets/logo.png" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <p><a href="../index.html#mobil">Telefon & Tablet bölümüne git</a></p>
+  <div class="app">
+    <header class="header">
+      <img src="../assets/logo.png" width="48" height="48" alt="" aria-hidden="true" />
+      <div>
+        <h1>Marsana Launcher</h1>
+        <p>Mobil sürüm · yalnızca Bedrock</p>
+        <span class="badge">TELEFON & TABLET</span>
+      </div>
+    </header>
+
+    <section class="play-card" aria-label="Minecraft Bedrock başlat">
+      <h2>Minecraft Bedrock</h2>
+      <p>
+        Bu ayrı mobil launcher yalnızca <strong>Minecraft Bedrock</strong> uygulamasını açar.
+        Java Edition, modlar ve shader desteklenmez.
+      </p>
+      <button type="button" class="btn-play" id="play-btn">OYNA</button>
+      <p class="status" id="status" aria-live="polite"></p>
+      <p class="hint" id="play-hint">
+        Minecraft yüklü değilse Play Store / App Store açılır. Oyuna girdikten sonra Microsoft hesabınla giriş yap.
+      </p>
+    </section>
+
+    <section aria-label="Önerilen sunucular">
+      <h2 class="section-title">Önerilen Sunucular</h2>
+      <div class="server-list" id="server-list">
+        <p class="hint">Sunucular yükleniyor…</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>
+        Bilgisayar sürümü:
+        <a href="../index.html">marsana-launcher ana site</a>
+      </p>
+      <p>Tarayıcı menüsünden <strong>Ana Ekrana Ekle</strong> ile uygulama gibi kullanabilirsin.</p>
+    </footer>
+  </div>
+
+  <script src="app.js" defer></script>
 </body>
 </html>
