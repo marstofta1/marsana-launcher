@@ -6,6 +6,8 @@ import {
   fullbrightUbSupported,
   betterLeavesSupported,
   glowingOresSupported,
+  roundTreesSupported,
+  crops3dSupported,
   forgeOptifineLikelySupported,
 } from '../../shared/versionCompatibility.js';
 
@@ -161,6 +163,26 @@ export function createModsPanel({ root, store }) {
               Madenleri parlatır ve bağlı çerçeve ekler; mod desteği mevcuttur. Fabric/Quilt/Forge için <strong>Continuity</strong> otomatik eklenir; OptiFine'da <strong>Emissive Textures</strong> açın.
             </p>
           </div>
+
+          <div data-role="row-roundTrees">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="roundTrees" />
+              <span>Round Trees</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-roundTrees">
+              Ağaç gövdelerini yuvarlak gösterir; Vanilla+ görünüm. Ek mod gerekmez; diğer kaynak paketlerinin <strong>üstünde</strong> otomatik etkinleştirilir.
+            </p>
+          </div>
+
+          <div data-role="row-crops3d">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="crops3d" />
+              <span>3D crops Revamped</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-crops3d">
+              Buğday, patates, havuç ve diğer tarım bloklarını 3D modellere çevirir. Hafif kaynak paketi; Vanilla stiline yakın kalır.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -175,6 +197,8 @@ export function createModsPanel({ root, store }) {
   const fullbrightUbCb = root.querySelector('[data-role="fullbrightUb"]');
   const betterLeavesCb = root.querySelector('[data-role="betterLeaves"]');
   const glowingOresCb = root.querySelector('[data-role="glowingOres"]');
+  const roundTreesCb = root.querySelector('[data-role="roundTrees"]');
+  const crops3dCb = root.querySelector('[data-role="crops3d"]');
   const optifineRow = root.querySelector('[data-role="row-optifine"]');
   const shaderRow = root.querySelector('[data-role="row-shaderFps"]');
   const embossedRow = root.querySelector('[data-role="row-embossed"]');
@@ -182,6 +206,8 @@ export function createModsPanel({ root, store }) {
   const fullbrightUbRow = root.querySelector('[data-role="row-fullbrightUb"]');
   const betterLeavesRow = root.querySelector('[data-role="row-betterLeaves"]');
   const glowingOresRow = root.querySelector('[data-role="row-glowingOres"]');
+  const roundTreesRow = root.querySelector('[data-role="row-roundTrees"]');
+  const crops3dRow = root.querySelector('[data-role="row-crops3d"]');
   const shaderLabel = root.querySelector('[data-role="label-shaderFps"]');
   const embossedLabel = root.querySelector('[data-role="label-embossed"]');
   const shaderPickerBlock = root.querySelector('[data-role="shader-picker-block"]');
@@ -209,6 +235,8 @@ export function createModsPanel({ root, store }) {
       modFullbrightUb: fullbrightUbCb.checked,
       modBetterLeaves: betterLeavesCb.checked,
       modGlowingOres: glowingOresCb.checked,
+      modRoundTrees: roundTreesCb.checked,
+      modCrops3d: crops3dCb.checked,
       selectedShader: shaderPicker.value || DEFAULT_SHADER_SLUG,
     });
   }
@@ -274,6 +302,8 @@ export function createModsPanel({ root, store }) {
     const fbOk = !isSnapshot && fullbrightUbSupported(v);
     const blOk = !isSnapshot && betterLeavesSupported(v);
     const goOk = !isSnapshot && glowingOresSupported(v);
+    const rtOk = !isSnapshot && roundTreesSupported(v);
+    const c3Ok = !isSnapshot && crops3dSupported(v);
 
     if (isSnapshot) {
       const reason = 'Snapshot/eski sürümlerde mod ekosistemi (Iris, Sodium, Continuity) yayınlanmaz; stable bir sürüm seçin.';
@@ -305,6 +335,14 @@ export function createModsPanel({ root, store }) {
         glowingOresCb.checked = false;
         store.setState({ modGlowingOres: false });
       }
+      if (roundTreesCb.checked) {
+        roundTreesCb.checked = false;
+        store.setState({ modRoundTrees: false });
+      }
+      if (crops3dCb.checked) {
+        crops3dCb.checked = false;
+        store.setState({ modCrops3d: false });
+      }
       optifineCb.disabled = true;
       shaderCb.disabled = true;
       embossedCb.disabled = true;
@@ -312,6 +350,8 @@ export function createModsPanel({ root, store }) {
       fullbrightUbCb.disabled = true;
       betterLeavesCb.disabled = true;
       glowingOresCb.disabled = true;
+      roundTreesCb.disabled = true;
+      crops3dCb.disabled = true;
       optifineCb.title = reason;
       shaderCb.title = reason;
       embossedCb.title = reason;
@@ -319,6 +359,8 @@ export function createModsPanel({ root, store }) {
       fullbrightUbCb.title = reason;
       betterLeavesCb.title = reason;
       glowingOresCb.title = reason;
+      roundTreesCb.title = reason;
+      crops3dCb.title = reason;
       return;
     }
 
@@ -328,6 +370,8 @@ export function createModsPanel({ root, store }) {
     fullbrightUbCb.disabled = !fbOk;
     betterLeavesCb.disabled = !blOk;
     glowingOresCb.disabled = !goOk;
+    roundTreesCb.disabled = !rtOk;
+    crops3dCb.disabled = !c3Ok;
 
     optifineCb.title = opOk
       ? ''
@@ -347,6 +391,12 @@ export function createModsPanel({ root, store }) {
     glowingOresCb.title = goOk
       ? ''
       : 'Glowing Ores için Minecraft 1.17 veya üstü bir sürüm seçin.';
+    roundTreesCb.title = rtOk
+      ? ''
+      : 'Round Trees bu sürüm için desteklenmiyor.';
+    crops3dCb.title = c3Ok
+      ? ''
+      : '3D crops Revamped bu sürüm için desteklenmiyor.';
 
     if (!opOk && optifineCb.checked) {
       optifineCb.checked = false;
@@ -372,6 +422,14 @@ export function createModsPanel({ root, store }) {
       glowingOresCb.checked = false;
       store.setState({ modGlowingOres: false });
     }
+    if (!rtOk && roundTreesCb.checked) {
+      roundTreesCb.checked = false;
+      store.setState({ modRoundTrees: false });
+    }
+    if (!c3Ok && crops3dCb.checked) {
+      crops3dCb.checked = false;
+      store.setState({ modCrops3d: false });
+    }
 
     applyMutualExclusion();
     updateShaderPickerVisibility();
@@ -380,37 +438,37 @@ export function createModsPanel({ root, store }) {
   // Her loader için hangi mod row'ları görünür ve mods-title:
   const ROWS_BY_LOADER = {
     fabric: {
-      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
       title: 'Fabric Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
     },
     'fabric-beta': {
-      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
       title: 'Fabric (Beta) Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
     },
     quilt: {
-      rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
+      rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
       title: 'Quilt Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity)',
     },
     forge: {
-      rows: ['shaderFps', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
+      rows: ['shaderFps', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
       title: 'Forge Modları',
       shaderLabel: 'Shader + FPS (Embeddium + Oculus + seçilen shader paketi — ⚠ Mac\'te Oculus OpenGL 1282 hatası verebilir; NeoForge veya Fabric önerilir)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity Forge — sadece 1.20.1)',
     },
     'forge-optifine': {
-      rows: ['embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
+      rows: ['embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
       title: 'Forge + OptiFine Modları',
       shaderLabel: '',
       embossedLabel: "Kabartmalı / bağlı bloklar (OptiFine içeride zaten CTM destekler — ek mod gerek yok)",
     },
     neoforge: {
-      rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres'],
+      rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
       title: 'NeoForge Modları',
       shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
       embossedLabel: 'Kabartmalı / bağlı bloklar (NeoForge\'da native Continuity yok — desteklenmiyor)',
@@ -446,7 +504,7 @@ export function createModsPanel({ root, store }) {
       embossedLabel: '',
     },
     vanilla: {
-      rows: ['fullbrightUb', 'betterLeaves', 'glowingOres'],
+      rows: ['fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
       title: 'Vanilla Modları',
       shaderLabel: '',
       embossedLabel: '',
@@ -472,6 +530,8 @@ export function createModsPanel({ root, store }) {
       fullbrightUb: fullbrightUbRow,
       betterLeaves: betterLeavesRow,
       glowingOres: glowingOresRow,
+      roundTrees: roundTreesRow,
+      crops3d: crops3dRow,
     };
     for (const key of Object.keys(allRows)) {
       allRows[key].style.display = config.rows.includes(key) ? '' : 'none';
@@ -483,7 +543,9 @@ export function createModsPanel({ root, store }) {
       config.rows.includes('voiceChat') ||
       config.rows.includes('fullbrightUb') ||
       config.rows.includes('betterLeaves') ||
-      config.rows.includes('glowingOres');
+      config.rows.includes('glowingOres') ||
+      config.rows.includes('roundTrees') ||
+      config.rows.includes('crops3d');
     if (modsOptionsColRight) {
       modsOptionsColRight.style.display = rightColVisible ? '' : 'none';
     }
@@ -519,6 +581,14 @@ export function createModsPanel({ root, store }) {
     if (!config.rows.includes('glowingOres') && glowingOresCb.checked) {
       glowingOresCb.checked = false;
       store.setState({ modGlowingOres: false });
+    }
+    if (!config.rows.includes('roundTrees') && roundTreesCb.checked) {
+      roundTreesCb.checked = false;
+      store.setState({ modRoundTrees: false });
+    }
+    if (!config.rows.includes('crops3d') && crops3dCb.checked) {
+      crops3dCb.checked = false;
+      store.setState({ modCrops3d: false });
     }
 
     modsTitle.textContent = config.title;
@@ -559,7 +629,7 @@ export function createModsPanel({ root, store }) {
           'Rift otomatik kurulacak. Kayıtlar ve ayarlar profiles/rift-<sürüm>/ altında tutulur. Yalnızca 1.13 ve 1.13.2 desteklenir.';
       } else if (loader === 'vanilla') {
         loaderWarning.textContent =
-          'Vanilla seçili — Minecraft resmi profille başlar. Kaynak paketi modları (Fullbright, Better Leaves, Glowing Ores) seçiliyse otomatik indirilir; parıltı için Fabric+Continuity veya OptiFine gerekir.';
+          'Vanilla seçili — Minecraft resmi profille başlar. Kaynak paketi modları (Fullbright, Better Leaves, Glowing Ores, Round Trees, 3D crops) seçiliyse otomatik indirilir; parıltı için Fabric+Continuity veya OptiFine gerekir.';
       } else if (loader === 'bedrock') {
         loaderWarning.textContent =
           'Bedrock (Minecraft for Windows) Microsoft Store uygulaması olarak başlatılır. ' +
@@ -615,6 +685,8 @@ export function createModsPanel({ root, store }) {
   fullbrightUbCb.addEventListener('change', publish);
   betterLeavesCb.addEventListener('change', publish);
   glowingOresCb.addEventListener('change', publish);
+  roundTreesCb.addEventListener('change', publish);
+  crops3dCb.addEventListener('change', publish);
   shaderPicker.addEventListener('change', publish);
 
   function renderFromStore(state) {
@@ -632,6 +704,8 @@ export function createModsPanel({ root, store }) {
     if (fullbrightUbCb.checked !== !!state.modFullbrightUb) fullbrightUbCb.checked = !!state.modFullbrightUb;
     if (betterLeavesCb.checked !== !!state.modBetterLeaves) betterLeavesCb.checked = !!state.modBetterLeaves;
     if (glowingOresCb.checked !== !!state.modGlowingOres) glowingOresCb.checked = !!state.modGlowingOres;
+    if (roundTreesCb.checked !== !!state.modRoundTrees) roundTreesCb.checked = !!state.modRoundTrees;
+    if (crops3dCb.checked !== !!state.modCrops3d) crops3dCb.checked = !!state.modCrops3d;
     const shader = state.selectedShader || DEFAULT_SHADER_SLUG;
     if (shaderPicker.value !== shader) shaderPicker.value = shader;
     applyLoaderState();

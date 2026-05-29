@@ -102,6 +102,16 @@ const LOADER_EMPTY_MESSAGES = Object.freeze({
   rift: 'Rift uyumlu sürüm bulunamadı (1.13 ve 1.13.2)',
 });
 
+/** 3D crops Revamped kaynak paketi; geniş sürüm desteği. */
+export function crops3dSupported(versionId) {
+  return fullbrightUbSupported(versionId);
+}
+
+/** Round Trees kaynak paketi; geniş sürüm desteği. */
+export function roundTreesSupported(versionId) {
+  return fullbrightUbSupported(versionId);
+}
+
 export function selectionRequiresReleaseVersions({
   loader,
   modOptifine,
@@ -111,9 +121,11 @@ export function selectionRequiresReleaseVersions({
   modFullbrightUb,
   modBetterLeaves,
   modGlowingOres,
+  modRoundTrees,
+  modCrops3d,
 }) {
   if (loader === 'forge-optifine') return true;
-  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat || modFullbrightUb || modBetterLeaves || modGlowingOres);
+  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat || modFullbrightUb || modBetterLeaves || modGlowingOres || modRoundTrees || modCrops3d);
 }
 
 export function isVersionAllowedForSelection({
@@ -127,6 +139,8 @@ export function isVersionAllowedForSelection({
   modFullbrightUb,
   modBetterLeaves,
   modGlowingOres,
+  modRoundTrees,
+  modCrops3d,
   legacyFabricSupportedSet = null,
   loaderSupportedSet = null,
 }) {
@@ -152,6 +166,8 @@ export function isVersionAllowedForSelection({
       modFullbrightUb,
       modBetterLeaves,
       modGlowingOres,
+      modRoundTrees,
+      modCrops3d,
     }) &&
     versionType !== 'release'
   ) {
@@ -166,6 +182,8 @@ export function isVersionAllowedForSelection({
   if (modFullbrightUb && !fullbrightUbSupported(id)) return false;
   if (modBetterLeaves && !betterLeavesSupported(id)) return false;
   if (modGlowingOres && !glowingOresSupported(id)) return false;
+  if (modRoundTrees && !roundTreesSupported(id)) return false;
+  if (modCrops3d && !crops3dSupported(id)) return false;
 
   if (modEmbossedBlocks) {
     if (loaderVal === 'forge') {
@@ -189,7 +207,7 @@ export function getVersionFilterEmptyMessage(state, { legacyFabric = false, load
     return LOADER_EMPTY_MESSAGES[loaderVal];
   }
 
-  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat, modFullbrightUb, modBetterLeaves, modGlowingOres } = state;
+  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat, modFullbrightUb, modBetterLeaves, modGlowingOres, modRoundTrees, modCrops3d } = state;
   const labels = [];
   if (loader === 'forge-optifine' || modOptifine) labels.push('OptiFine');
   if (modShaderFps) labels.push('Shader + FPS');
@@ -198,6 +216,8 @@ export function getVersionFilterEmptyMessage(state, { legacyFabric = false, load
   if (modFullbrightUb) labels.push('Fullbright UB');
   if (modBetterLeaves) labels.push('Better Leaves');
   if (modGlowingOres) labels.push('Glowing Ores');
+  if (modRoundTrees) labels.push('Round Trees');
+  if (modCrops3d) labels.push('3D crops Revamped');
 
   if (labels.length > 0) {
     return `${labels.join(' ve ')} ile uyumlu sürüm bulunamadı`;

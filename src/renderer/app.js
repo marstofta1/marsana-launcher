@@ -41,6 +41,8 @@ const initialState = Object.freeze({
   modFullbrightUb: false,
   modBetterLeaves: false,
   modGlowingOres: false,
+  modRoundTrees: false,
+  modCrops3d: false,
   statusText: 'Hazır.',
   progressPercent: 0,
   logLines: [],
@@ -106,6 +108,8 @@ async function bootstrap() {
       modFullbrightUb: !!state.modFullbrightUb,
       modBetterLeaves: !!state.modBetterLeaves,
       modGlowingOres: !!state.modGlowingOres,
+      modRoundTrees: !!state.modRoundTrees,
+      modCrops3d: !!state.modCrops3d,
     };
     const ser = JSON.stringify(snap);
     if (ser !== lastSerialized) {

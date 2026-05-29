@@ -129,7 +129,8 @@ function createLaunchService({
   function syncModResourcePacks({ gameVersion, modPresets }) {
     const presets = modPresets || {};
     const hasResourceMods =
-      presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.embossedBlocks;
+      presets.fullbrightUb || presets.betterLeaves || presets.glowingOres ||
+      presets.roundTrees || presets.crops3d || presets.embossedBlocks;
     if (!hasResourceMods) return;
     shaderStackService.applyModResourcePackPresets({
       gameRoot: paths.gameRoot,
@@ -137,6 +138,15 @@ function createLaunchService({
       presets,
       resourcepacksDir: path.join(paths.gameRoot, 'resourcepacks'),
     });
+  }
+
+  async function installOptionalResourcePacks({ gameRoot, gameVersion, emit, roundTrees, crops3d }) {
+    if (roundTrees) {
+      await shaderStackService.installRoundTreesForExternalLoader({ gameRoot, gameVersion, emit });
+    }
+    if (crops3d) {
+      await shaderStackService.installCrops3dForExternalLoader({ gameRoot, gameVersion, emit });
+    }
   }
 
   async function writeMergedProfile({ merged, customId, version, loaderVersion, logLabel }) {
@@ -155,8 +165,8 @@ function createLaunchService({
   }
 
   async function buildFabricBetaSpec({ version, modPresets, shaderSlug, emit }) {
-    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false };
-    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres);
+    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false, roundTrees: false, crops3d: false };
+    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d);
     if (useMods) {
       const effectiveVersion = effectiveModGameVersion(version);
       if (effectiveVersion !== version && emit && emit.status) {
@@ -273,8 +283,8 @@ function createLaunchService({
   }
 
   async function buildFabricSpec({ version, modPresets, shaderSlug, emit }) {
-    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false };
-    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres);
+    const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false, roundTrees: false, crops3d: false };
+    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d);
     if (!useFabric) {
       return { spec: { number: version, type: 'release' }, overrides: { detached: false }, extra: {} };
     }
@@ -425,7 +435,7 @@ function createLaunchService({
     }
   }
 
-  async function buildForgeSpec({ version, includeOptifine, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, shaderSlug, javaPath, emit }) {
+  async function buildForgeSpec({ version, includeOptifine, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, javaPath, emit }) {
     // Mod ekosistemi (Embeddium, Oculus, Continuity) Minecraft'ın patch
     // sürümünü hedefler (örn. 1.20.1) ve onunla uyumlu Forge'u (47.x) ister.
     // Kullanıcı base seçti ise (örn. 1.20) bu, javafml sürüm uyumsuzluğuna yol
@@ -530,12 +540,22 @@ function createLaunchService({
       });
     }
 
+    await installOptionalResourcePacks({
+      gameRoot: paths.gameRoot,
+      gameVersion: effectiveVersion,
+      emit,
+      roundTrees: includeRoundTrees,
+      crops3d: includeCrops3d,
+    });
+
     syncModResourcePacks({
       gameVersion: effectiveVersion,
       modPresets: {
         fullbrightUb: includeFullbright,
         betterLeaves: includeBetterLeaves,
         glowingOres: includeGlowingOres,
+        roundTrees: includeRoundTrees,
+        crops3d: includeCrops3d,
         embossedBlocks: includeEmbossed,
       },
     });
@@ -558,7 +578,7 @@ function createLaunchService({
     await httpClient.download(assetIndex.url, target);
   }
 
-  async function buildQuiltSpec({ version, includeShader, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, shaderSlug, emit }) {
+  async function buildQuiltSpec({ version, includeShader, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, emit }) {
     const effectiveVersion = effectiveModGameVersion(version);
     if (effectiveVersion !== version && emit && emit.status) {
       emit.status({
@@ -634,12 +654,22 @@ function createLaunchService({
       });
     }
 
+    await installOptionalResourcePacks({
+      gameRoot: paths.gameRoot,
+      gameVersion: effectiveVersion,
+      emit,
+      roundTrees: includeRoundTrees,
+      crops3d: includeCrops3d,
+    });
+
     syncModResourcePacks({
       gameVersion: effectiveVersion,
       modPresets: {
         fullbrightUb: includeFullbright,
         betterLeaves: includeBetterLeaves,
         glowingOres: includeGlowingOres,
+        roundTrees: includeRoundTrees,
+        crops3d: includeCrops3d,
       },
     });
 
@@ -680,7 +710,7 @@ function createLaunchService({
     };
   }
 
-  async function buildNeoForgeSpec({ version, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, shaderSlug, javaPath, emit }) {
+  async function buildNeoForgeSpec({ version, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, javaPath, emit }) {
     const effectiveVersion =
       includeShader || includeEmbossed || includeVoiceChat || includeFullbright || includeBetterLeaves || includeGlowingOres ? effectiveModGameVersion(version) : version;
     if (effectiveVersion !== version && emit && emit.status) {
@@ -758,12 +788,22 @@ function createLaunchService({
       });
     }
 
+    await installOptionalResourcePacks({
+      gameRoot: paths.gameRoot,
+      gameVersion: effectiveVersion,
+      emit,
+      roundTrees: includeRoundTrees,
+      crops3d: includeCrops3d,
+    });
+
     syncModResourcePacks({
       gameVersion: effectiveVersion,
       modPresets: {
         fullbrightUb: includeFullbright,
         betterLeaves: includeBetterLeaves,
         glowingOres: includeGlowingOres,
+        roundTrees: includeRoundTrees,
+        crops3d: includeCrops3d,
         embossedBlocks: includeEmbossed,
       },
     });
@@ -786,6 +826,8 @@ function createLaunchService({
     const includeFullbright = !!(modPresets && modPresets.fullbrightUb);
     const includeBetterLeaves = !!(modPresets && modPresets.betterLeaves);
     const includeGlowingOres = !!(modPresets && modPresets.glowingOres);
+    const includeRoundTrees = !!(modPresets && modPresets.roundTrees);
+    const includeCrops3d = !!(modPresets && modPresets.crops3d);
 
     if (loader === 'forge' || loader === 'forge-optifine') {
       applyLoaderModsState('forge');
@@ -798,6 +840,8 @@ function createLaunchService({
         includeFullbright,
         includeBetterLeaves,
         includeGlowingOres,
+        includeRoundTrees,
+        includeCrops3d,
         shaderSlug,
         javaPath,
         emit,
@@ -815,6 +859,8 @@ function createLaunchService({
         includeFullbright,
         includeBetterLeaves,
         includeGlowingOres,
+        includeRoundTrees,
+        includeCrops3d,
         shaderSlug,
         javaPath,
         emit,
@@ -824,7 +870,7 @@ function createLaunchService({
       // Quilt, Fabric'in çatalı: mod ekosistemi büyük oranda Fabric ile uyumlu,
       // o yüzden mods/ izolasyonu Fabric ile aynı kategoriye düşer.
       applyLoaderModsState('fabric');
-      return buildQuiltSpec({ version, includeShader, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, shaderSlug, emit });
+      return buildQuiltSpec({ version, includeShader, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, emit });
     }
     if (loader === 'legacy-fabric') {
       applyLoaderModsState('fabric');
@@ -883,6 +929,13 @@ function createLaunchService({
           includeEmbossed: false,
         });
       }
+      await installOptionalResourcePacks({
+        gameRoot: paths.gameRoot,
+        gameVersion: version,
+        emit,
+        roundTrees: includeRoundTrees,
+        crops3d: includeCrops3d,
+      });
       syncModResourcePacks({
         gameVersion: version,
         modPresets,
@@ -935,6 +988,8 @@ function createLaunchService({
       fullbrightUb: false,
       betterLeaves: false,
       glowingOres: false,
+      roundTrees: false,
+      crops3d: false,
     };
 
     // Forge installer'ı subprocess olarak çalıştırmak için javaPath'i önceden çöz.

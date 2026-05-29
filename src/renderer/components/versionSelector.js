@@ -65,6 +65,8 @@ export function createVersionSelector({ root, store, versionsApi }) {
       modFullbrightUb: !!state.modFullbrightUb,
       modBetterLeaves: !!state.modBetterLeaves,
       modGlowingOres: !!state.modGlowingOres,
+      modRoundTrees: !!state.modRoundTrees,
+      modCrops3d: !!state.modCrops3d,
     };
   }
 
@@ -139,6 +141,12 @@ export function createVersionSelector({ root, store, versionsApi }) {
     }
     if (snap.modGlowingOres) {
       parts.push('Glowing Ores uyumlu sürümler (1.17+)');
+    }
+    if (snap.modRoundTrees) {
+      parts.push('Round Trees uyumlu sürümler');
+    }
+    if (snap.modCrops3d) {
+      parts.push('3D crops Revamped uyumlu sürümler');
     }
     if (parts.length === 0) {
       filterHint.style.display = 'none';

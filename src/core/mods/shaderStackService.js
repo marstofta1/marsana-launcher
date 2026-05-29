@@ -8,7 +8,7 @@ const { LauncherError, Codes } = require('../infra/errors');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 9;
+const SHADER_BUNDLE_VERSION = 10;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -23,6 +23,10 @@ const BETTER_LEAVES_PACK_LOCAL_NAME = 'better-leaves.zip';
 const CULL_LEAVES_SLUG = 'cull-leaves';
 const GLOWING_ORES_SLUG = 'new-glowing-ores';
 const GLOWING_ORES_PACK_LOCAL_NAME = 'new-glowing-ores.zip';
+const ROUND_TREES_SLUG = 'round-trees';
+const ROUND_TREES_PACK_LOCAL_NAME = 'round-trees.zip';
+const CROPS_3D_SLUG = '3d-crops';
+const CROPS_3D_PACK_LOCAL_NAME = '3d-crops.zip';
 const CONTINUITY_SLUG = 'continuity';
 const DEFAULT_SHADER_SLUG = 'complementary-reimagined';
 const OPTIFINE_PROJECT = 'optifine-for-fabric';
@@ -279,19 +283,25 @@ function customIdFor(gameVersion, presets, shaderSlug, { loaderPrefix = 'marsana
   if (presets.shaderFps && shaderSlug && KNOWN_SHADER_SLUGS.has(shaderSlug)) {
     return `${loaderPrefix}-shader-${gameVersion}-${shaderSlug}`;
   }
-  if (presets.voiceChat && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres) {
+  if (presets.voiceChat && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d) {
     return `${loaderPrefix}-voice-${gameVersion}`;
   }
-  if (presets.fullbrightUb && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.betterLeaves && !presets.glowingOres) {
+  if (presets.fullbrightUb && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d) {
     return `${loaderPrefix}-fullbright-${gameVersion}`;
   }
-  if (presets.betterLeaves && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.glowingOres) {
+  if (presets.betterLeaves && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.glowingOres && !presets.roundTrees && !presets.crops3d) {
     return `${loaderPrefix}-betterleaves-${gameVersion}`;
   }
-  if (presets.glowingOres && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves) {
+  if (presets.glowingOres && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.roundTrees && !presets.crops3d) {
     return `${loaderPrefix}-glowingores-${gameVersion}`;
   }
-  if (presets.shaderFps || presets.embossedBlocks || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres) {
+  if (presets.roundTrees && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.crops3d) {
+    return `${loaderPrefix}-roundtrees-${gameVersion}`;
+  }
+  if (presets.crops3d && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees) {
+    return `${loaderPrefix}-crops3d-${gameVersion}`;
+  }
+  if (presets.shaderFps || presets.embossedBlocks || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d) {
     return `${loaderPrefix}-shader-${gameVersion}`;
   }
   return `${loaderPrefix}-shader-${gameVersion}`;
@@ -368,6 +378,8 @@ function normalizePresets(p) {
     fullbrightUb: !!(p && p.fullbrightUb),
     betterLeaves: !!(p && p.betterLeaves),
     glowingOres: !!(p && p.glowingOres),
+    roundTrees: !!(p && p.roundTrees),
+    crops3d: !!(p && p.crops3d),
   };
 }
 
@@ -455,6 +467,8 @@ const MANAGED_MOD_RESOURCE_PACKS = Object.freeze([
   FULLBRIGHT_PACK_LOCAL_NAME,
   BETTER_LEAVES_PACK_LOCAL_NAME,
   GLOWING_ORES_PACK_LOCAL_NAME,
+  CROPS_3D_PACK_LOCAL_NAME,
+  ROUND_TREES_PACK_LOCAL_NAME,
 ]);
 
 function managedModResourcePackEntries() {
@@ -470,6 +484,9 @@ function modResourcePackFilenamesForPresets(presets) {
   if (presets.fullbrightUb) files.push(FULLBRIGHT_PACK_LOCAL_NAME);
   if (presets.betterLeaves) files.push(BETTER_LEAVES_PACK_LOCAL_NAME);
   if (presets.glowingOres) files.push(GLOWING_ORES_PACK_LOCAL_NAME);
+  if (presets.crops3d) files.push(CROPS_3D_PACK_LOCAL_NAME);
+  // Round Trees diğer paketlerin üstünde olmalı (Modrinth önerisi).
+  if (presets.roundTrees) files.push(ROUND_TREES_PACK_LOCAL_NAME);
   return files;
 }
 
@@ -574,7 +591,9 @@ function presetsMatch(saved, wanted) {
     typeof saved.voiceChat !== 'boolean' ||
     typeof saved.fullbrightUb !== 'boolean' ||
     typeof saved.betterLeaves !== 'boolean' ||
-    typeof saved.glowingOres !== 'boolean'
+    typeof saved.glowingOres !== 'boolean' ||
+    typeof saved.roundTrees !== 'boolean' ||
+    typeof saved.crops3d !== 'boolean'
   ) {
     return false;
   }
@@ -585,7 +604,9 @@ function presetsMatch(saved, wanted) {
     saved.voiceChat === wanted.voiceChat &&
     saved.fullbrightUb === wanted.fullbrightUb &&
     saved.betterLeaves === wanted.betterLeaves &&
-    saved.glowingOres === wanted.glowingOres
+    saved.glowingOres === wanted.glowingOres &&
+    saved.roundTrees === wanted.roundTrees &&
+    saved.crops3d === wanted.crops3d
   );
 }
 
@@ -1051,29 +1072,32 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   }
 
   async function downloadModrinthResourcePack({ slug, localName, resourcepacksDir, gameVersion, label, onNotice }) {
-    const expanded = (function expand(v) {
-      const m = String(v).match(/^(\d+\.\d+)$/);
-      return m ? [v, `${v}.1`] : [v];
-    })(gameVersion);
-    const queryAttempts = [{ gameVersions: expanded }, {}];
-    let lastErr = null;
-    for (const query of queryAttempts) {
-      try {
-        const file = await modrinthClient.latestPrimaryFile(slug, query);
-        await fs.promises.mkdir(resourcepacksDir, { recursive: true });
-        await httpClient.download(file.url, path.join(resourcepacksDir, localName));
-        ensureResourcePackCompatibleForGame({ resourcepacksDir, localName, gameVersion });
-        if (onNotice) onNotice(`${label} hazır: ${localName}`);
-        return [localName];
-      } catch (err) {
-        lastErr = err;
-        if (!isModrinthNotFound(err)) break;
-      }
+    const expanded = expandResourcePackGameVersions(gameVersion);
+    let versions = await modrinthClient.listProjectVersions(slug, { gameVersions: expanded });
+    if (!versions.length) {
+      versions = (await modrinthClient.listProjectVersions(slug, {}))
+        .filter((v) => versionListsGame(v.game_versions, gameVersion));
     }
-    throw lastErr || new LauncherError(
-      Codes.MODRINTH_NOT_FOUND,
-      `${label} bu Minecraft sürümü (${gameVersion}) için Modrinth'te bulunamadı.`
-    );
+
+    const picked = pickNewestModrinthVersion(versions, { gameVersion });
+    if (!picked) {
+      throw new LauncherError(
+        Codes.MODRINTH_NOT_FOUND,
+        `${label} bu Minecraft sürümü (${gameVersion}) için Modrinth'te bulunamadı.`
+      );
+    }
+
+    const file = modrinthClient.primaryFileOf(picked);
+    if (!file || !file.url) {
+      throw new LauncherError(Codes.MODRINTH_NOT_FOUND, `${label} dosyası Modrinth'te bulunamadı.`);
+    }
+
+    await fs.promises.mkdir(resourcepacksDir, { recursive: true });
+    await httpClient.download(file.url, path.join(resourcepacksDir, localName));
+    ensureResourcePackCompatibleForGame({ resourcepacksDir, localName, gameVersion });
+    const versionLabel = picked.name || picked.version_number || label;
+    if (onNotice) onNotice(`${label} ${versionLabel} hazır: ${localName}`);
+    return [localName];
   }
 
   async function downloadGlowingOresResourcePack({ resourcepacksDir, gameVersion, onNotice, useContinuity = true }) {
@@ -1159,6 +1183,28 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     });
   }
 
+  async function downloadRoundTreesResourcePack({ resourcepacksDir, gameVersion, onNotice }) {
+    return downloadModrinthResourcePack({
+      slug: ROUND_TREES_SLUG,
+      localName: ROUND_TREES_PACK_LOCAL_NAME,
+      resourcepacksDir,
+      gameVersion,
+      label: 'Round Trees',
+      onNotice,
+    });
+  }
+
+  async function downloadCrops3dResourcePack({ resourcepacksDir, gameVersion, onNotice }) {
+    return downloadModrinthResourcePack({
+      slug: CROPS_3D_SLUG,
+      localName: CROPS_3D_PACK_LOCAL_NAME,
+      resourcepacksDir,
+      gameVersion,
+      label: '3D crops Revamped',
+      onNotice,
+    });
+  }
+
   function glowingOresUseContinuityPack({ includeOptifine = false, includeEmbossed = false, presets = null } = {}) {
     if (presets) {
       if (presets.optifine) return false;
@@ -1203,6 +1249,30 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         status('PolyTone bulunamadı — Fullbright Sodium/Iris ile çalışmayabilir.');
       }
     }
+    return { resourcepacks };
+  }
+
+  async function installRoundTreesForExternalLoader({ gameRoot, gameVersion, emit }) {
+    const resourcepacksDir = path.join(gameRoot, 'resourcepacks');
+    const status = statusEmitter(emit);
+    status('Round Trees kaynak paketi indiriliyor...');
+    const resourcepacks = await downloadRoundTreesResourcePack({
+      resourcepacksDir,
+      gameVersion,
+      onNotice: status,
+    });
+    return { resourcepacks };
+  }
+
+  async function installCrops3dForExternalLoader({ gameRoot, gameVersion, emit }) {
+    const resourcepacksDir = path.join(gameRoot, 'resourcepacks');
+    const status = statusEmitter(emit);
+    status('3D crops Revamped kaynak paketi indiriliyor...');
+    const resourcepacks = await downloadCrops3dResourcePack({
+      resourcepacksDir,
+      gameVersion,
+      onNotice: status,
+    });
     return { resourcepacks };
   }
 
@@ -1355,7 +1425,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable' }) {
     const presets = normalizePresets(modPresets);
-    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres) {
+    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
     }
 
@@ -1468,6 +1538,22 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         useContinuity: glowingOresUseContinuityPack({ presets }),
       })));
     }
+    if (presets.crops3d) {
+      status('Mod profili: 3D crops Revamped kaynak paketi indiriliyor...');
+      resourcepacks.push(...(await downloadCrops3dResourcePack({
+        resourcepacksDir,
+        gameVersion,
+        onNotice: status,
+      })));
+    }
+    if (presets.roundTrees) {
+      status('Mod profili: Round Trees kaynak paketi indiriliyor...');
+      resourcepacks.push(...(await downloadRoundTreesResourcePack({
+        resourcepacksDir,
+        gameVersion,
+        onNotice: status,
+      })));
+    }
 
     applyModResourcePackPresets({ gameRoot, gameVersion, presets, resourcepacksDir });
 
@@ -1548,6 +1634,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           ? 'New Glowing Ores (Border) kuruldu. Continuity ile parıltı ve bağlı çerçeve etkin.'
           : 'New Glowing Ores (Default) kuruldu. OptiFine kullanıyorsanız Emissive Textures açın.'
       );
+    } else if (presets.roundTrees) {
+      status('Round Trees kuruldu. Kaynak paketi listenin en üstüne yerleştirildi.');
+    } else if (presets.crops3d) {
+      status('3D crops Revamped kuruldu. Tarım blokları 3D görünüme geçti.');
     } else {
       status('Kabartmalı blok / bağlı doku: Continuity + Sodium hazır.');
     }
@@ -1555,7 +1645,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { customId, assetIndexId };
   }
 
-  return { ensure, applyModResourcePackPresets, installShadersForExternalLoader, installEmbossedForExternalLoader, installVoiceChatForExternalLoader, installFullbrightForExternalLoader, installBetterLeavesForExternalLoader, installGlowingOresForExternalLoader };
+  return { ensure, applyModResourcePackPresets, installShadersForExternalLoader, installEmbossedForExternalLoader, installVoiceChatForExternalLoader, installFullbrightForExternalLoader, installBetterLeavesForExternalLoader, installGlowingOresForExternalLoader, installRoundTreesForExternalLoader, installCrops3dForExternalLoader };
 }
 
 module.exports = { createShaderStackService };
