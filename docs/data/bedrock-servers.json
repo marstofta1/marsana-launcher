@@ -5,7 +5,7 @@
     "host": "marstral132.aternos.me",
     "bedrockPort": null,
     "javaPort": 25565,
-    "description": "Ücretsiz Aternos sunucusu. Bedrock için Aternos panelinden port ve crossplay ayarlarını kontrol et.",
+    "description": "Ücretsiz Aternos sunucusu. Bedrock için panelden port ve crossplay ayarlarını kontrol et.",
     "dashboardUrl": "https://aternos.org/servers/"
   },
   {
@@ -23,7 +23,7 @@
     "host": "play.ultimismc.com",
     "bedrockPort": null,
     "javaPort": 25565,
-    "description": "Türkiye topluluk sunucusu. Bedrock desteği sunucu ayarına bağlıdır.",
+    "description": "Türkiye topluluk sunucusu.",
     "websiteUrl": "https://ultimismc.com"
   },
   {
