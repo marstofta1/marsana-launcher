@@ -11,7 +11,8 @@
     "pack:win": "node scripts/embed-logo.js && electron-builder --win",
     "pack:linux": "electron-builder --linux",
     "pack:desktop": "electron-builder --mac --win",
-    "verify:release": "node scripts/verify-release-docs.js"
+    "verify:release": "node scripts/verify-release-docs.js",
+    "mobile:sync": "node scripts/sync-mobile-www.js"
   },
   "build": {
     "appId": "com.marsana.launcher",

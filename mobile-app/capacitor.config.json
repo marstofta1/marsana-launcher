@@ -1,0 +1,12 @@
+{
+  "appId": "com.marsana.launcher.mobile",
+  "appName": "Marsana Launcher",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#0d1116"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

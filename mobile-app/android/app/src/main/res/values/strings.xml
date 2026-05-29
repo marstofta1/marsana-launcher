@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Marsana Launcher</string>
+    <string name="title_activity_main">Marsana Launcher</string>
+    <string name="package_name">com.marsana.launcher.mobile</string>
+    <string name="custom_url_scheme">com.marsana.launcher.mobile</string>
+</resources>

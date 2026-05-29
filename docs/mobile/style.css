@@ -209,3 +209,34 @@ a { color: var(--accent); text-decoration: none; font-weight: 600; }
 }
 
 .footer p { margin: 8px 0 0; }
+
+.download-card {
+  text-align: left;
+}
+
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #0d1116;
+}
+
+.install-steps {
+  margin-bottom: 24px;
+}
+
+.steps {
+  margin: 0 0 12px;
+  padding-left: 1.2rem;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.steps li {
+  margin-bottom: 10px;
+}
+
+.steps strong {
+  color: var(--text);
+}

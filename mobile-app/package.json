@@ -1,0 +1,19 @@
+{
+  "name": "marsana-launcher-mobile",
+  "version": "0.1.23",
+  "private": true,
+  "description": "Marsana Launcher — Android Bedrock başlatıcı",
+  "scripts": {
+    "sync:www": "node ../scripts/sync-mobile-www.js",
+    "cap:sync": "npm run sync:www && npx cap sync android",
+    "build:apk": "npm run cap:sync && cd android && ./gradlew assembleRelease",
+    "build:apk:win": "npm run cap:sync && cd android && gradlew.bat assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/core": "^7.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.2.0"
+  }
+}

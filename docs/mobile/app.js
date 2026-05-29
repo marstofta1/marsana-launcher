@@ -19,6 +19,13 @@ function bedrockJoinUrl(name, host, port) {
 }
 
 function openBedrockWithFallback(primaryUrl, fallbackUrl) {
+  const isNative = window.Capacitor?.isNativePlatform?.() === true;
+
+  if (isNative) {
+    window.location.href = primaryUrl;
+    return;
+  }
+
   let hidden = false;
   const onHide = () => {
     hidden = true;
@@ -209,6 +216,7 @@ function wirePlayButton() {
 }
 
 function registerServiceWorker() {
+  if (window.Capacitor?.isNativePlatform?.()) return;
   if (!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
