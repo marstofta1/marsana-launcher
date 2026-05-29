@@ -31,8 +31,10 @@
       }
     ],
     "mac": {
-      "target": ["dmg", "zip"],
-      "category": "public.app-category.games"
+      "target": ["dmg"],
+      "arch": ["universal"],
+      "category": "public.app-category.games",
+      "artifactName": "${productName}-${version}-mac.dmg"
     },
     "win": {
       "target": "nsis",
@@ -40,7 +42,8 @@
     },
     "linux": {
       "target": "AppImage",
-      "category": "Game"
+      "category": "Game",
+      "artifactName": "${productName}-${version}-linux-${arch}.AppImage"
     }
   },
   "dependencies": {
