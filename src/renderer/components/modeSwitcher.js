@@ -27,7 +27,7 @@ export function createModeSwitcher({ root, store }) {
     <div class="mode-switcher" data-role="mode-switcher">
       <button type="button" class="mode-tab active" data-mode="client">
         <span class="mode-tab-title">Marsana Client</span>
-        <span class="mode-tab-sub">Hazır paket — FPS, Fullbright, Voice Chat</span>
+        <span class="mode-tab-sub">Hazır paket — H menüsü, FPS, Fullbright, Voice Chat</span>
       </button>
       <button type="button" class="mode-tab" data-mode="launcher">
         <span class="mode-tab-title">Gelişmiş Launcher</span>

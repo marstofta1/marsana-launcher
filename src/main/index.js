@@ -1,6 +1,7 @@
 'use strict';
 
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const path = require('path');
 
 const { buildContainer } = require('./container');
 const { createMainWindow } = require('./window');
@@ -19,7 +20,10 @@ function focusMainWindow() {
 }
 
 function bootstrap() {
-  const container = buildContainer({ userDataDir: app.getPath('userData') });
+  const repoRoot = app.isPackaged
+    ? path.join(process.resourcesPath)
+    : path.join(__dirname, '..', '..');
+  const container = buildContainer({ userDataDir: app.getPath('userData'), repoRoot });
   registerAllHandlers({ ipcMain, shell, container, getWindow });
 
   app.whenReady().then(() => {

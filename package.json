@@ -1,6 +1,6 @@
 {
   "name": "marsana-launcher",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "description": "Marsana Minecraft Launcher",
   "private": true,
   "main": "src/main/index.js",
@@ -8,11 +8,12 @@
     "start": "electron .",
     "pack": "electron-builder",
     "pack:mac": "electron-builder --mac",
-    "pack:win": "node scripts/embed-logo.js && electron-builder --win",
+    "pack:win": "node scripts/embed-logo.js && node scripts/ensure-client-mod.js && electron-builder --win",
     "pack:linux": "electron-builder --linux",
     "pack:desktop": "electron-builder --mac --win",
     "verify:release": "node scripts/verify-release-docs.js",
-    "mobile:sync": "node scripts/sync-mobile-www.js"
+    "mobile:sync": "node scripts/sync-mobile-www.js",
+    "build:client-mod": "cd marsana-client-mod && gradlew.bat build copyToBundled"
   },
   "build": {
     "appId": "com.marsana.launcher",
@@ -21,6 +22,13 @@
       "src/**/*",
       "package.json",
       "build/icon.png"
+    ],
+    "extraResources": [
+      {
+        "from": "bundled-mods",
+        "to": "bundled-mods",
+        "filter": ["**/*"]
+      }
     ],
     "directories": {
       "buildResources": "build"

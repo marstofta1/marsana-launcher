@@ -1,0 +1,32 @@
+name: Build Marsana Client mod
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'marsana-client-mod/**'
+      - '.github/workflows/build-marsana-client-mod.yml'
+
+jobs:
+  build-mod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Build Marsana Client mod
+        working-directory: marsana-client-mod
+        run: ./gradlew build copyToBundled --no-daemon
+
+      - name: Upload bundled jar artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: marsana-client-mod-jar
+          path: bundled-mods/marsana-client/*.jar
+          if-no-files-found: error

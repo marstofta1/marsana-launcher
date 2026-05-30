@@ -12,8 +12,8 @@ export function createCosmeticsPanel({ root, store }) {
         <span class="cosmetics-badge">Ücretsiz</span>
       </div>
       <p class="hint cosmetics-lead">
-        Pelerin ve görünüm seçenekleri — şimdilik tamamen ücretsiz. Seçimin launcher'da kaydedilir;
-        oyun içi uygulama gelecek güncellemelerde eklenecek.
+        Pelerin ve görünüm seçenekleri — şimdilik tamamen ücretsiz. Seçim launcher'da
+        kaydedilir; oyunda <strong>H</strong> tuşu → Kozmetik sekmesinden de değiştirebilirsin.
       </p>
       <div class="cosmetics-grid" data-role="cosmetics-grid"></div>
     </div>

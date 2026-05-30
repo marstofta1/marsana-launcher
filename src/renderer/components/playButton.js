@@ -32,6 +32,7 @@ export function createPlayButton({ root, store, launchApi }) {
         selectedLoader: loader,
         shaderSlug: state.selectedShader,
         modPresets: {
+          marsanaClientMenu: state.playMode === 'client',
           optifine: !!state.modOptifine,
           shaderFps: !!state.modShaderFps,
           embossedBlocks: !!state.modEmbossedBlocks,
@@ -49,6 +50,8 @@ export function createPlayButton({ root, store, launchApi }) {
                 musicVolume: typeof s.musicVolume === 'number' ? s.musicVolume / 100 : null,
               }
             : null,
+        playMode: state.playMode || 'client',
+        selectedCosmetic: state.selectedCosmetic || 'none',
       });
     } catch (err) {
       store.setState({ statusText: 'Hata: ' + (err.message || err) });

@@ -33,6 +33,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Setup Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Build Marsana Client mod
+        run: cd marsana-client-mod && ./gradlew build copyToBundled --no-daemon
+
       - name: Build Linux AppImage
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -59,6 +68,15 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Setup Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Build Marsana Client mod
+        run: cd marsana-client-mod && ./gradlew build copyToBundled --no-daemon
 
       - name: Build macOS DMG
         env:

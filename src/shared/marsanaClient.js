@@ -25,6 +25,11 @@ export const CLIENT_MOD_PRESET = Object.freeze({
 /** Client modunda kullanıcıya gösterilen özellik özeti */
 export const CLIENT_FEATURES = Object.freeze([
   {
+    id: 'clientMenu',
+    title: 'Marsana Client Menüsü',
+    description: 'Oyunda H tuşu — mod aç/kapa ve ücretsiz kozmetik.',
+  },
+  {
     id: 'shaderFps',
     title: 'Shader + FPS',
     description: 'Sodium + Iris ile yüksek FPS; Complementary Reimagined shader paketi.',
@@ -49,6 +54,9 @@ export const COSMETIC_ITEMS = Object.freeze([
 ]);
 
 export const DEFAULT_COSMETIC = 'none';
+
+/** Oyun içi H menüsü modu — yalnızca Marsana Client modunda */
+export const CLIENT_MENU_MOD = true;
 
 export function isClientMode(playMode) {
   return playMode === PLAY_MODES.CLIENT;

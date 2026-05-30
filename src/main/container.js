@@ -30,7 +30,7 @@ const { createShaderStackService } = require('../core/mods/shaderStackService');
 
 const { createRecommendedServersService } = require('../core/servers/recommendedServers');
 
-function buildContainer({ userDataDir }) {
+function buildContainer({ userDataDir, repoRoot }) {
   const paths = createPaths({ userDataDir });
   paths.ensureBaseDirs();
 
@@ -69,6 +69,7 @@ function buildContainer({ userDataDir }) {
     fabricInstaller,
     modrinthClient,
     mrpackInstaller,
+    repoRoot,
   });
 
   const bedrockLaunchService = createBedrockLaunchService({ logger: logger.child('bedrock') });

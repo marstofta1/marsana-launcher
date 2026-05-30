@@ -6,10 +6,11 @@ const os = require('os');
 const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
+const marsanaClientModService = require('./marsanaClientModService');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 15;
+const SHADER_BUNDLE_VERSION = 16;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -422,6 +423,7 @@ function normalizePresets(p) {
     glowingOres: !!(p && p.glowingOres),
     roundTrees: !!(p && p.roundTrees),
     crops3d: !!(p && p.crops3d),
+    marsanaClientMenu: !!(p && p.marsanaClientMenu),
   };
 }
 
@@ -652,7 +654,8 @@ function presetsMatch(saved, wanted) {
     typeof saved.betterLeaves !== 'boolean' ||
     typeof saved.glowingOres !== 'boolean' ||
     typeof saved.roundTrees !== 'boolean' ||
-    typeof saved.crops3d !== 'boolean'
+    typeof saved.crops3d !== 'boolean' ||
+    typeof saved.marsanaClientMenu !== 'boolean'
   ) {
     return false;
   }
@@ -665,7 +668,8 @@ function presetsMatch(saved, wanted) {
     saved.betterLeaves === wanted.betterLeaves &&
     saved.glowingOres === wanted.glowingOres &&
     saved.roundTrees === wanted.roundTrees &&
-    saved.crops3d === wanted.crops3d
+    saved.crops3d === wanted.crops3d &&
+    saved.marsanaClientMenu === wanted.marsanaClientMenu
   );
 }
 
@@ -700,7 +704,7 @@ function statusEmitter(emit) {
   return (text) => emit && emit.status && emit.status({ text });
 }
 
-function createShaderStackService({ httpClient, fabricInstaller, modrinthClient, mrpackInstaller }) {
+function createShaderStackService({ httpClient, fabricInstaller, modrinthClient, mrpackInstaller, repoRoot }) {
   function cachedReady({ versionDir, modsDir, shaderpacksDir, resourcepacksDir, gameVersion, versionJsonPath, readyPath, modPresets, shaderSlug }) {
     const existing = readBundle(modsDir);
     const expectedPack = modPresets.shaderFps && !modPresets.optifine ? shaderPackLocalName(shaderSlug) : null;
@@ -1543,6 +1547,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename: cached.shaderpacks[0] });
       }
       applyModResourcePackPresets({ gameRoot, gameVersion, presets, resourcepacksDir });
+      if (presets.marsanaClientMenu) {
+        const cfg = marsanaClientModService.readConfig(gameRoot);
+        marsanaClientModService.applyModToggleStates(modsDir, cfg);
+      }
       status(`Mod profili (önbellek): ${resolvedShaderSlug} shader hazır, başlatılıyor...`);
       return { customId: cached.customId, assetIndexId: cached.assetIndexId };
     }
@@ -1591,6 +1599,20 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           jars.push(name);
         }
       }
+    }
+
+    if (presets.marsanaClientMenu && repoRoot) {
+      const menuJar = marsanaClientModService.installBundledMod({
+        repoRoot,
+        modsDir,
+        gameVersion,
+        onNotice: status,
+      });
+      if (menuJar && !jars.includes(menuJar)) {
+        jars.push(menuJar);
+      }
+      const cfg = marsanaClientModService.readConfig(gameRoot);
+      marsanaClientModService.applyModToggleStates(modsDir, cfg);
     }
 
     let resourcepacks = [];

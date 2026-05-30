@@ -10,6 +10,7 @@ const {
   ornitheBlockedVersionMessage,
 } = require('../../shared/ornitheCompatibility');
 const { LauncherError, Codes } = require('../infra/errors');
+const marsanaClientModService = require('../mods/marsanaClientModService');
 
 const MIN_MEM_MB = 1024;
 const DEFAULT_MEM_MB = 2048;
@@ -975,6 +976,12 @@ function createLaunchService({
     }
     ensureGameRoot();
 
+    if (opts.modPresets?.marsanaClientMenu || opts.playMode === 'client') {
+      marsanaClientModService.writeConfig(paths.gameRoot, {
+        cosmetic: opts.selectedCosmetic || 'none',
+      });
+    }
+
     const profile = authService.buildLaunchProfile({
       allowOffline: !!opts.offline,
       overrideName: opts.offlineName,
@@ -991,6 +998,7 @@ function createLaunchService({
       glowingOres: false,
       roundTrees: false,
       crops3d: false,
+      marsanaClientMenu: opts.playMode === 'client',
     };
 
     // Forge installer'ı subprocess olarak çalıştırmak için javaPath'i önceden çöz.

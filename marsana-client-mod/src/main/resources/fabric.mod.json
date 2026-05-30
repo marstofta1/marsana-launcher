@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "marsana-client",
+  "version": "${version}",
+  "name": "Marsana Client",
+  "description": "Marsana Client oyun içi menüsü — H tuşu ile mod ve kozmetik yönetimi.",
+  "authors": ["Marsana"],
+  "contact": {
+    "homepage": "https://marstofta1.github.io/marsana-launcher/"
+  },
+  "license": "MIT",
+  "icon": "assets/marsana-client/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.marsana.client.MarsanaClientMod"]
+  },
+  "mixins": ["marsana-client.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "minecraft": "~26.1.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  },
+  "custom": {
+    "modmenu:api": false
+  }
+}
