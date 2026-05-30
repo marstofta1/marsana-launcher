@@ -13,7 +13,14 @@ import { createRecommendedServers } from './components/recommendedServers.js';
 import { createPlayerProfileCard } from './components/playerProfileCard.js';
 import { createBottomLinks } from './components/bottomLinks.js';
 import { createWebsiteLinksPanel } from './components/websiteLinksPanel.js';
+import { createModeSwitcher, updateBranding } from './components/modeSwitcher.js';
+import { createCosmeticsPanel } from './components/cosmeticsPanel.js';
 import { wireUpdateFlow } from './components/updateFlow.js';
+import {
+  DEFAULT_PLAY_MODE,
+  CLIENT_MOD_PRESET,
+  DEFAULT_COSMETIC,
+} from '../shared/marsanaClient.js';
 import { wireHowToPlayGuide } from './components/howToPlayGuide.js';
 import {
   loadSettings,
@@ -29,20 +36,22 @@ import {
 const initialState = Object.freeze({
   user: null,
   selectedVersion: null,
-  selectedLoader: 'fabric',
-  selectedShader: 'complementary-reimagined',
+  playMode: DEFAULT_PLAY_MODE,
+  selectedCosmetic: DEFAULT_COSMETIC,
+  selectedLoader: CLIENT_MOD_PRESET.selectedLoader,
+  selectedShader: CLIENT_MOD_PRESET.selectedShader,
   memoryMb: 2048,
   offline: false,
   offlineName: '',
-  modOptifine: false,
-  modShaderFps: true,
-  modEmbossedBlocks: false,
-  modVoiceChat: false,
-  modFullbrightUb: false,
-  modBetterLeaves: false,
-  modGlowingOres: false,
-  modRoundTrees: false,
-  modCrops3d: false,
+  modOptifine: CLIENT_MOD_PRESET.modOptifine,
+  modShaderFps: CLIENT_MOD_PRESET.modShaderFps,
+  modEmbossedBlocks: CLIENT_MOD_PRESET.modEmbossedBlocks,
+  modVoiceChat: CLIENT_MOD_PRESET.modVoiceChat,
+  modFullbrightUb: CLIENT_MOD_PRESET.modFullbrightUb,
+  modBetterLeaves: CLIENT_MOD_PRESET.modBetterLeaves,
+  modGlowingOres: CLIENT_MOD_PRESET.modGlowingOres,
+  modRoundTrees: CLIENT_MOD_PRESET.modRoundTrees,
+  modCrops3d: CLIENT_MOD_PRESET.modCrops3d,
   statusText: 'Hazır.',
   progressPercent: 0,
   logLines: [],
@@ -70,13 +79,14 @@ async function bootstrap() {
   }
 
   // "Seçimleri hatırla" açıkken son kayıtlı loader/mod snapshot'unu initial
-  // state'e enjekte et. Kapalıyken (default) Fabric + Shader + FPS seçili gelir.
+  // state'e enjekte et. Kapalıyken varsayılan Marsana Client preset'i gelir.
   const seededState = { ...initialState };
   if (persistedSettings.rememberSelection) {
     const last = loadLastSelection();
     if (last) Object.assign(seededState, last);
   }
   const store = createStore({ ...seededState, settings: persistedSettings });
+  updateBranding(store.getState().playMode);
 
   wireUpdateFlow({
     button: $('update-trigger'),
@@ -99,6 +109,8 @@ async function bootstrap() {
     prevRemember = nowRemember;
     if (!nowRemember) return;
     const snap = {
+      playMode: state.playMode || DEFAULT_PLAY_MODE,
+      selectedCosmetic: state.selectedCosmetic || DEFAULT_COSMETIC,
       selectedLoader: state.selectedLoader,
       selectedShader: state.selectedShader,
       modOptifine: !!state.modOptifine,
@@ -127,6 +139,7 @@ async function bootstrap() {
     createPlayButton({ root: $('play-slot'), store, launchApi: api.launch }),
     createStatusPanel({ root: $('status-slot'), store, events: api.events }),
     createPlayerProfileCard({ root: $('profile-slot'), store }),
+    createCosmeticsPanel({ root: $('cosmetics-slot'), store }),
     createWebsiteLinksPanel({ root: $('website-links-slot'), openExternal: api.openExternal }),
     createRecommendedServers({
       root: $('servers-slot'),
@@ -139,6 +152,8 @@ async function bootstrap() {
   ];
 
   for (const c of components) await c.mount();
+
+  createModeSwitcher({ root: $('mode-switcher-slot'), store }).mount();
 
   wireHowToPlayGuide({
     button: $('how-to-play-trigger'),

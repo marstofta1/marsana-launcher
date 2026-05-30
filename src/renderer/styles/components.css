@@ -671,6 +671,230 @@
   line-height: 1.4;
 }
 
+#cosmetics-slot {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Marsana Client — mod geçişi */
+#mode-switcher-slot {
+  margin-bottom: 20px;
+}
+
+.mode-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mode-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mode-tab:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
+}
+
+.mode-tab.active {
+  background: linear-gradient(145deg, rgba(61, 154, 95, 0.18) 0%, var(--bg-elevated) 100%);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(61, 154, 95, 0.25);
+}
+
+.mode-tab-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mode-tab-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.client-features {
+  margin-top: 16px;
+  padding: 16px 18px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.client-features-lead {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
+.client-features-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.client-feature-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.client-feature-check {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+.client-feature-item strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.client-feature-desc {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Kozmetik paneli */
+.cosmetics-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.cosmetics-header h3 {
+  margin: 0;
+}
+
+.cosmetics-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: rgba(61, 154, 95, 0.2);
+  color: var(--accent);
+  border: 1px solid rgba(61, 154, 95, 0.35);
+}
+
+.cosmetics-lead {
+  margin: 0 0 14px;
+  padding-left: 0;
+}
+
+.cosmetics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cosmetic-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.cosmetic-tile:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
+}
+
+.cosmetic-tile.selected {
+  border-color: var(--accent);
+  background: rgba(61, 154, 95, 0.1);
+  box-shadow: 0 0 0 1px rgba(61, 154, 95, 0.2);
+}
+
+.cosmetic-preview {
+  width: 48px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cosmetic-preview-none {
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+.cosmetic-cape {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 36px;
+  background: var(--cape-color);
+  border-radius: 2px 2px 4px 4px;
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+}
+
+.cosmetic-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.25;
+}
+
+@media (max-width: 900px) {
+  .mode-switcher {
+    grid-template-columns: 1fr;
+  }
+
+  .cosmetics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* Sayfa altı: mod siteleri dış linkleri */
 .bottom-bar {
   display: flex;

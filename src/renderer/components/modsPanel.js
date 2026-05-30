@@ -1,3 +1,4 @@
+import { isClientMode } from '../../shared/marsanaClient.js';
 import {
   shaderFpsSupported,
   embossedBlocksSupported,
@@ -69,7 +70,7 @@ export function createModsPanel({ root, store }) {
   ).join('');
 
   root.innerHTML = `
-    <h3 class="section-title">Mod Yükleyici</h3>
+    <h3 class="section-title" data-role="loader-section-title">Mod Yükleyici</h3>
     <div class="loader-grid" data-role="loader-grid">
       ${loaderRadios}
     </div>
@@ -219,6 +220,8 @@ export function createModsPanel({ root, store }) {
   const modsOptionsGrid = root.querySelector('.mods-options-grid');
   const modsOptionsColRight = root.querySelector('.mods-options-col:last-child');
   const loaderWarning = root.querySelector('[data-role="loader-warning"]');
+  const loaderGrid = root.querySelector('[data-role="loader-grid"]');
+  const loaderSectionTitle = root.querySelector('[data-role="loader-section-title"]');
   const loaderRadioEls = LOADER_OPTIONS.reduce((acc, opt) => {
     acc[opt.value] = root.querySelector(`[data-role="loader-${opt.value}"]`);
     return acc;
@@ -690,6 +693,21 @@ export function createModsPanel({ root, store }) {
   crops3dCb.addEventListener('change', publish);
   shaderPicker.addEventListener('change', publish);
 
+  function applyPlayModeVisibility(state) {
+    const client = isClientMode(state.playMode);
+    const hide = client ? 'none' : '';
+    if (loaderSectionTitle) loaderSectionTitle.style.display = hide;
+    if (loaderGrid) loaderGrid.style.display = hide;
+    if (modsOptionsBox) {
+      modsOptionsBox.style.display = client
+        ? 'none'
+        : (ROWS_BY_LOADER[currentLoader()] || ROWS_BY_LOADER.fabric).rows.length > 0
+          ? ''
+          : 'none';
+    }
+    if (loaderWarning && client) loaderWarning.style.display = 'none';
+  }
+
   function renderFromStore(state) {
     const loader = state.selectedLoader || DEFAULT_LOADER;
     for (const opt of LOADER_OPTIONS) {
@@ -712,6 +730,7 @@ export function createModsPanel({ root, store }) {
     applyLoaderState();
     applyVersionGates();
     updateShaderPickerVisibility();
+    applyPlayModeVisibility(state);
   }
 
   function mount() {
