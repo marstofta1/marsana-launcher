@@ -37,6 +37,10 @@ public final class MarsanaKeybinds {
         if (client.player == null || client.screen != null) {
             return;
         }
-        client.setScreen(new MarsanaMenuScreen());
+        client.execute(() -> {
+            if (client.player != null && client.screen == null) {
+                client.setScreen(new MarsanaMenuScreen());
+            }
+        });
     }
 }

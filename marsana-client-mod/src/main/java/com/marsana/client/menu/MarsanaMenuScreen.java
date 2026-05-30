@@ -104,13 +104,18 @@ public class MarsanaMenuScreen extends Screen {
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        extractBackground(graphics, mouseX, mouseY, delta);
         graphics.centeredText(this.font, this.title, this.width / 2, 12, 0x55FF88);
         String subtitle = activeTab == Tab.MODS
             ? "Modlari ac/kapa — degisiklik sonraki baslatmada gecerli"
             : "Ucretsiz pelerin secenekleri — sadece sen gorursun";
         graphics.centeredText(this.font, subtitle, this.width / 2, 52, 0xAAAAAA);
         super.extractRenderState(graphics, mouseX, mouseY, delta);
+    }
+
+    /** Envanter gibi: dunya acikken blur/panorama yerine seffaf karartma kullan. */
+    @Override
+    public boolean isInGameUi() {
+        return true;
     }
 
     @Override
