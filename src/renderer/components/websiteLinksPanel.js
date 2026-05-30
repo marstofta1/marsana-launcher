@@ -7,6 +7,12 @@ const LINKS = [
     accent: true,
   },
   {
+    label: 'Marsana YouTube',
+    description: 'Resmi video kanalı',
+    url: 'https://www.youtube.com/@Bilmemle',
+    iconImage: 'assets/sites/youtube.svg',
+  },
+  {
     label: 'Minecraft.net',
     description: 'Resmi Minecraft sitesi',
     url: 'https://www.minecraft.net/',
