@@ -9,7 +9,7 @@ const { LauncherError, Codes } = require('../infra/errors');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 14;
+const SHADER_BUNDLE_VERSION = 15;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -73,6 +73,9 @@ function versionMatchesGamePatch(version, gameVersion) {
   const gvs = version && version.game_versions;
   if (!Array.isArray(gvs) || !gvs.includes(gameVersion)) return false;
   if (!/^\d+\.\d+\.\d+$/.test(String(gameVersion))) return true;
+  // 26.x: Iris/Sodium gibi modlar mc26.1.1 jar ile 26.1.2'yi Modrinth'te listeler.
+  // game_versions hedef patch'i içeriyorsa kabul et (1.21.x fallback aday listesinde değil).
+  if (/^26\./.test(String(gameVersion))) return true;
   const tagged = extractMcVersionFromModMeta(version);
   if (!tagged) return true;
   return tagged === gameVersion;
@@ -825,7 +828,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       const looseList = await modrinthClient.listProjectVersions(projectId, {
         loaders: loaderFilter,
       });
-      return pickNewestModrinthVersion(looseList, { ...pickOpts, strictPatch: isMc26 });
+      return pickNewestModrinthVersion(looseList, { ...pickOpts, strictPatch: false });
     }
 
     async function persistVersion(version) {
@@ -860,14 +863,17 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       let version;
       try {
         const candidates = expandLoaderModGameVersion(gameVersion);
-        const versions = await modrinthClient.listProjectVersions(slug, {
+        let versions = await modrinthClient.listProjectVersions(slug, {
           loaders: loaderFilter,
           gameVersions: candidates,
         });
+        if (versions.length === 0 && isMc26) {
+          versions = await modrinthClient.listProjectVersions(slug, { loaders: loaderFilter });
+        }
         version = pickNewestModrinthVersion(versions, {
           gameVersion,
           gameVersionCandidates: candidates,
-          strictPatch: isMc26,
+          strictPatch: false,
         });
         if (!version) {
           if (OPTIONAL_LOADER_MOD_SLUGS.has(slug)) continue;
