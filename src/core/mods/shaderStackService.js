@@ -9,7 +9,7 @@ const { LauncherError, Codes } = require('../infra/errors');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 13;
+const SHADER_BUNDLE_VERSION = 14;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -78,7 +78,24 @@ function versionMatchesGamePatch(version, gameVersion) {
   return tagged === gameVersion;
 }
 
-// 26.x sürümlerde Modrinth listesi gecikebilir (Polytone yalnızca 1.21.11'de).
+// 26.x loader modları için yalnızca gerçek 26.x etiketleri — 1.21.x fallback
+// jar'ları Fabric'te "wrong version is present" hatası verir (Polytone vb.).
+function modrinthLoaderModGameVersionCandidates(gameVersion) {
+  const id = String(gameVersion || '').trim();
+  const candidates = [id];
+  const m26 = id.match(/^26\.(\d+)(?:\.(\d+))?$/);
+  if (m26) {
+    if (m26[2]) candidates.push(`26.${m26[1]}`);
+    return [...new Set(candidates)];
+  }
+  const baseTwo = id.match(/^(\d+\.\d+)$/);
+  if (baseTwo) candidates.push(`${id}.1`);
+  const classicPatch = id.match(/^(\d+\.\d+)\.\d+$/);
+  if (classicPatch) candidates.push(classicPatch[1]);
+  return [...new Set(candidates)];
+}
+
+// 26.x sürümlerde Modrinth listesi gecikebilir (kaynak paketleri için 1.21.x fallback).
 function modrinthClassicFallbacksForGameVersion(gameVersion) {
   const id = String(gameVersion || '').trim();
   const m26 = id.match(/^26\.(\d+)(?:\.\d+)?$/);
@@ -405,8 +422,20 @@ function normalizePresets(p) {
   };
 }
 
-function fullbrightNeedsPolytone(p) {
-  return !!(p.fullbrightUb && p.shaderFps && !p.optifine);
+const OPTIONAL_LOADER_MOD_SLUGS = new Set([POLYTONE_SLUG]);
+
+function polytoneSupportedForGameVersion(gameVersion) {
+  // Polytone Modrinth'te en fazla 1.21.11'e kadar; 26.x için native jar yok.
+  return !/^26\./.test(String(gameVersion || '').trim());
+}
+
+function fullbrightNeedsPolytone(p, gameVersion) {
+  return !!(
+    p.fullbrightUb &&
+    p.shaderFps &&
+    !p.optifine &&
+    polytoneSupportedForGameVersion(gameVersion)
+  );
 }
 
 function betterLeavesNeedsCullLeaves(p) {
@@ -418,7 +447,7 @@ function glowingOresNeedsContinuity(p) {
   return !!(p.glowingOres && !p.optifine && !p.embossedBlocks);
 }
 
-function modrinthSlugsForPresets(p) {
+function modrinthSlugsForPresets(p, gameVersion) {
   if (p.optifine) {
     return [];
   }
@@ -433,7 +462,7 @@ function modrinthSlugsForPresets(p) {
   if (p.shaderFps) SHADER_FPS_SLUGS.forEach(add);
   if (p.embossedBlocks) EMBOSSED_SLUGS.forEach(add);
   if (p.voiceChat) add(VOICE_CHAT_SLUG);
-  if (fullbrightNeedsPolytone(p)) add(POLYTONE_SLUG);
+  if (fullbrightNeedsPolytone(p, gameVersion)) add(POLYTONE_SLUG);
   if (betterLeavesNeedsCullLeaves(p)) add(CULL_LEAVES_SLUG);
   if (glowingOresNeedsContinuity(p)) add(CONTINUITY_SLUG);
   return out;
@@ -684,7 +713,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       !allFilesExist(modsDir, existing.jars) ||
       !allFilesExist(shaderpacksDir, existing.shaderpacks || []) ||
       !allFilesExist(resourcepacksDir, existing.resourcepacks || []) ||
-      (existing.shaderpacks || []).some((name) => /§/.test(String(name)))
+      (existing.shaderpacks || []).some((name) => /§/.test(String(name))) ||
+      (!polytoneSupportedForGameVersion(gameVersion) &&
+        (existing.jars || []).some((name) => /^polytone/i.test(String(name))))
     ) {
       return null;
     }
@@ -743,6 +774,19 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return modrinthGameVersionCandidates(v);
   }
 
+  function expandLoaderModGameVersion(v) {
+    return modrinthLoaderModGameVersionCandidates(v);
+  }
+
+  function removeIncompatiblePolytoneJars(modsDir, gameVersion) {
+    if (polytoneSupportedForGameVersion(gameVersion) || !fs.existsSync(modsDir)) return;
+    for (const entry of fs.readdirSync(modsDir)) {
+      if (/^polytone.*\.jar$/i.test(entry)) {
+        removeIfExists(path.join(modsDir, entry));
+      }
+    }
+  }
+
   // Modlar arası "latest" sürümler bazen birbiriyle uyumsuz olabilir (örn. Iris
   // 1.6.11 Modrinth manifest'inde Sodium 0.5.7'yi gösterir ama jar içindeki
   // breaks Sodium >=0.5.7'yi çakışmalı sayar). Çözüm katmanları:
@@ -756,14 +800,16 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const loaderFilter = Array.isArray(modrinthLoaders) && modrinthLoaders.length
       ? modrinthLoaders
       : ['fabric'];
+    const isMc26 = /^26\./.test(String(gameVersion));
     await fs.promises.mkdir(modsDir, { recursive: true });
+    removeIncompatiblePolytoneJars(modsDir, gameVersion);
     const jars = [];
     const downloadedVersionIds = new Set();
     const downloadedProjectIds = new Set();
 
     async function findContemporaryVersion(projectId, anchorPublishedIso, { strictPatch = false } = {}) {
       const anchorTs = Date.parse(anchorPublishedIso || '') || Date.now();
-      const candidates = expandGameVersion(gameVersion);
+      const candidates = expandLoaderModGameVersion(gameVersion);
       const pickOpts = { anchorTs, gameVersion, gameVersionCandidates: candidates };
       const strictList = await modrinthClient.listProjectVersions(projectId, {
         loaders: loaderFilter,
@@ -772,19 +818,14 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       const strictPick = pickNewestModrinthVersion(strictList, { ...pickOpts, strictPatch });
       if (strictPick) return strictPick;
 
-      if (strictPatch && /^26\./.test(String(gameVersion))) {
-        const relaxedPick = pickNewestModrinthVersion(strictList, { ...pickOpts, strictPatch: false });
-        if (relaxedPick) return relaxedPick;
-      }
-
-      if (!/^26\./.test(String(gameVersion)) && /^\d+\.\d+\.\d+$/.test(String(gameVersion))) {
+      if (!isMc26 && /^\d+\.\d+\.\d+$/.test(String(gameVersion))) {
         return null;
       }
 
       const looseList = await modrinthClient.listProjectVersions(projectId, {
         loaders: loaderFilter,
       });
-      return pickNewestModrinthVersion(looseList, { ...pickOpts, strictPatch: false });
+      return pickNewestModrinthVersion(looseList, { ...pickOpts, strictPatch: isMc26 });
     }
 
     async function persistVersion(version) {
@@ -818,7 +859,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     for (const slug of slugs) {
       let version;
       try {
-        const candidates = expandGameVersion(gameVersion);
+        const candidates = expandLoaderModGameVersion(gameVersion);
         const versions = await modrinthClient.listProjectVersions(slug, {
           loaders: loaderFilter,
           gameVersions: candidates,
@@ -826,15 +867,17 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         version = pickNewestModrinthVersion(versions, {
           gameVersion,
           gameVersionCandidates: candidates,
-          strictPatch: false,
+          strictPatch: isMc26,
         });
         if (!version) {
+          if (OPTIONAL_LOADER_MOD_SLUGS.has(slug)) continue;
           throw new LauncherError(
             Codes.MODRINTH_NOT_FOUND,
             `Modrinth: "${slug}" için uygun sürüm bulunamadı.`
           );
         }
       } catch (err) {
+        if (OPTIONAL_LOADER_MOD_SLUGS.has(slug)) continue;
         if (err && err.code === Codes.MODRINTH_NOT_FOUND) {
           throw new LauncherError(
             Codes.MODRINTH_NOT_FOUND,
@@ -1263,7 +1306,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       ensureFileResourcePackInOptions(gameRoot, resourcepacks[0]);
     }
 
-    if (includeShader && !includeOptifine && (loader === 'fabric' || loader === 'quilt')) {
+    if (includeShader && !includeOptifine && (loader === 'fabric' || loader === 'quilt') && polytoneSupportedForGameVersion(gameVersion)) {
       status('Fullbright + Shader için PolyTone indiriliyor...');
       try {
         await downloadModsFromSlugs({
@@ -1510,6 +1553,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
     status('Mod profili: seçilen modlar indiriliyor...');
     cleanupPreviousBundle({ modsDir, shaderpacksDir, resourcepacksDir });
+    removeIncompatiblePolytoneJars(modsDir, gameVersion);
 
     let optifineMeta = null;
     if (presets.optifine) {
@@ -1521,7 +1565,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       });
     }
 
-    const slugs = modrinthSlugsForPresets(presets);
+    const slugs = modrinthSlugsForPresets(presets, gameVersion);
     let jars = slugs.length ? await downloadModsFromSlugs({ modsDir, gameVersion, slugs }) : [];
     if (optifineMeta && Array.isArray(optifineMeta.jarNames)) {
       const seen = new Set(jars);
@@ -1648,9 +1692,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       );
     } else if (presets.fullbrightUb) {
       status(
-        fullbrightNeedsPolytone(presets)
+        fullbrightNeedsPolytone(presets, gameVersion)
           ? 'Fullbright UB kuruldu. Kaynak paketi etkinleştirildi; Sodium/Iris ile PolyTone da yüklendi.'
-          : 'Fullbright UB kuruldu. Kaynak paketi indirildi ve Seçenekler → Kaynak paketleri bölümünde etkinleştirildi.'
+          : presets.shaderFps && !presets.optifine && !polytoneSupportedForGameVersion(gameVersion)
+            ? 'Fullbright UB kuruldu. 26.x sürümünde PolyTone henüz yok — kaynak paketi etkin; tam parlaklık Sodium/Iris ile sınırlı olabilir.'
+            : 'Fullbright UB kuruldu. Kaynak paketi indirildi ve Seçenekler → Kaynak paketleri bölümünde etkinleştirildi.'
       );
     } else if (presets.betterLeaves) {
       status(

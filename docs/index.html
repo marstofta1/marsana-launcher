@@ -79,22 +79,22 @@
         kurabilirsin. Windows, macOS ve Linux için tek tıkla indirme; başka bir bağımlılık gerekmez.
       </p>
       <div class="download-grid">
-        <a class="download-card available" href="downloads/Marsana%20Launcher-0.1.25-win-x64.exe" download="Marsana-Launcher-0.1.25-Setup.exe">
+        <a class="download-card available" href="downloads/Marsana%20Launcher-0.1.26-win-x64.exe" download="Marsana-Launcher-0.1.26-Setup.exe">
           <div class="download-icon">🪟</div>
           <h3>Windows</h3>
-          <p><code>.exe</code> kurucu · v0.1.25 · 80 MB · Marsana Client · Windows 10/11 (64 bit)</p>
+          <p><code>.exe</code> kurucu · v0.1.26 · 80 MB · Marsana Client · Windows 10/11 (64 bit)</p>
           <span class="dl-badge ready">Şimdi indir</span>
         </a>
-        <a class="download-card available" href="https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.25/Marsana.Launcher-0.1.25-mac.dmg" download="Marsana-Launcher-0.1.25-mac.dmg">
+        <a class="download-card available" href="https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.26/Marsana.Launcher-0.1.26-mac.dmg" download="Marsana-Launcher-0.1.26-mac.dmg">
           <div class="download-icon">🍎</div>
           <h3>macOS</h3>
-          <p><code>.dmg</code> paketi · v0.1.25 · Marsana Client · macOS 11+ (Intel + Apple Silicon)</p>
+          <p><code>.dmg</code> paketi · v0.1.26 · Marsana Client · macOS 11+ (Intel + Apple Silicon)</p>
           <span class="dl-badge ready">Şimdi indir</span>
         </a>
-        <a class="download-card available" href="https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.25/Marsana.Launcher-0.1.25-linux.AppImage" download="Marsana-Launcher-0.1.25-linux.AppImage">
+        <a class="download-card available" href="https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.26/Marsana.Launcher-0.1.26-linux.AppImage" download="Marsana-Launcher-0.1.26-linux.AppImage">
           <div class="download-icon">🐧</div>
           <h3>Linux</h3>
-          <p><code>.AppImage</code> · v0.1.25 · Marsana Client · x86_64 (Ubuntu, Fedora, Arch, …)</p>
+          <p><code>.AppImage</code> · v0.1.26 · Marsana Client · x86_64 (Ubuntu, Fedora, Arch, …)</p>
           <span class="dl-badge ready">Şimdi indir</span>
         </a>
         <a class="download-card available" href="https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-android.apk" download="Marsana-Launcher-0.1.24-android.apk">
@@ -271,8 +271,17 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v0.1.25 — Marsana Client</span>
+            <span class="release-version">v0.1.26 — 26.x Polytone düzeltmesi</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li><strong>26.1.2 başlatma hatası:</strong> Fullbright + Shader açıkken uyumsuz Polytone (1.21.11) artık 26.x sürümlerine kurulmuyor; Fabric "Incompatible mods" çökmesi giderildi.</li>
+            <li>Eski Polytone jar'ları otomatik temizlenir; Fullbright UB kaynak paketi Sodium/Iris ile yine etkinleştirilir.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v0.1.25 — Marsana Client</span>
           </div>
           <ul class="release-changes">
             <li><strong>Marsana Client modu:</strong> Varsayılan hazır paket — Fabric + Shader + FPS (Sodium + Iris), Fullbright UB ve Voice Chat tek tıkla.</li>
@@ -323,7 +332,7 @@
             <span class="release-version">v0.1.22</span>
           </div>
           <ul class="release-changes">
-            <li><strong>Polytone (26.x):</strong> Minecraft 26.1.2'de Modrinth'te henüz listelenmeyen Polytone için <strong>1.21.11</strong> uyumlu sürüm otomatik seçiliyor; Fullbright UB + Shader ile başlatma hatası giderildi.</li>
+            <li><strong>Polytone (26.x):</strong> Minecraft 26.x'te Polytone Modrinth'te yok; 1.21.11 fallback jar'ı Fabric uyumsuzluk hatası veriyordu — v0.1.26 ile 26.x'te Polytone kurulmuyor.</li>
           </ul>
         </li>
         <li class="release">
