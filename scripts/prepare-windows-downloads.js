@@ -9,6 +9,7 @@ const root = path.join(__dirname, '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const version = pkg.version;
 const downloadsDir = path.join(root, 'docs', 'downloads');
+const distDir = path.join(root, 'dist');
 
 const PLATFORMS = [
   {
@@ -45,7 +46,36 @@ const PLATFORMS = [
   },
 ];
 
+/** electron-builder ciktisini indirme sitesi klasorune kopyala. */
+function syncDistArtifacts() {
+  const exeName = `Marsana Launcher-${version}-win-x64.exe`;
+  const distExe = path.join(distDir, exeName);
+  if (!fs.existsSync(distExe)) {
+    return null;
+  }
+
+  fs.mkdirSync(downloadsDir, { recursive: true });
+  const destExe = path.join(downloadsDir, exeName);
+  fs.copyFileSync(distExe, destExe);
+
+  const distBlockmap = `${distExe}.blockmap`;
+  if (fs.existsSync(distBlockmap)) {
+    fs.copyFileSync(distBlockmap, `${destExe}.blockmap`);
+  }
+
+  const distLatest = path.join(distDir, 'latest.yml');
+  if (fs.existsSync(distLatest)) {
+    fs.copyFileSync(distLatest, path.join(downloadsDir, 'latest.yml'));
+  }
+
+  console.log(`[windows] dist -> docs/downloads: ${exeName}`);
+  return exeName;
+}
+
 function findSourceExe() {
+  const synced = syncDistArtifacts();
+  if (synced) return synced;
+
   const primary = path.join(downloadsDir, `Marsana Launcher-${version}-win-x64.exe`);
   if (fs.existsSync(primary)) return path.basename(primary);
   const fallback = path.join(downloadsDir, `Marsana Launcher-${version}-win10-x64.exe`);
