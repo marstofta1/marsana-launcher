@@ -326,9 +326,27 @@ function createLaunchService({
   // .jar'a geri alıyoruz.
   const STASHED_FABRIC_SUFFIX = '.marsana-stashed-fabric';
   const STASHED_FORGE_SUFFIX = '.marsana-stashed-forge';
+  const LOADER_STATE_FILE = '.marsana-active-loader.json';
 
   function modsDir() {
     return path.join(paths.gameRoot, 'mods');
+  }
+
+  function readActiveLoaderState(dir) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(path.join(dir, LOADER_STATE_FILE), 'utf8'));
+      return raw && raw.loader ? String(raw.loader) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeActiveLoaderState(dir, loader) {
+    fs.writeFileSync(
+      path.join(dir, LOADER_STATE_FILE),
+      JSON.stringify({ loader, updatedAt: Date.now() }, null, 2),
+      'utf8'
+    );
   }
 
   // Launcher ayarlarında verilen ses seviyelerini Minecraft `options.txt`'e
@@ -414,15 +432,15 @@ function createLaunchService({
     purgeManagedOptifineJars(dir);
 
     // Forge moduna geçişte shader mod artikalarını (active + stash hepsi) sil.
-    // installShadersForExternalLoader istenirse uyumlu yeni sürümü indirir;
-    // istenmezse Forge boş başlar — eski uyumsuz jar'lar duplicate veya javafml
-    // sürüm uyuşmazlığı yaratmaz.
     if (target === 'forge') {
       purgeForgeShaderArtifacts(dir);
     }
 
-    // Geçilen loader Fabric ise: şu anda aktif .jar'lar Forge'a ait → STASHED_FORGE ile sakla,
-    // sonra STASHED_FABRIC olanları .jar olarak geri al. Tersi ise tam tersi.
+    const previous = readActiveLoaderState(dir);
+    if (previous === target) {
+      return;
+    }
+
     const stashSuffixForCurrent = target === 'fabric' ? STASHED_FORGE_SUFFIX : STASHED_FABRIC_SUFFIX;
     const restoreSuffix = target === 'fabric' ? STASHED_FABRIC_SUFFIX : STASHED_FORGE_SUFFIX;
 
@@ -435,6 +453,8 @@ function createLaunchService({
       const restored = entry.slice(0, -restoreSuffix.length);
       fs.renameSync(path.join(dir, entry), path.join(dir, restored));
     }
+
+    writeActiveLoaderState(dir, target);
   }
 
   async function buildForgeSpec({ version, includeOptifine, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, javaPath, emit }) {
@@ -879,8 +899,9 @@ function createLaunchService({
       return buildLegacyFabricSpec({ version, emit });
     }
     if (loader === 'fabric-beta') {
+      const plan = await buildFabricBetaSpec({ version, modPresets, shaderSlug, emit });
       applyLoaderModsState('fabric');
-      return buildFabricBetaSpec({ version, modPresets, shaderSlug, emit });
+      return plan;
     }
     if (loader === 'ornithe') {
       applyLoaderModsState('fabric');
@@ -948,8 +969,9 @@ function createLaunchService({
         extra: {},
       };
     }
+    const fabricPlan = await buildFabricSpec({ version, modPresets, shaderSlug, emit });
     applyLoaderModsState('fabric');
-    return buildFabricSpec({ version, modPresets, shaderSlug, emit });
+    return fabricPlan;
   }
 
   function resolveJavaPathSyncFallback() {

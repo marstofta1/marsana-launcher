@@ -91,6 +91,7 @@ function applyModToggleStates(modsDir, config) {
     if (typeof enabled !== 'boolean') continue;
     if (fileName.startsWith('feature:')) continue;
     if (fileName.startsWith(MOD_JAR_PREFIX)) continue;
+    if (/^cloth-config/i.test(fileName)) continue;
     const enabledPath = path.join(modsDir, fileName);
     const disabledPath = path.join(modsDir, `${fileName}.disabled`);
     try {

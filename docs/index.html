@@ -275,8 +275,18 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v0.1.36 — cloth-config önbellek düzeltmesi</span>
+            <span class="release-version">v0.1.37 — cloth-config stash düzeltmesi</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li><strong>Kök neden:</strong> Her Fabric başlatmada mod jar'ları yanlışlıkla gizleniyordu (stash); <code>cloth-config</code> kayboluyordu.</li>
+            <li><code>cloth-config</code> artık launcher paketine gömülü — internet olmasa bile kurulur.</li>
+            <li>Yanlış stash'lenmiş modlar otomatik geri yüklenir.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v0.1.36 — cloth-config önbellek düzeltmesi</span>
           </div>
           <ul class="release-changes">
             <li><strong>Kök neden giderildi:</strong> Shader paketi onarımı mod listesini yenilemeden önbellek sürümünü yükseltiyordu; <code>cloth-config</code> hiç indirilmeden oyun başlatılabiliyordu.</li>

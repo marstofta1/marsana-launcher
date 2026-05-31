@@ -18,7 +18,8 @@ import java.util.Set;
 public final class ModToggleManager {
     private static final Set<String> PROTECTED_PREFIXES = Set.of(
         "marsana-client",
-        "fabric-api"
+        "fabric-api",
+        "cloth-config"
     );
 
     public static final String FULLBRIGHT_FEATURE_ID = "feature:fullbright-ub";

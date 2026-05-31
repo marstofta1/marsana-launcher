@@ -7,11 +7,12 @@ const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
 const marsanaClientModService = require('./marsanaClientModService');
+const hudDepsService = require('./hudDepsService');
 const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../shared/clientHudModRegistry');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 26;
+const SHADER_BUNDLE_VERSION = 27;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -659,10 +660,7 @@ function ensureFileResourcePackInOptions(gameRoot, filename) {
 }
 
 function clothConfigJarPresent(modsDir) {
-  if (!fs.existsSync(modsDir)) return false;
-  return fs.readdirSync(modsDir).some(
-    (f) => /^cloth-config/i.test(f) && f.endsWith('.jar') && !f.endsWith('.jar.disabled')
-  );
+  return hudDepsService.clothConfigJarPresent(modsDir);
 }
 
 function clientHudDependenciesOk(modsDir, modPresets) {
@@ -734,6 +732,41 @@ function statusEmitter(emit) {
 }
 
 function createShaderStackService({ httpClient, fabricInstaller, modrinthClient, mrpackInstaller, repoRoot }) {
+  function ensureClothConfigForHud({ modsDir, gameVersion, status, jars }) {
+    hudDepsService.recoverFabricModsFromMisstash(modsDir);
+    hudDepsService.reenableClothConfigJar(modsDir);
+    let out = Array.isArray(jars) ? jars.slice() : [];
+    if (repoRoot) {
+      const bundled = hudDepsService.installBundledClothConfig({
+        repoRoot,
+        modsDir,
+        gameVersion,
+        onNotice: status,
+      });
+      if (bundled && !out.includes(bundled)) out.push(bundled);
+    }
+    return out;
+  }
+
+  async function ensureClothConfigForHudAsync({ modsDir, gameVersion, status, jars }) {
+    let out = ensureClothConfigForHud({ modsDir, gameVersion, status, jars });
+    if (!clothConfigJarPresent(modsDir)) {
+      const requiredJars = await downloadModsFromSlugs({
+        modsDir,
+        gameVersion,
+        slugs: [...CLIENT_HUD_REQUIRED_SLUGS],
+      });
+      out = [...new Set([...out, ...requiredJars])];
+    }
+    if (!clothConfigJarPresent(modsDir)) {
+      throw new LauncherError(
+        Codes.MODRINTH_NOT_FOUND,
+        'cloth-config kurulamadi. BetterF3 ve Visuality icin gerekli — internet baglantinizi kontrol edip tekrar deneyin.'
+      );
+    }
+    return out;
+  }
+
   function cachedReady({ versionDir, modsDir, shaderpacksDir, resourcepacksDir, gameVersion, versionJsonPath, readyPath, modPresets, shaderSlug }) {
     const existing = readBundle(modsDir);
     const expectedPack = modPresets.shaderFps && !modPresets.optifine ? shaderPackLocalName(shaderSlug) : null;
@@ -1554,6 +1587,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const versionJsonPath = path.join(versionDir, `${customId}.json`);
     const readyPath = path.join(versionDir, READY_FILE);
 
+    hudDepsService.recoverFabricModsFromMisstash(modsDir);
+
     repairLegacyShaderPack({
       gameRoot,
       shaderpacksDir,
@@ -1577,16 +1612,15 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename: cached.shaderpacks[0] });
       }
       applyModResourcePackPresets({ gameRoot, gameVersion, presets, resourcepacksDir });
-      if (presets.clientHudPack && !clothConfigJarPresent(modsDir)) {
-        status('Client HUD: cloth-config eksik, indiriliyor...');
-        const requiredJars = await downloadModsFromSlugs({
+      if (presets.clientHudPack) {
+        let bundle = readBundle(modsDir);
+        const mergedJars = await ensureClothConfigForHudAsync({
           modsDir,
           gameVersion,
-          slugs: [...CLIENT_HUD_REQUIRED_SLUGS],
+          status,
+          jars: bundle && bundle.jars,
         });
-        const bundle = readBundle(modsDir);
         if (bundle) {
-          const mergedJars = [...new Set([...(bundle.jars || []), ...requiredJars])];
           writeBundle(modsDir, { ...bundle, jars: mergedJars, updatedAt: Date.now() });
         }
       }
@@ -1627,14 +1661,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       status('Client HUD paketi: minimap ve client modlari indiriliyor (uyumlu olanlar)...');
     }
     let jars = slugs.length ? await downloadModsFromSlugs({ modsDir, gameVersion, slugs }) : [];
-    if (presets.clientHudPack && !clothConfigJarPresent(modsDir)) {
-      status('Client HUD: cloth-config dogrulaniyor...');
-      const requiredJars = await downloadModsFromSlugs({
-        modsDir,
-        gameVersion,
-        slugs: [...CLIENT_HUD_REQUIRED_SLUGS],
-      });
-      jars = [...new Set([...jars, ...requiredJars])];
+    if (presets.clientHudPack) {
+      jars = await ensureClothConfigForHudAsync({ modsDir, gameVersion, status, jars });
     }
     if (optifineMeta && Array.isArray(optifineMeta.jarNames)) {
       const seen = new Set(jars);
