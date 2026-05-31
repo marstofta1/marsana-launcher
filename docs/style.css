@@ -283,6 +283,13 @@ code {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.35);
 }
+.android-grid {
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+}
+.download-card.android-card.detected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.35);
+}
 .platform-manifest-note {
   margin: -8px 0 20px;
   color: var(--text-dim);

@@ -15,7 +15,8 @@
     "prepare:win-downloads": "node scripts/prepare-windows-downloads.js",
     "prepare:mac-downloads": "node scripts/prepare-macos-downloads.js",
     "prepare:linux-downloads": "node scripts/prepare-linux-downloads.js",
-    "prepare:downloads": "node scripts/prepare-windows-downloads.js && node scripts/prepare-macos-downloads.js && node scripts/prepare-linux-downloads.js",
+    "prepare:android-downloads": "node scripts/prepare-android-downloads.js",
+    "prepare:downloads": "node scripts/prepare-windows-downloads.js && node scripts/prepare-macos-downloads.js && node scripts/prepare-linux-downloads.js && node scripts/prepare-android-downloads.js",
     "version:resolve": "node scripts/resolve-release-version.js",
     "mobile:sync": "node scripts/sync-mobile-www.js",
     "build:client-mod": "cd marsana-client-mod && gradlew.bat build copyToBundled"

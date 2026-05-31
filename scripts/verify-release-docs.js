@@ -14,6 +14,7 @@ const indexPath = path.join(root, 'docs', 'index.html');
 const windowsManifestPath = path.join(root, 'docs', 'downloads', 'windows-manifest.json');
 const macosManifestPath = path.join(root, 'docs', 'downloads', 'macos-manifest.json');
 const linuxManifestPath = path.join(root, 'docs', 'downloads', 'linux-manifest.json');
+const androidManifestPath = path.join(root, 'docs', 'downloads', 'android-manifest.json');
 const exeName = `Marsana Launcher-${version}-win-x64.exe`;
 
 const errors = [];
@@ -82,6 +83,21 @@ if (!fs.existsSync(linuxManifestPath)) {
   }
 }
 
+if (!fs.existsSync(androidManifestPath)) {
+  errors.push('docs/downloads/android-manifest.json bulunamadı (prepare:android-downloads çalıştırın).');
+} else {
+  const manifest = JSON.parse(fs.readFileSync(androidManifestPath, 'utf8'));
+  if (manifest.version !== version) {
+    errors.push(`android-manifest.json sürümü (${manifest.version}) package.json ile eşleşmiyor.`);
+  }
+  if (!manifest.sourceUrl) {
+    errors.push('android-manifest.json sourceUrl eksik.');
+  }
+  if (!Array.isArray(manifest.platforms) || manifest.platforms.length === 0) {
+    errors.push('android-manifest.json platform listesi bos.');
+  }
+}
+
 if (fs.existsSync(indexPath)) {
   const html = fs.readFileSync(indexPath, 'utf8');
   if (!html.includes('windows-download-grid')) {
@@ -101,6 +117,12 @@ if (fs.existsSync(indexPath)) {
   }
   if (!html.includes('download-linux.js')) {
     errors.push('docs/index.html download-linux.js script\'i içermiyor.');
+  }
+  if (!html.includes('android-download-grid')) {
+    errors.push('docs/index.html Android indirme grid\'i içermiyor.');
+  }
+  if (!html.includes('download-android.js')) {
+    errors.push('docs/index.html download-android.js script\'i içermiyor.');
   }
   if (!html.includes(`v${version}`)) {
     errors.push(`docs/index.html sürüm etiketi v${version} içermiyor.`);
