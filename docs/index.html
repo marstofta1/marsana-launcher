@@ -76,7 +76,7 @@
       <h2>İndir</h2>
       <p>
         Marsana Launcher'ın en güncel sürümünü aşağıdan işletim sistemine uygun paketi indirerek
-        kurabilirsin. Windows için sürümünüze uygun kurucuyu seçin; macOS, Linux ve mobil paketler aşağıdadır.
+        kurabilirsin. Windows ve macOS için sürümünüze uygun paketi seçin; Linux ve mobil paketler aşağıdadır.
       </p>
 
       <h3 class="download-platform-heading">Windows (64 bit)</h3>
@@ -87,14 +87,15 @@
       </p>
       <div id="windows-download-grid" class="download-grid windows-grid" aria-label="Windows sürüm indirmeleri"></div>
 
+      <h3 class="download-platform-heading">macOS</h3>
+      <p class="download-platform-desc">
+        macOS 15 Sequoia, 14 Sonoma, 13 Ventura, 12 Monterey veya 11 Big Sur için indirme kartları.
+        Paket <strong>Intel + Apple Silicon</strong> universal <code>.dmg</code> dosyasıdır.
+      </p>
+      <div id="macos-download-grid" class="download-grid macos-grid" aria-label="macOS sürüm indirmeleri"></div>
+
       <h3 class="download-platform-heading">Diğer platformlar</h3>
       <div class="download-grid">
-        <a class="download-card available" href="https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-mac.dmg" download="Marsana-Launcher-0.1.27-mac.dmg">
-          <div class="download-icon">🍎</div>
-          <h3>macOS</h3>
-          <p><code>.dmg</code> paketi · v0.1.27 · Marsana Client · macOS 11+ (Intel + Apple Silicon)</p>
-          <span class="dl-badge ready">Şimdi indir</span>
-        </a>
         <a class="download-card available" href="https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-linux.AppImage" download="Marsana-Launcher-0.1.27-linux.AppImage">
           <div class="download-icon">🐧</div>
           <h3>Linux</h3>
@@ -116,8 +117,8 @@
       </div>
       <p class="download-note">
         Windows kurucuları bu siteden doğrudan indirilir (sürümünüze uygun kartı seçin).
-        Güncelleme kanalı varsayılan olarak <code>win-x64</code> kurucusunu kullanır.
-        macOS ve Linux paketleri GitHub Releases üzerinden sunulur (dosya boyutu nedeniyle).
+        macOS paketleri GitHub Releases üzerinden sunulur (sürümünüze uygun kartı seçin).
+        Linux paketleri GitHub Releases üzerinden sunulur.
         Telefon için
         <a href="mobile/index.html">Android APK</a> veya
         <a href="https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-ios.ipa">iOS IPA (v0.1.24)</a>
@@ -707,6 +708,7 @@
   </footer>
 
   <script src="download-windows.js"></script>
+  <script src="download-macos.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
