@@ -1,6 +1,6 @@
 {
   "name": "marsana-launcher",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "description": "Marsana Minecraft Launcher",
   "private": true,
   "main": "src/main/index.js",
@@ -12,6 +12,7 @@
     "pack:linux": "electron-builder --linux",
     "pack:desktop": "electron-builder --mac --win",
     "verify:release": "node scripts/verify-release-docs.js",
+    "version:resolve": "node scripts/resolve-release-version.js",
     "mobile:sync": "node scripts/sync-mobile-www.js",
     "build:client-mod": "cd marsana-client-mod && gradlew.bat build copyToBundled"
   },

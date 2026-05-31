@@ -3,8 +3,12 @@
 const fs = require('fs');
 const path = require('path');
 
+const { assertPublishableVersion } = require('./resolve-release-version');
+
 const root = path.join(__dirname, '..');
-const version = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version;
+const version = assertPublishableVersion(
+  JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version
+);
 const latestYmlPath = path.join(root, 'docs', 'downloads', 'latest.yml');
 const indexPath = path.join(root, 'docs', 'index.html');
 const exeName = `Marsana Launcher-${version}-win-x64.exe`;
