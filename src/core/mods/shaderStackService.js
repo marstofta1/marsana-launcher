@@ -10,7 +10,7 @@ const marsanaClientModService = require('./marsanaClientModService');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 17;
+const SHADER_BUNDLE_VERSION = 18;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -577,7 +577,17 @@ function writeResourcePacksLine(optionsPath, entries) {
 }
 
 function applyModResourcePackPresets({ gameRoot, gameVersion, presets, resourcepacksDir }) {
-  const p = normalizePresets(presets);
+  let p = normalizePresets(presets);
+  if (
+    p.fullbrightUb &&
+    !marsanaClientModService.isFeatureEnabled(
+      gameRoot,
+      marsanaClientModService.FULLBRIGHT_FEATURE_ID,
+      true
+    )
+  ) {
+    p = { ...p, fullbrightUb: false };
+  }
   const files = modResourcePackFilenamesForPresets(p);
   const needContinuity = continuityResourcePacksNeeded(p);
   if (files.length === 0 && !needContinuity) return;

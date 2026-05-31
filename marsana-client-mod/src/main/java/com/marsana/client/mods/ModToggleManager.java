@@ -20,40 +20,110 @@ public final class ModToggleManager {
         "fabric-api"
     );
 
+    public static final String FULLBRIGHT_FEATURE_ID = "feature:fullbright-ub";
+
     private ModToggleManager() {}
 
     public record ModEntry(String fileName, String displayName, boolean enabled, boolean protectedMod) {}
 
+    public enum ToggleOutcome {
+        /** Hem tercih kaydedildi hem anlik etki (veya dosya guncellendi). */
+        APPLIED,
+        /** Tercih kaydedildi; Sodium gibi modlar sonraki baslatmada jar ile kapanir. */
+        SAVED_RESTART,
+        /** Korunan mod veya hata. */
+        BLOCKED
+    }
+
+    public record ToggleResult(ToggleOutcome outcome, boolean runtimeApplied, boolean fileApplied) {}
+
     public static List<ModEntry> listMods() {
         Path modsDir = FabricLoader.getInstance().getGameDir().resolve("mods");
         List<ModEntry> out = new ArrayList<>();
-        if (!Files.isDirectory(modsDir)) {
-            return out;
+        if (Files.isDirectory(modsDir)) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(modsDir)) {
+                for (Path p : stream) {
+                    String name = p.getFileName().toString();
+                    if (!name.endsWith(".jar") && !name.endsWith(".jar.disabled")) {
+                        continue;
+                    }
+                    boolean fileDisabled = name.endsWith(".jar.disabled");
+                    String baseName = fileDisabled ? name.substring(0, name.length() - ".disabled".length()) : name;
+                    boolean enabled = MarsanaConfigManager.isModEnabled(baseName);
+                    boolean protectedMod = isProtected(baseName);
+                    out.add(new ModEntry(baseName, friendlyName(baseName), enabled, protectedMod));
+                }
+            } catch (IOException ignored) {
+            }
         }
 
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(modsDir)) {
-            for (Path p : stream) {
-                String name = p.getFileName().toString();
-                if (!name.endsWith(".jar") && !name.endsWith(".jar.disabled")) {
-                    continue;
-                }
-                boolean disabled = name.endsWith(".jar.disabled");
-                String baseName = disabled ? name.substring(0, name.length() - ".disabled".length()) : name;
-                boolean enabled = !disabled && MarsanaConfigManager.isModEnabled(baseName);
-                boolean protectedMod = isProtected(baseName);
-                out.add(new ModEntry(baseName, friendlyName(baseName), enabled, protectedMod));
-            }
-        } catch (IOException ignored) {
+        if (hasFullbrightPack()) {
+            boolean enabled = MarsanaConfigManager.isModEnabled(FULLBRIGHT_FEATURE_ID);
+            out.add(new ModEntry(FULLBRIGHT_FEATURE_ID, "Fullbright UB", enabled, false));
         }
 
         out.sort(Comparator.comparing(ModEntry::displayName));
         return out;
     }
 
-    public static boolean toggleMod(String fileName, boolean enable) {
+    public static ToggleResult toggleMod(String fileName, boolean enable) {
         if (isProtected(fileName)) {
-            return false;
+            return new ToggleResult(ToggleOutcome.BLOCKED, false, false);
         }
+
+        if (FULLBRIGHT_FEATURE_ID.equals(fileName)) {
+            MarsanaConfigManager.setModEnabled(fileName, enable);
+            boolean runtime = RuntimeModControl.applyFullbrightFeature(enable);
+            return new ToggleResult(
+                runtime ? ToggleOutcome.APPLIED : ToggleOutcome.SAVED_RESTART,
+                runtime,
+                false
+            );
+        }
+
+        MarsanaConfigManager.setModEnabled(fileName, enable);
+        boolean runtime = RuntimeModControl.apply(fileName, enable);
+        boolean fileApplied = syncJarFileState(fileName, enable);
+
+        if (runtime || fileApplied) {
+            return new ToggleResult(ToggleOutcome.APPLIED, runtime, fileApplied);
+        }
+        return new ToggleResult(ToggleOutcome.SAVED_RESTART, false, false);
+    }
+
+    public static void applyPendingFileToggles() {
+        Path modsDir = FabricLoader.getInstance().getGameDir().resolve("mods");
+        if (!Files.isDirectory(modsDir)) {
+            return;
+        }
+        for (var entry : MarsanaConfigManager.get().modStates.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith("feature:") || isProtected(key)) {
+                continue;
+            }
+            Boolean enabled = entry.getValue();
+            if (enabled == null) {
+                continue;
+            }
+            syncJarFileState(key, enabled);
+        }
+    }
+
+    /** Oturum basinda kayitli acik/kapali tercihleri oyuna uygula. */
+    public static void applyRuntimeFromConfig() {
+        for (ModEntry entry : listMods()) {
+            if (entry.protectedMod()) {
+                continue;
+            }
+            if (FULLBRIGHT_FEATURE_ID.equals(entry.fileName())) {
+                RuntimeModControl.applyFullbrightFeature(entry.enabled());
+            } else {
+                RuntimeModControl.apply(entry.fileName(), entry.enabled());
+            }
+        }
+    }
+
+    private static boolean syncJarFileState(String fileName, boolean enable) {
         Path modsDir = FabricLoader.getInstance().getGameDir().resolve("mods");
         Path enabledPath = modsDir.resolve(fileName);
         Path disabledPath = modsDir.resolve(fileName + ".disabled");
@@ -62,20 +132,24 @@ public final class ModToggleManager {
             if (enable) {
                 if (Files.exists(disabledPath)) {
                     Files.move(disabledPath, enabledPath, StandardCopyOption.REPLACE_EXISTING);
+                    return true;
                 }
-            } else {
-                if (Files.exists(enabledPath)) {
-                    Files.move(enabledPath, disabledPath, StandardCopyOption.REPLACE_EXISTING);
-                }
+                return Files.exists(enabledPath);
             }
-            MarsanaConfigManager.setModEnabled(fileName, enable);
-            return true;
+            if (Files.exists(enabledPath)) {
+                Files.move(enabledPath, disabledPath, StandardCopyOption.REPLACE_EXISTING);
+                return true;
+            }
+            return Files.exists(disabledPath);
         } catch (IOException e) {
             return false;
         }
     }
 
     public static boolean isProtected(String fileName) {
+        if (FULLBRIGHT_FEATURE_ID.equals(fileName)) {
+            return false;
+        }
         String lower = fileName.toLowerCase(Locale.ROOT);
         for (String prefix : PROTECTED_PREFIXES) {
             if (lower.startsWith(prefix)) {
@@ -85,7 +159,15 @@ public final class ModToggleManager {
         return false;
     }
 
+    private static boolean hasFullbrightPack() {
+        Path packs = FabricLoader.getInstance().getGameDir().resolve("resourcepacks/fullbright-ub.zip");
+        return Files.isRegularFile(packs);
+    }
+
     private static String friendlyName(String fileName) {
+        if (FULLBRIGHT_FEATURE_ID.equals(fileName)) {
+            return "Fullbright UB";
+        }
         String lower = fileName.toLowerCase(Locale.ROOT);
         if (lower.contains("iris")) return "Iris (Shader)";
         if (lower.contains("sodium")) return "Sodium (FPS)";

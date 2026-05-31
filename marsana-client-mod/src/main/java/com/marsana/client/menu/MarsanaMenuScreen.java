@@ -18,6 +18,7 @@ public class MarsanaMenuScreen extends Screen {
     private final List<Button> dynamicButtons = new ArrayList<>();
     private Button modsTabButton;
     private Button cosmeticsTabButton;
+    private int modScrollOffset = 0;
 
     public MarsanaMenuScreen() {
         super(Component.literal("Marsana Client"));
@@ -43,6 +44,7 @@ public class MarsanaMenuScreen extends Screen {
 
     private void switchTab(Tab tab) {
         activeTab = tab;
+        modScrollOffset = 0;
         rebuildTabContent();
     }
 
@@ -64,26 +66,65 @@ public class MarsanaMenuScreen extends Screen {
 
     private void buildModsTab() {
         List<ModToggleManager.ModEntry> mods = ModToggleManager.listMods();
-        int y = 64;
-        int max = Math.min(mods.size(), 8);
-        for (int i = 0; i < max; i++) {
+        int visibleRows = Math.max(1, (this.height - 120) / 24);
+        int maxOffset = Math.max(0, mods.size() - visibleRows);
+        modScrollOffset = Math.min(modScrollOffset, maxOffset);
+
+        if (modScrollOffset > 0) {
+            Button up = Button.builder(Component.literal("^ Yukari"), b -> {
+                modScrollOffset = Math.max(0, modScrollOffset - 1);
+                rebuildTabContent();
+            }).bounds(this.width / 2 - 160, 58, 155, 18).build();
+            addRenderableWidget(up);
+            dynamicButtons.add(up);
+        }
+
+        int y = modScrollOffset > 0 ? 80 : 64;
+        int end = Math.min(mods.size(), modScrollOffset + visibleRows);
+        for (int i = modScrollOffset; i < end; i++) {
             ModToggleManager.ModEntry entry = mods.get(i);
-            String label = entry.displayName() + (entry.enabled() ? " [Acik]" : " [Kapali]");
-            Button btn = Button.builder(Component.literal(label), b -> {
-                if (!entry.protectedMod()) {
-                    ModToggleManager.toggleMod(entry.fileName(), !entry.enabled());
-                    if (this.minecraft != null && this.minecraft.player != null) {
-                        this.minecraft.player.sendSystemMessage(
-                            Component.literal("Degisiklik icin oyunu yeniden baslatin.").withStyle(ChatFormatting.YELLOW)
-                        );
-                    }
-                    rebuildTabContent();
-                }
-            }).bounds(this.width / 2 - 160, y + i * 24, 320, 20).build();
+            String state = entry.enabled() ? "Acik" : "Kapali";
+            String label = entry.displayName() + " [" + state + "]";
+            Button btn = Button.builder(Component.literal(label), b -> onModToggle(entry))
+                .bounds(this.width / 2 - 160, y + (i - modScrollOffset) * 24, 320, 20).build();
             btn.active = !entry.protectedMod();
             addRenderableWidget(btn);
             dynamicButtons.add(btn);
         }
+
+        if (modScrollOffset + visibleRows < mods.size()) {
+            int scrollY = y + (end - modScrollOffset) * 24 + 4;
+            Button down = Button.builder(Component.literal("v Asagi"), b -> {
+                modScrollOffset = Math.min(maxOffset, modScrollOffset + 1);
+                rebuildTabContent();
+            }).bounds(this.width / 2 + 5, scrollY, 155, 18).build();
+            addRenderableWidget(down);
+            dynamicButtons.add(down);
+        }
+    }
+
+    private void onModToggle(ModToggleManager.ModEntry entry) {
+        if (entry.protectedMod()) {
+            return;
+        }
+        ModToggleManager.ToggleResult result = ModToggleManager.toggleMod(entry.fileName(), !entry.enabled());
+        if (this.minecraft != null && this.minecraft.player != null) {
+            Component msg = toggleMessage(entry.displayName(), result);
+            this.minecraft.player.sendSystemMessage(msg);
+        }
+        rebuildTabContent();
+    }
+
+    private static Component toggleMessage(String name, ModToggleManager.ToggleResult result) {
+        return switch (result.outcome()) {
+            case APPLIED -> Component.literal(name + " guncellendi.")
+                .withStyle(ChatFormatting.GREEN);
+            case SAVED_RESTART -> Component.literal(
+                name + " kaydedildi. Sodium gibi modlar tam kapanmak icin oyunu kapatip yeniden baslat.")
+                .withStyle(ChatFormatting.YELLOW);
+            case BLOCKED -> Component.literal(name + " degistirilemez.")
+                .withStyle(ChatFormatting.RED);
+        };
     }
 
     private void buildCosmeticsTab() {
@@ -106,13 +147,12 @@ public class MarsanaMenuScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         graphics.centeredText(this.font, this.title, this.width / 2, 12, 0x55FF88);
         String subtitle = activeTab == Tab.MODS
-            ? "Modlari ac/kapa — degisiklik sonraki baslatmada gecerli"
+            ? "Moda tikla — shader/voice/fullbright aninda; Sodium sonraki baslatmada"
             : "Ucretsiz pelerin secenekleri — sadece sen gorursun";
         graphics.centeredText(this.font, subtitle, this.width / 2, 52, 0xAAAAAA);
         super.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 
-    /** Envanter gibi: dunya acikken blur/panorama yerine seffaf karartma kullan. */
     @Override
     public boolean isInGameUi() {
         return true;

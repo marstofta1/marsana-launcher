@@ -84,6 +84,7 @@ function applyModToggleStates(modsDir, config) {
   if (!config || !config.modStates || !fs.existsSync(modsDir)) return;
   for (const [fileName, enabled] of Object.entries(config.modStates)) {
     if (typeof enabled !== 'boolean') continue;
+    if (fileName.startsWith('feature:')) continue;
     if (fileName.startsWith(MOD_JAR_PREFIX)) continue;
     const enabledPath = path.join(modsDir, fileName);
     const disabledPath = path.join(modsDir, `${fileName}.disabled`);
@@ -105,6 +106,16 @@ function isMarsanaClientJar(name) {
   return String(name || '').toLowerCase().startsWith(MOD_JAR_PREFIX) && name.endsWith('.jar');
 }
 
+const FULLBRIGHT_FEATURE_ID = 'feature:fullbright-ub';
+
+function isFeatureEnabled(gameRoot, featureId, defaultValue = true) {
+  const cfg = readConfig(gameRoot);
+  if (!cfg || !cfg.modStates || cfg.modStates[featureId] === undefined) {
+    return defaultValue;
+  }
+  return cfg.modStates[featureId] !== false;
+}
+
 module.exports = {
   CONFIG_FILE,
   bundledModsRoot,
@@ -116,4 +127,6 @@ module.exports = {
   installBundledMod,
   applyModToggleStates,
   isMarsanaClientJar,
+  isFeatureEnabled,
+  FULLBRIGHT_FEATURE_ID,
 };
