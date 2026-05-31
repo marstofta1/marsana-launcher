@@ -275,8 +275,17 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v0.1.35 — cloth-config bağımlılık düzeltmesi</span>
+            <span class="release-version">v0.1.36 — cloth-config önbellek düzeltmesi</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li><strong>Kök neden giderildi:</strong> Shader paketi onarımı mod listesini yenilemeden önbellek sürümünü yükseltiyordu; <code>cloth-config</code> hiç indirilmeden oyun başlatılabiliyordu.</li>
+            <li>HUD paketi açıkken <code>cloth-config</code> eksikse launcher artık otomatik indirir veya mod paketini baştan kurar.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v0.1.35 — cloth-config bağımlılık düzeltmesi</span>
           </div>
           <ul class="release-changes">
             <li><strong>Mod çakışması düzeltmesi:</strong> BetterF3 ve Visuality için gerekli <code>cloth-config</code> artık HUD paketinde zorunlu olarak önce indirilir.</li>
