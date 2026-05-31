@@ -13,6 +13,7 @@ const latestYmlPath = path.join(root, 'docs', 'downloads', 'latest.yml');
 const indexPath = path.join(root, 'docs', 'index.html');
 const windowsManifestPath = path.join(root, 'docs', 'downloads', 'windows-manifest.json');
 const macosManifestPath = path.join(root, 'docs', 'downloads', 'macos-manifest.json');
+const linuxManifestPath = path.join(root, 'docs', 'downloads', 'linux-manifest.json');
 const exeName = `Marsana Launcher-${version}-win-x64.exe`;
 
 const errors = [];
@@ -66,6 +67,21 @@ if (!fs.existsSync(macosManifestPath)) {
   }
 }
 
+if (!fs.existsSync(linuxManifestPath)) {
+  errors.push('docs/downloads/linux-manifest.json bulunamadı (prepare:linux-downloads çalıştırın).');
+} else {
+  const manifest = JSON.parse(fs.readFileSync(linuxManifestPath, 'utf8'));
+  if (manifest.version !== version) {
+    errors.push(`linux-manifest.json sürümü (${manifest.version}) package.json ile eşleşmiyor.`);
+  }
+  if (!manifest.sourceUrl) {
+    errors.push('linux-manifest.json sourceUrl eksik.');
+  }
+  if (!Array.isArray(manifest.platforms) || manifest.platforms.length === 0) {
+    errors.push('linux-manifest.json platform listesi bos.');
+  }
+}
+
 if (fs.existsSync(indexPath)) {
   const html = fs.readFileSync(indexPath, 'utf8');
   if (!html.includes('windows-download-grid')) {
@@ -79,6 +95,12 @@ if (fs.existsSync(indexPath)) {
   }
   if (!html.includes('download-macos.js')) {
     errors.push('docs/index.html download-macos.js script\'i içermiyor.');
+  }
+  if (!html.includes('linux-download-grid')) {
+    errors.push('docs/index.html Linux indirme grid\'i içermiyor.');
+  }
+  if (!html.includes('download-linux.js')) {
+    errors.push('docs/index.html download-linux.js script\'i içermiyor.');
   }
   if (!html.includes(`v${version}`)) {
     errors.push(`docs/index.html sürüm etiketi v${version} içermiyor.`);

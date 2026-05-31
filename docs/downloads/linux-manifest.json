@@ -1,0 +1,82 @@
+{
+  "version": "0.1.33",
+  "releaseVersion": "0.1.27",
+  "note": "AppImage x86_64 — çoğu dağıtımda çalışır. İlk çalıştırmadan önce: chmod +x Marsana*.AppImage",
+  "source": "Marsana.Launcher-0.1.27-linux.AppImage",
+  "sourceUrl": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-linux.AppImage",
+  "sourceType": "remote",
+  "platforms": [
+    {
+      "id": "ubuntu",
+      "title": "Ubuntu",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-linux.AppImage",
+      "downloadName": "Marsana-Launcher-0.1.33-ubuntu.AppImage",
+      "badge": "Önerilen",
+      "badgeClass": "ready",
+      "note": ".AppImage · x86_64 · v0.1.33"
+    },
+    {
+      "id": "mint",
+      "title": "Linux Mint",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-linux.AppImage",
+      "downloadName": "Marsana-Launcher-0.1.33-mint.AppImage",
+      "badge": "Önerilen",
+      "badgeClass": "ready",
+      "note": ".AppImage · x86_64 · v0.1.33"
+    },
+    {
+      "id": "debian",
+      "title": "Debian",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-linux.AppImage",
+      "downloadName": "Marsana-Launcher-0.1.33-debian.AppImage",
+      "badge": "Desteklenir",
+      "badgeClass": "ready",
+      "note": ".AppImage · x86_64 · v0.1.33"
+    },
+    {
+      "id": "fedora",
+      "title": "Fedora",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-linux.AppImage",
+      "downloadName": "Marsana-Launcher-0.1.33-fedora.AppImage",
+      "badge": "Önerilen",
+      "badgeClass": "ready",
+      "note": ".AppImage · x86_64 · v0.1.33"
+    },
+    {
+      "id": "manjaro",
+      "title": "Manjaro",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-linux.AppImage",
+      "downloadName": "Marsana-Launcher-0.1.33-manjaro.AppImage",
+      "badge": "Desteklenir",
+      "badgeClass": "ready",
+      "note": ".AppImage · x86_64 · v0.1.33"
+    },
+    {
+      "id": "mxlinux",
+      "title": "MX Linux",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-linux.AppImage",
+      "downloadName": "Marsana-Launcher-0.1.33-mxlinux.AppImage",
+      "badge": "Desteklenir",
+      "badgeClass": "legacy",
+      "note": ".AppImage · x86_64 · v0.1.33"
+    },
+    {
+      "id": "solus",
+      "title": "Solus",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-linux.AppImage",
+      "downloadName": "Marsana-Launcher-0.1.33-solus.AppImage",
+      "badge": "Desteklenir",
+      "badgeClass": "legacy",
+      "note": ".AppImage · x86_64 · v0.1.33"
+    },
+    {
+      "id": "elementary",
+      "title": "Elementary OS",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.27/Marsana.Launcher-0.1.27-linux.AppImage",
+      "downloadName": "Marsana-Launcher-0.1.33-elementary.AppImage",
+      "badge": "Desteklenir",
+      "badgeClass": "ready",
+      "note": ".AppImage · x86_64 · v0.1.33"
+    }
+  ]
+}

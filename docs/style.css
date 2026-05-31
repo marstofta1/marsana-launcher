@@ -272,7 +272,14 @@ code {
 .macos-grid {
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
 }
+.linux-grid {
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+}
 .download-card.macos-card.detected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.35);
+}
+.download-card.linux-card.detected {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.35);
 }
