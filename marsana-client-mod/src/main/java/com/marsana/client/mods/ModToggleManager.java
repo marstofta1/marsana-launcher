@@ -49,7 +49,7 @@ public final class ModToggleManager {
                     }
                     boolean fileDisabled = name.endsWith(".jar.disabled");
                     String baseName = fileDisabled ? name.substring(0, name.length() - ".disabled".length()) : name;
-                    boolean enabled = MarsanaConfigManager.isModEnabled(baseName);
+                    boolean enabled = resolveEnabledState(baseName, fileDisabled);
                     boolean protectedMod = isProtected(baseName);
                     out.add(new ModEntry(baseName, friendlyName(baseName), enabled, protectedMod));
                 }
@@ -58,7 +58,7 @@ public final class ModToggleManager {
         }
 
         if (hasFullbrightPack()) {
-            boolean enabled = MarsanaConfigManager.isModEnabled(FULLBRIGHT_FEATURE_ID);
+            boolean enabled = RuntimeModControl.isFullbrightPackEnabled();
             out.add(new ModEntry(FULLBRIGHT_FEATURE_ID, "Fullbright UB", enabled, false));
         }
 
@@ -74,6 +74,9 @@ public final class ModToggleManager {
         if (FULLBRIGHT_FEATURE_ID.equals(fileName)) {
             MarsanaConfigManager.setModEnabled(fileName, enable);
             boolean runtime = RuntimeModControl.applyFullbrightFeature(enable);
+            if (runtime) {
+                MarsanaConfigManager.setModEnabled(fileName, RuntimeModControl.isFullbrightPackEnabled());
+            }
             return new ToggleResult(
                 runtime ? ToggleOutcome.APPLIED : ToggleOutcome.SAVED_RESTART,
                 runtime,
@@ -83,6 +86,9 @@ public final class ModToggleManager {
 
         MarsanaConfigManager.setModEnabled(fileName, enable);
         boolean runtime = RuntimeModControl.apply(fileName, enable);
+        if (runtime) {
+            MarsanaConfigManager.setModEnabled(fileName, readRuntimeEnabled(fileName, enable));
+        }
         boolean fileApplied = syncJarFileState(fileName, enable);
 
         if (runtime || fileApplied) {
@@ -109,18 +115,59 @@ public final class ModToggleManager {
         }
     }
 
-    /** Oturum basinda kayitli acik/kapali tercihleri oyuna uygula. */
+    /** Oturum basinda kayitli tercihleri oyuna uygula. */
     public static void applyRuntimeFromConfig() {
+        for (var entry : MarsanaConfigManager.get().modStates.entrySet()) {
+            String key = entry.getKey();
+            Boolean enabled = entry.getValue();
+            if (enabled == null || isProtected(key)) {
+                continue;
+            }
+            if (FULLBRIGHT_FEATURE_ID.equals(key)) {
+                RuntimeModControl.applyFullbrightFeature(enabled);
+            } else if (!key.startsWith("feature:")) {
+                RuntimeModControl.apply(key, enabled);
+            }
+        }
+        syncConfigFromRuntime();
+    }
+
+    /** Menude gosterilen gercek durumu config dosyasina yansit (launcher senkronu). */
+    public static void syncConfigFromRuntime() {
         for (ModEntry entry : listMods()) {
             if (entry.protectedMod()) {
                 continue;
             }
-            if (FULLBRIGHT_FEATURE_ID.equals(entry.fileName())) {
-                RuntimeModControl.applyFullbrightFeature(entry.enabled());
-            } else {
-                RuntimeModControl.apply(entry.fileName(), entry.enabled());
-            }
+            MarsanaConfigManager.setModEnabled(entry.fileName(), entry.enabled());
         }
+    }
+
+    private static boolean resolveEnabledState(String baseName, boolean fileDisabled) {
+        if (fileDisabled) {
+            return false;
+        }
+        String lower = baseName.toLowerCase(Locale.ROOT);
+        if (lower.contains("iris")) {
+            return RuntimeModControl.isIrisShadersEnabled();
+        }
+        if (lower.contains("voice")) {
+            return RuntimeModControl.isVoiceChatEnabled();
+        }
+        return MarsanaConfigManager.isModEnabled(baseName);
+    }
+
+    private static boolean readRuntimeEnabled(String fileName, boolean fallback) {
+        if (FULLBRIGHT_FEATURE_ID.equals(fileName)) {
+            return RuntimeModControl.isFullbrightPackEnabled();
+        }
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        if (lower.contains("iris")) {
+            return RuntimeModControl.isIrisShadersEnabled();
+        }
+        if (lower.contains("voice")) {
+            return RuntimeModControl.isVoiceChatEnabled();
+        }
+        return fallback;
     }
 
     private static boolean syncJarFileState(String fileName, boolean enable) {

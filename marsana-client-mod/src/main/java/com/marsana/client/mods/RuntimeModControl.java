@@ -14,7 +14,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.regex.Pattern;
 
 /**
@@ -23,6 +22,7 @@ import java.util.regex.Pattern;
 public final class RuntimeModControl {
     private static final Logger LOGGER = LoggerFactory.getLogger(MarsanaClientMod.MOD_ID);
     private static final String FULLBRIGHT_PACK_ID = "file/fullbright-ub.zip";
+    private static final String IRIS_API = "net.irisshaders.iris.api.v0.IrisApi";
     private static final Pattern PROP_LINE = Pattern.compile("^([^#=\\s]+)\\s*=\\s*(.*)$");
 
     private RuntimeModControl() {}
@@ -41,19 +41,51 @@ public final class RuntimeModControl {
         return false;
     }
 
-    /** Kaynak paketi mods klasorunde jar degil; ayri satir olarak gosterilir. */
     public static boolean applyFullbrightFeature(boolean enable) {
         return setFullbrightPackEnabled(enable);
     }
 
+    public static boolean isIrisShadersEnabled() {
+        Boolean apiState = readIrisShadersFromApi();
+        if (apiState != null) {
+            return apiState;
+        }
+        return readBooleanProperty(
+            FabricLoader.getInstance().getConfigDir().resolve("iris.properties"),
+            "enableShaders",
+            true
+        );
+    }
+
+    public static boolean isVoiceChatEnabled() {
+        return !readBooleanProperty(
+            FabricLoader.getInstance().getConfigDir().resolve("voicechat/voicechat-client.properties"),
+            "disabled",
+            false
+        );
+    }
+
+    public static boolean isFullbrightPackEnabled() {
+        Minecraft client = Minecraft.getInstance();
+        if (client == null) {
+            return false;
+        }
+        return client.getResourcePackRepository().getSelectedIds().contains(FULLBRIGHT_PACK_ID);
+    }
+
     public static boolean setIrisShadersEnabled(boolean enable) {
+        if (applyIrisShadersViaApi(enable)) {
+            return true;
+        }
         Path propsPath = FabricLoader.getInstance().getConfigDir().resolve("iris.properties");
         if (!Files.isRegularFile(propsPath)) {
             return false;
         }
         try {
             setPropertyFileValue(propsPath, "enableShaders", Boolean.toString(enable));
-            tryReloadIris();
+            if (!enable) {
+                setPropertyFileValue(propsPath, "shaderPack", "");
+            }
             return true;
         } catch (IOException e) {
             LOGGER.warn("Iris shader durumu guncellenemedi", e);
@@ -81,11 +113,9 @@ public final class RuntimeModControl {
             return false;
         }
         PackRepository repo = client.getResourcePackRepository();
-        boolean changed;
-        if (enable) {
-            changed = repo.addPack(FULLBRIGHT_PACK_ID);
-        } else {
-            changed = repo.removePack(FULLBRIGHT_PACK_ID);
+        boolean changed = enable ? repo.addPack(FULLBRIGHT_PACK_ID) : repo.removePack(FULLBRIGHT_PACK_ID);
+        if (!changed && enable == isFullbrightPackEnabled()) {
+            return true;
         }
         if (!changed) {
             return false;
@@ -102,14 +132,62 @@ public final class RuntimeModControl {
         }
     }
 
-    private static void tryReloadIris() {
+    private static boolean applyIrisShadersViaApi(boolean enable) {
         try {
-            Class<?> irisClass = Class.forName("net.irisshaders.iris.Iris");
-            Object iris = irisClass.getMethod("getIris").invoke(null);
-            irisClass.getMethod("reload").invoke(iris);
-        } catch (ReflectiveOperationException ignored) {
-            // Iris surumune gore reload yoksa properties sonraki shader acilisinda okunur
+            Class<?> apiClass = Class.forName(IRIS_API);
+            Object api = apiClass.getMethod("getInstance").invoke(null);
+            Object config = apiClass.getMethod("getConfig").invoke(api);
+            config.getClass()
+                .getMethod("setShadersEnabledAndApply", boolean.class)
+                .invoke(config, enable);
+            return true;
+        } catch (ReflectiveOperationException e) {
+            LOGGER.debug("Iris API ile shader durumu degistirilemedi, properties fallback kullanilacak", e);
+            return false;
         }
+    }
+
+    private static Boolean readIrisShadersFromApi() {
+        try {
+            Class<?> apiClass = Class.forName(IRIS_API);
+            Object api = apiClass.getMethod("getInstance").invoke(null);
+            try {
+                Object config = apiClass.getMethod("getConfig").invoke(api);
+                for (String method : new String[] { "areShadersEnabled", "isShadersEnabled", "getShadersEnabled" }) {
+                    try {
+                        Object value = config.getClass().getMethod(method).invoke(config);
+                        if (value instanceof Boolean b) {
+                            return b;
+                        }
+                    } catch (NoSuchMethodException ignored) {
+                    }
+                }
+            } catch (ReflectiveOperationException ignored) {
+            }
+            Object inUse = apiClass.getMethod("isShaderPackInUse").invoke(api);
+            if (inUse instanceof Boolean b) {
+                return b;
+            }
+        } catch (ReflectiveOperationException ignored) {
+        }
+        return null;
+    }
+
+    private static boolean readBooleanProperty(Path path, String key, boolean defaultValue) {
+        if (!Files.isRegularFile(path)) {
+            return defaultValue;
+        }
+        try {
+            for (String line : Files.readAllLines(path, StandardCharsets.UTF_8)) {
+                var m = PROP_LINE.matcher(line.trim());
+                if (m.matches() && key.equals(m.group(1))) {
+                    return Boolean.parseBoolean(m.group(2).trim());
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.debug("Properties okunamadi: {}", path, e);
+        }
+        return defaultValue;
     }
 
     private static void setPropertyFileValue(Path path, String key, String value) throws IOException {
