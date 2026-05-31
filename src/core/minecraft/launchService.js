@@ -11,6 +11,7 @@ const {
 } = require('../../shared/ornitheCompatibility');
 const { LauncherError, Codes } = require('../infra/errors');
 const marsanaClientModService = require('../mods/marsanaClientModService');
+const hudDepsService = require('../mods/hudDepsService');
 
 const MIN_MEM_MB = 1024;
 const DEFAULT_MEM_MB = 2048;
@@ -441,6 +442,12 @@ function createLaunchService({
       return;
     }
 
+    // Ilk kurulum veya bilinmeyen onceki loader: aktif jar'lar zaten hedef loader icin.
+    if (previous == null) {
+      writeActiveLoaderState(dir, target);
+      return;
+    }
+
     const stashSuffixForCurrent = target === 'fabric' ? STASHED_FORGE_SUFFIX : STASHED_FABRIC_SUFFIX;
     const restoreSuffix = target === 'fabric' ? STASHED_FABRIC_SUFFIX : STASHED_FORGE_SUFFIX;
 
@@ -455,6 +462,10 @@ function createLaunchService({
     }
 
     writeActiveLoaderState(dir, target);
+  }
+
+  function finalizeFabricModsDir() {
+    hudDepsService.recoverFabricModsFromMisstash(modsDir());
   }
 
   async function buildForgeSpec({ version, includeOptifine, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, javaPath, emit }) {
@@ -901,6 +912,7 @@ function createLaunchService({
     if (loader === 'fabric-beta') {
       const plan = await buildFabricBetaSpec({ version, modPresets, shaderSlug, emit });
       applyLoaderModsState('fabric');
+      finalizeFabricModsDir();
       return plan;
     }
     if (loader === 'ornithe') {
@@ -971,6 +983,7 @@ function createLaunchService({
     }
     const fabricPlan = await buildFabricSpec({ version, modPresets, shaderSlug, emit });
     applyLoaderModsState('fabric');
+    finalizeFabricModsDir();
     return fabricPlan;
   }
 

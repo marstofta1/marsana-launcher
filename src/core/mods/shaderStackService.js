@@ -12,7 +12,7 @@ const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../share
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 27;
+const SHADER_BUNDLE_VERSION = 28;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -784,6 +784,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       !allFilesExist(resourcepacksDir, existing.resourcepacks || []) ||
       (existing.shaderpacks || []).some((name) => /§/.test(String(name))) ||
       !clientHudDependenciesOk(modsDir, modPresets) ||
+      (modPresets.marsanaClientMenu && !marsanaClientModService.marsanaClientJarPresent(modsDir)) ||
       (!polytoneSupportedForGameVersion(gameVersion) &&
         (existing.jars || []).some((name) => /^polytone/i.test(String(name))))
     ) {
@@ -1624,7 +1625,24 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           writeBundle(modsDir, { ...bundle, jars: mergedJars, updatedAt: Date.now() });
         }
       }
-      if (presets.marsanaClientMenu) {
+      if (presets.marsanaClientMenu && repoRoot) {
+        const menuJar = marsanaClientModService.installBundledMod({
+          repoRoot,
+          modsDir,
+          gameVersion,
+          onNotice: status,
+        });
+        if (menuJar) {
+          let bundle = readBundle(modsDir);
+          if (bundle) {
+            const jars = [...new Set([...(bundle.jars || []), menuJar])];
+            writeBundle(modsDir, { ...bundle, jars, updatedAt: Date.now() });
+          }
+        }
+        marsanaClientModService.seedHudFeatureDefaults(gameRoot);
+        const cfg = marsanaClientModService.readConfig(gameRoot);
+        marsanaClientModService.applyModToggleStates(modsDir, cfg);
+      } else if (presets.marsanaClientMenu) {
         const cfg = marsanaClientModService.readConfig(gameRoot);
         marsanaClientModService.applyModToggleStates(modsDir, cfg);
       }

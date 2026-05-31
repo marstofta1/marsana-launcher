@@ -32,25 +32,29 @@ function reenableClothConfigJar(modsDir) {
   return false;
 }
 
-/** Fabric modlari yanlislikla forge stash'ine alindigysa geri yukle. */
+/** Fabric modlari yanlislikla .marsana-stashed-forge ile gizlendiyse geri yukle. */
 function recoverFabricModsFromMisstash(modsDir) {
-  if (!fs.existsSync(modsDir)) return;
-  const entries = fs.readdirSync(modsDir);
-  const hasActive = entries.some(
-    (e) => e.endsWith('.jar') && !e.endsWith('.jar.disabled') && !e.includes('.marsana-stashed-')
-  );
-  if (hasActive) return;
+  if (!fs.existsSync(modsDir)) return 0;
   const suffix = '.marsana-stashed-forge';
-  for (const entry of entries) {
+  let restored = 0;
+  for (const entry of fs.readdirSync(modsDir)) {
     if (!entry.endsWith(suffix)) continue;
     const base = entry.slice(0, -suffix.length);
     if (!base.endsWith('.jar')) continue;
+    const from = path.join(modsDir, entry);
+    const to = path.join(modsDir, base);
     try {
-      fs.renameSync(path.join(modsDir, entry), path.join(modsDir, base));
+      if (fs.existsSync(to)) {
+        fs.unlinkSync(from);
+      } else {
+        fs.renameSync(from, to);
+        restored += 1;
+      }
     } catch {
       /* ignore */
     }
   }
+  return restored;
 }
 
 function installBundledClothConfig({ repoRoot, modsDir, gameVersion, onNotice }) {

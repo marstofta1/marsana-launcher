@@ -275,8 +275,17 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v0.1.37 — cloth-config stash düzeltmesi</span>
+            <span class="release-version">v0.1.38 — H menüsü ve modlar geri yükleme</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li>Gizlenmiş Fabric modları (<code>.marsana-stashed-forge</code>) artık her başlatmada otomatik geri yüklenir.</li>
+            <li>Ilk kurulumda mod jar'lari stash'lenip kaybolmuyor; Marsana Client (H menusu) her zaman kuruluyor.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v0.1.37 — cloth-config stash düzeltmesi</span>
           </div>
           <ul class="release-changes">
             <li><strong>Kök neden:</strong> Her Fabric başlatmada mod jar'ları yanlışlıkla gizleniyordu (stash); <code>cloth-config</code> kayboluyordu.</li>

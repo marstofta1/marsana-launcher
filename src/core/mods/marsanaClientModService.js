@@ -112,6 +112,13 @@ function isMarsanaClientJar(name) {
   return String(name || '').toLowerCase().startsWith(MOD_JAR_PREFIX) && name.endsWith('.jar');
 }
 
+function marsanaClientJarPresent(modsDir) {
+  if (!fs.existsSync(modsDir)) return false;
+  return fs.readdirSync(modsDir).some(
+    (f) => isMarsanaClientJar(f) && !f.endsWith('.jar.disabled')
+  );
+}
+
 const FULLBRIGHT_FEATURE_ID = 'feature:fullbright-ub';
 
 const DEFAULT_HUD_FEATURE_STATES = Object.freeze({
@@ -152,6 +159,7 @@ module.exports = {
   installBundledMod,
   applyModToggleStates,
   isMarsanaClientJar,
+  marsanaClientJarPresent,
   isFeatureEnabled,
   FULLBRIGHT_FEATURE_ID,
   defaultHudFeatureStates,
