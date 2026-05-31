@@ -8,10 +8,11 @@
     "start": "electron .",
     "pack": "electron-builder",
     "pack:mac": "electron-builder --mac",
-    "pack:win": "node scripts/embed-logo.js && node scripts/ensure-client-mod.js && electron-builder --win",
+    "pack:win": "node scripts/embed-logo.js && node scripts/ensure-client-mod.js && electron-builder --win && node scripts/prepare-windows-downloads.js",
     "pack:linux": "electron-builder --linux",
     "pack:desktop": "electron-builder --mac --win",
     "verify:release": "node scripts/verify-release-docs.js",
+    "prepare:win-downloads": "node scripts/prepare-windows-downloads.js",
     "version:resolve": "node scripts/resolve-release-version.js",
     "mobile:sync": "node scripts/sync-mobile-www.js",
     "build:client-mod": "cd marsana-client-mod && gradlew.bat build copyToBundled"

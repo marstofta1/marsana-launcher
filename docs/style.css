@@ -243,7 +243,32 @@ code {
   letter-spacing: 0.3px;
 }
 .dl-badge.ready { background: var(--accent); color: #0d1116; }
+.dl-badge.legacy { background: #3d3520; color: #f0c040; border: 1px solid #6b5a20; }
 .dl-badge.soon { background: var(--bg-elev); color: var(--text-dim); border: 1px solid var(--border); }
+.download-platform-heading {
+  margin: 28px 0 8px;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+.download-platform-desc {
+  margin: 0 0 4px;
+  color: var(--text-dim);
+  font-size: 14px;
+  max-width: 820px;
+}
+.windows-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+.download-card.windows-card.detected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.35);
+}
+.windows-manifest-note {
+  margin: -8px 0 20px;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-style: italic;
+}
 .download-note {
   margin-top: 18px;
   color: var(--text-dim);
