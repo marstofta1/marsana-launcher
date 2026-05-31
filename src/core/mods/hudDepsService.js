@@ -3,6 +3,8 @@
 const path = require('path');
 const fs = require('fs');
 
+const modCompatibilityService = require('./modCompatibilityService');
+
 const CLOTH_CONFIG_BUNDLED = 'cloth-config-26.1.154.jar';
 
 function bundledDepsRoot(repoRoot) {
@@ -32,8 +34,8 @@ function reenableClothConfigJar(modsDir) {
   return false;
 }
 
-/** Fabric modlari yanlislikla .marsana-stashed-forge ile gizlendiyse geri yukle. */
-function recoverFabricModsFromMisstash(modsDir) {
+/** Fabric modlari yanlislikla .marsana-stashed-forge ile gizlendiyse geri yukle (26.x uyumlu olanlar). */
+function recoverFabricModsFromMisstash(modsDir, gameVersion) {
   if (!fs.existsSync(modsDir)) return 0;
   const suffix = '.marsana-stashed-forge';
   let restored = 0;
@@ -41,6 +43,10 @@ function recoverFabricModsFromMisstash(modsDir) {
     if (!entry.endsWith(suffix)) continue;
     const base = entry.slice(0, -suffix.length);
     if (!base.endsWith('.jar')) continue;
+    if (modCompatibilityService.isJarFilenameIncompatibleWithGame(base, gameVersion)) {
+      removeIfExists(path.join(modsDir, entry));
+      continue;
+    }
     const from = path.join(modsDir, entry);
     const to = path.join(modsDir, base);
     try {
@@ -55,6 +61,14 @@ function recoverFabricModsFromMisstash(modsDir) {
     }
   }
   return restored;
+}
+
+function removeIfExists(filePath) {
+  try {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  } catch {
+    /* ignore */
+  }
 }
 
 function installBundledClothConfig({ repoRoot, modsDir, gameVersion, onNotice }) {

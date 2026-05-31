@@ -8,11 +8,12 @@ const AdmZip = require('adm-zip');
 const { LauncherError, Codes } = require('../infra/errors');
 const marsanaClientModService = require('./marsanaClientModService');
 const hudDepsService = require('./hudDepsService');
+const modCompatibilityService = require('./modCompatibilityService');
 const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../shared/clientHudModRegistry');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 28;
+const SHADER_BUNDLE_VERSION = 29;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -140,6 +141,10 @@ function modrinthCandidateRank(version, candidates) {
     if (gvs.includes(candidates[i])) return i;
   }
   return Infinity;
+}
+
+function versionMatchesLoaderModGame(version, gameVersion) {
+  return versionListsAnyGame(version, modrinthLoaderModGameVersionCandidates(gameVersion));
 }
 
 function versionMatchesGameForFetch(version, gameVersion, { strictPatch = false } = {}) {
@@ -733,7 +738,8 @@ function statusEmitter(emit) {
 
 function createShaderStackService({ httpClient, fabricInstaller, modrinthClient, mrpackInstaller, repoRoot }) {
   function ensureClothConfigForHud({ modsDir, gameVersion, status, jars }) {
-    hudDepsService.recoverFabricModsFromMisstash(modsDir);
+    hudDepsService.recoverFabricModsFromMisstash(modsDir, gameVersion);
+    modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     hudDepsService.reenableClothConfigJar(modsDir);
     let out = Array.isArray(jars) ? jars.slice() : [];
     if (repoRoot) {
@@ -889,7 +895,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       const strictPick = pickNewestModrinthVersion(strictList, { ...pickOpts, strictPatch });
       if (strictPick) return strictPick;
 
-      if (!isMc26 && /^\d+\.\d+\.\d+$/.test(String(gameVersion))) {
+      if (isMc26) return null;
+
+      if (/^\d+\.\d+\.\d+$/.test(String(gameVersion))) {
         return null;
       }
 
@@ -914,7 +922,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         let depVersion = null;
         if (dep.version_id) {
           depVersion = await modrinthClient.versionById(dep.version_id);
-          if (depVersion && !versionMatchesGameForFetch(depVersion, gameVersion, { strictPatch: true }) && dep.project_id) {
+          const depOk = isMc26
+            ? versionMatchesLoaderModGame(depVersion, gameVersion)
+            : versionMatchesGameForFetch(depVersion, gameVersion, { strictPatch: true });
+          if (depVersion && !depOk && dep.project_id) {
             const override = await findContemporaryVersion(dep.project_id, version.date_published, {
               strictPatch: true,
             });
@@ -922,6 +933,13 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           }
         } else if (dep.project_id) {
           depVersion = await findContemporaryVersion(dep.project_id, version.date_published);
+        }
+        if (
+          depVersion &&
+          isMc26 &&
+          !versionMatchesLoaderModGame(depVersion, gameVersion)
+        ) {
+          depVersion = null;
         }
         if (depVersion) await persistVersion(depVersion);
       }
@@ -1588,7 +1606,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const versionJsonPath = path.join(versionDir, `${customId}.json`);
     const readyPath = path.join(versionDir, READY_FILE);
 
-    hudDepsService.recoverFabricModsFromMisstash(modsDir);
+    hudDepsService.recoverFabricModsFromMisstash(modsDir, gameVersion);
+    modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
 
     repairLegacyShaderPack({
       gameRoot,
@@ -1681,6 +1700,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     let jars = slugs.length ? await downloadModsFromSlugs({ modsDir, gameVersion, slugs }) : [];
     if (presets.clientHudPack) {
       jars = await ensureClothConfigForHudAsync({ modsDir, gameVersion, status, jars });
+    }
+    if (modCompatibilityService.isMc26GameVersion(gameVersion)) {
+      modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     }
     if (optifineMeta && Array.isArray(optifineMeta.jarNames)) {
       const seen = new Set(jars);
