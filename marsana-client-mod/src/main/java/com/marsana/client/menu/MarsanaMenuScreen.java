@@ -3,6 +3,7 @@ package com.marsana.client.menu;
 import com.marsana.client.cosmetics.CosmeticsManager;
 import com.marsana.client.friends.FriendsManager;
 import com.marsana.client.friends.FriendsNetworking;
+import com.marsana.client.friends.OnlinePlayerLookup;
 import com.marsana.client.mods.ModToggleManager;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -214,11 +215,8 @@ public class MarsanaMenuScreen extends Screen {
     }
 
     private Set<String> onlinePlayerNames() {
-        if (this.minecraft == null || this.minecraft.getConnection() == null) {
-            return Set.of();
-        }
-        return this.minecraft.getConnection().getOnlinePlayers().stream()
-            .map(info -> info.getProfile().name().toLowerCase())
+        return OnlinePlayerLookup.listOtherPlayers(this.minecraft).stream()
+            .map(String::toLowerCase)
             .collect(Collectors.toSet());
     }
 
