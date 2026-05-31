@@ -52,6 +52,7 @@
     }
 
     highlightDetectedVersion(container);
+    if (window.MarsanaAnalytics) MarsanaAnalytics.bindDownloadCards(container, manifest);
   }
 
   function highlightDetectedVersion(container) {

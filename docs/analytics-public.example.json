@@ -1,0 +1,4 @@
+{
+  "enabled": true,
+  "downloadEndpoint": "https://analytics.sizin-domain.com/api/v1/download"
+}

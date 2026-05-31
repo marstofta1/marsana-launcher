@@ -1,0 +1,4 @@
+{
+  "enabled": true,
+  "downloadEndpoint": "http://127.0.0.1:3847/api/v1/download"
+}

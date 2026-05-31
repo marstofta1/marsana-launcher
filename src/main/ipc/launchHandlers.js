@@ -15,9 +15,29 @@ function createRendererEmitter(getWindow) {
   };
 }
 
-function registerLaunchHandlers({ ipcMain, launchService, getWindow }) {
+function registerLaunchHandlers({ ipcMain, launchService, analyticsService, getWindow }) {
   const emit = createRendererEmitter(getWindow);
-  ipcMain.handle(LAUNCH.START, (_event, opts) => launchService.launch(opts || {}, emit));
+  ipcMain.handle(LAUNCH.START, async (_event, opts) => {
+    let gameTracked = false;
+    const wrappedEmit = {
+      ...emit,
+      close: (info) => {
+        if (gameTracked && analyticsService) {
+          analyticsService.trackGameClose(info || {});
+        }
+        emit.close(info);
+      },
+    };
+    const result = await launchService.launch(opts || {}, wrappedEmit);
+    if (result && result.started && analyticsService) {
+      analyticsService.trackGameLaunch({
+        version: opts && opts.version,
+        loader: opts && opts.selectedLoader,
+      });
+      gameTracked = true;
+    }
+    return result;
+  });
 }
 
 module.exports = { registerLaunchHandlers };

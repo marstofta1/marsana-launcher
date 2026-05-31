@@ -8,13 +8,22 @@ const { registerSystemHandlers } = require('./systemHandlers');
 const { registerUpdateHandlers } = require('./updateHandlers');
 
 function registerAllHandlers({ ipcMain, shell, container, getWindow }) {
-  registerAuthHandlers({ ipcMain, authService: container.authService });
+  registerAuthHandlers({
+    ipcMain,
+    authService: container.authService,
+    analyticsService: container.analyticsService,
+  });
   registerVersionHandlers({
     ipcMain,
     versionService: container.versionService,
     loaderSupport: container.loaderSupport,
   });
-  registerLaunchHandlers({ ipcMain, launchService: container.launchService, getWindow });
+  registerLaunchHandlers({
+    ipcMain,
+    launchService: container.launchService,
+    analyticsService: container.analyticsService,
+    getWindow,
+  });
   registerServerHandlers({
     ipcMain,
     recommendedServersService: container.recommendedServersService,

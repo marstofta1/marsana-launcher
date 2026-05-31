@@ -10,3 +10,6 @@ userdata/
 
 # Claude Code kişisel ayarları (settings.json paylaşılır, .local takım dışı kalır)
 .claude/settings.local.json
+
+# Analiz sunucusu toplanan veriler
+analytics-server/data/

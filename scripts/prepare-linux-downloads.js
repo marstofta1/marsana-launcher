@@ -3,6 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { getAnalyticsDownloadUrl } = require('./analytics-public-config');
+
 const root = path.join(__dirname, '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const version = pkg.version;
@@ -100,12 +102,14 @@ function main() {
     ? `downloads/${source.file}`
     : source.url;
 
+  const analyticsDownloadUrl = getAnalyticsDownloadUrl();
   const manifest = {
     version,
     releaseVersion: source.releaseVersion,
     note: 'AppImage x86_64 — çoğu dağıtımda çalışır. İlk çalıştırmadan önce: chmod +x Marsana*.AppImage',
     source: source.file,
     sourceUrl: href,
+    ...(analyticsDownloadUrl ? { analyticsDownloadUrl } : {}),
     sourceType: source.type,
     platforms: PLATFORMS.map((platform) => ({
       id: platform.id,

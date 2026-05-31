@@ -52,6 +52,7 @@
     }
 
     highlightDetectedDistro(container);
+    if (window.MarsanaAnalytics) MarsanaAnalytics.bindDownloadCards(container, manifest);
   }
 
   function highlightDetectedDistro(container) {

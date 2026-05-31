@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Marsana Launcher — Analiz Paneli</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Marsana Launcher Analiz</h1>
+    <p class="subtitle">Indirme sitesinden ayri yonetim paneli</p>
+  </header>
+
+  <section id="login-section" class="panel login-panel">
+    <h2>Giris</h2>
+    <p>Admin token ile giris yapin (<code>MARSANA_ANALYTICS_ADMIN_TOKEN</code>).</p>
+    <label class="field">
+      API adresi
+      <input id="api-base" type="url" placeholder="http://127.0.0.1:3847/api/v1" />
+    </label>
+    <label class="field">
+      Admin token
+      <input id="admin-token" type="password" placeholder="Token" autocomplete="current-password" />
+    </label>
+    <button id="login-btn" type="button">Panele gir</button>
+    <p id="login-error" class="error" hidden></p>
+  </section>
+
+  <main id="dashboard" hidden>
+    <div class="toolbar">
+      <button id="refresh-btn" type="button">Yenile</button>
+      <button id="logout-btn" type="button" class="ghost">Cikis</button>
+      <span id="last-updated" class="muted"></span>
+    </div>
+
+    <section class="stats-grid" id="summary-cards"></section>
+
+    <section class="panel">
+      <h2>Indirme tiklamalari (platform)</h2>
+      <div id="download-chart" class="bar-list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Kullanicilar / kurulumlar</h2>
+      <p class="muted">Microsoft ile giris yapanlar isimle, digerleri Anonim gorunur.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Oyuncu</th>
+              <th>Platform</th>
+              <th>Surum</th>
+              <th>Launcher kullanimi</th>
+              <th>Oyun suresi</th>
+              <th>Baslatma</th>
+              <th>Son gorulme</th>
+            </tr>
+          </thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel two-col">
+      <div>
+        <h2>Son olaylar</h2>
+        <ul id="recent-events" class="event-list"></ul>
+      </div>
+      <div>
+        <h2>Son indirmeler</h2>
+        <ul id="recent-downloads" class="event-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

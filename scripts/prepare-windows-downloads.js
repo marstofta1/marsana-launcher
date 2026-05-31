@@ -3,6 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { getAnalyticsDownloadUrl } = require('./analytics-public-config');
+
 const root = path.join(__dirname, '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const version = pkg.version;
@@ -60,10 +62,12 @@ function main() {
 
   fs.mkdirSync(downloadsDir, { recursive: true });
 
+  const analyticsDownloadUrl = getAnalyticsDownloadUrl();
   const manifest = {
     version,
     note: 'Resmi Windows 9 sürümü yayımlanmamıştır; Windows 10 sonrası Windows 11 gelmiştir.',
     source: sourceFile,
+    ...(analyticsDownloadUrl ? { analyticsDownloadUrl } : {}),
     platforms: PLATFORMS.map((platform) => ({
       id: platform.id,
       title: platform.title,

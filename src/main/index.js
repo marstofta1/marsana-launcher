@@ -9,6 +9,7 @@ const { registerAllHandlers } = require('./ipc');
 const { isMac } = require('../shared/platform');
 
 let mainWindow = null;
+let container = null;
 const getWindow = () => mainWindow;
 
 function focusMainWindow() {
@@ -23,11 +24,12 @@ function bootstrap() {
   const repoRoot = app.isPackaged
     ? path.join(process.resourcesPath)
     : path.join(__dirname, '..', '..');
-  const container = buildContainer({ userDataDir: app.getPath('userData'), repoRoot });
+  container = buildContainer({ userDataDir: app.getPath('userData'), repoRoot });
   registerAllHandlers({ ipcMain, shell, container, getWindow });
 
   app.whenReady().then(() => {
     mainWindow = createMainWindow();
+    container.analyticsService.start();
     mainWindow.on('closed', () => {
       mainWindow = null;
     });
@@ -45,6 +47,12 @@ function bootstrap() {
 
   app.on('window-all-closed', () => {
     if (!isMac) app.quit();
+  });
+
+  app.on('before-quit', () => {
+    if (container && container.analyticsService) {
+      container.analyticsService.stop();
+    }
   });
 }
 

@@ -29,6 +29,9 @@ const { createOptifineDownloader } = require('../core/mods/optifineDownloader');
 const { createShaderStackService } = require('../core/mods/shaderStackService');
 
 const { createRecommendedServersService } = require('../core/servers/recommendedServers');
+const { createAnalyticsService } = require('../core/analytics/analyticsService');
+
+const pkg = require('../../package.json');
 
 function buildContainer({ userDataDir, repoRoot }) {
   const paths = createPaths({ userDataDir });
@@ -104,6 +107,13 @@ function buildContainer({ userDataDir, repoRoot }) {
 
   const recommendedServersService = createRecommendedServersService();
 
+  const analyticsService = createAnalyticsService({
+    userDataDir,
+    getAccount: () => authService.current(),
+    getLauncherVersion: () => pkg.version,
+    logger: logger.child('analytics'),
+  });
+
   return Object.freeze({
     paths,
     logger,
@@ -113,6 +123,7 @@ function buildContainer({ userDataDir, repoRoot }) {
     loaderSupport,
     launchService,
     recommendedServersService,
+    analyticsService,
   });
 }
 

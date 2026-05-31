@@ -52,6 +52,7 @@
     }
 
     highlightDetectedPlatform(container);
+    if (window.MarsanaAnalytics) MarsanaAnalytics.bindDownloadCards(container, manifest);
   }
 
   function highlightDetectedPlatform(container) {
