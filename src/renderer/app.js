@@ -52,6 +52,7 @@ const initialState = Object.freeze({
   modGlowingOres: CLIENT_MOD_PRESET.modGlowingOres,
   modRoundTrees: CLIENT_MOD_PRESET.modRoundTrees,
   modCrops3d: CLIENT_MOD_PRESET.modCrops3d,
+  modClientHudPack: CLIENT_MOD_PRESET.modClientHudPack,
   statusText: 'Hazır.',
   progressPercent: 0,
   logLines: [],
@@ -122,6 +123,7 @@ async function bootstrap() {
       modGlowingOres: !!state.modGlowingOres,
       modRoundTrees: !!state.modRoundTrees,
       modCrops3d: !!state.modCrops3d,
+      modClientHudPack: !!state.modClientHudPack,
     };
     const ser = JSON.stringify(snap);
     if (ser !== lastSerialized) {

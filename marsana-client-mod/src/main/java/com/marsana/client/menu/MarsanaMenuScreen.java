@@ -242,7 +242,7 @@ public class MarsanaMenuScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         graphics.centeredText(this.font, this.title, this.width / 2, 12, 0x55FF88);
         String subtitle = switch (activeTab) {
-            case MODS -> "Moda tikla — shader/voice/fullbright aninda; Sodium sonraki baslatmada";
+            case MODS -> "Marsana HUD (CPS, keystrokes, zoom) aninda; Modrinth modlari jar ile";
             case COSMETICS -> "Ucretsiz pelerin secenekleri — sadece sen gorursun";
             case FRIENDS -> FriendsNetworking.isServerSupported()
                 ? "Sunucudaki oyunculara istek gonder, arkadaslarinla mesajlas"

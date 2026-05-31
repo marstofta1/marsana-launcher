@@ -79,6 +79,11 @@ function installBundledMod({ repoRoot, modsDir, gameVersion, onNotice }) {
   return destName;
 }
 
+/** Client HUD ozelliklerini config'e varsayilan olarak yazar */
+function seedHudFeatureDefaults(gameRoot) {
+  writeConfig(gameRoot, { modStates: defaultHudFeatureStates() });
+}
+
 /** Launcher indirdigi mod jar'larina config'teki acik/kapali durumunu uygula */
 function applyModToggleStates(modsDir, config) {
   if (!config || !config.modStates || !fs.existsSync(modsDir)) return;
@@ -108,6 +113,25 @@ function isMarsanaClientJar(name) {
 
 const FULLBRIGHT_FEATURE_ID = 'feature:fullbright-ub';
 
+const DEFAULT_HUD_FEATURE_STATES = Object.freeze({
+  'feature:marsana-cps': true,
+  'feature:marsana-keystrokes': true,
+  'feature:marsana-zoom': true,
+  'feature:marsana-fps': true,
+  'feature:marsana-coords': true,
+  'feature:marsana-armor': true,
+  'feature:marsana-ping': true,
+  'feature:marsana-toggle-sprint': true,
+  'feature:marsana-clock': false,
+  'feature:marsana-compass': false,
+  'feature:marsana-crosshair': false,
+  'feature:marsana-reach': false,
+});
+
+function defaultHudFeatureStates() {
+  return { ...DEFAULT_HUD_FEATURE_STATES };
+}
+
 function isFeatureEnabled(gameRoot, featureId, defaultValue = true) {
   const cfg = readConfig(gameRoot);
   if (!cfg || !cfg.modStates || cfg.modStates[featureId] === undefined) {
@@ -129,4 +153,6 @@ module.exports = {
   isMarsanaClientJar,
   isFeatureEnabled,
   FULLBRIGHT_FEATURE_ID,
+  defaultHudFeatureStates,
+  seedHudFeatureDefaults,
 };

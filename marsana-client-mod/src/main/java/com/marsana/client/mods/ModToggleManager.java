@@ -1,6 +1,7 @@
 package com.marsana.client.mods;
 
 import com.marsana.client.config.MarsanaConfigManager;
+import com.marsana.client.hud.HudFeatureRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
@@ -62,6 +63,11 @@ public final class ModToggleManager {
             out.add(new ModEntry(FULLBRIGHT_FEATURE_ID, "Fullbright UB", enabled, false));
         }
 
+        for (HudFeatureRegistry.HudFeature feature : HudFeatureRegistry.all()) {
+            boolean enabled = HudFeatureRegistry.isEnabled(feature.id());
+            out.add(new ModEntry(feature.id(), feature.displayName(), enabled, false));
+        }
+
         out.sort(Comparator.comparing(ModEntry::displayName));
         return out;
     }
@@ -82,6 +88,11 @@ public final class ModToggleManager {
                 runtime,
                 false
             );
+        }
+
+        if (HudFeatureRegistry.isHudFeature(fileName)) {
+            MarsanaConfigManager.setModEnabled(fileName, enable);
+            return new ToggleResult(ToggleOutcome.APPLIED, true, false);
         }
 
         MarsanaConfigManager.setModEnabled(fileName, enable);
@@ -125,6 +136,8 @@ public final class ModToggleManager {
             }
             if (FULLBRIGHT_FEATURE_ID.equals(key)) {
                 RuntimeModControl.applyFullbrightFeature(enabled);
+            } else if (HudFeatureRegistry.isHudFeature(key)) {
+                /* HUD ozellikleri anlik okunur */
             } else if (!key.startsWith("feature:")) {
                 RuntimeModControl.apply(key, enabled);
             }
@@ -224,6 +237,38 @@ public final class ModToggleManager {
         if (lower.contains("polytone")) return "Polytone";
         if (lower.startsWith("fabric-api")) return "Fabric API";
         if (lower.contains("marsana-client")) return "Marsana Client";
+        if (lower.contains("xaero") && lower.contains("minimap")) return "Xaero Minimap";
+        if (lower.contains("xaero") && lower.contains("world")) return "Xaero World Map";
+        if (lower.contains("appleskin")) return "AppleSkin";
+        if (lower.contains("modmenu")) return "Mod Menu";
+        if (lower.contains("betterf3")) return "BetterF3";
+        if (lower.contains("dynamic-fps") || lower.contains("dynamicfps")) return "Dynamic FPS";
+        if (lower.contains("entityculling")) return "Entity Culling";
+        if (lower.contains("lambdynamiclights")) return "LambDynamicLights";
+        if (lower.contains("shulkerboxtooltip")) return "Shulker Box Tooltip";
+        if (lower.contains("mousewheelie")) return "Mouse Wheelie";
+        if (lower.contains("skin-layers") || lower.contains("skinlayers")) return "Skin Layers 3D";
+        if (lower.contains("not-enough-animations")) return "Not Enough Animations";
+        if (lower.contains("falling-leaves")) return "Falling Leaves";
+        if (lower.contains("visuality")) return "Visuality";
+        if (lower.contains("presence-footsteps")) return "Presence Footsteps";
+        if (lower.contains("sound-physics")) return "Sound Physics";
+        if (lower.contains("enhanced-block-entities")) return "Enhanced Block Entities";
+        if (lower.contains("chat-heads")) return "Chat Heads";
+        if (lower.contains("wavey-capes") || lower.contains("waveycapes")) return "Wavey Capes";
+        if (lower.contains("lighty")) return "Lighty";
+        if (lower.contains("moreculling")) return "More Culling";
+        if (lower.contains("sodium-extra")) return "Sodium Extra";
+        if (lower.contains("reese")) return "Reese Sodium Options";
+        if (lower.contains("dynamiccrosshair")) return "Dynamic Crosshair";
+        if (lower.contains("ferritecore")) return "FerriteCore";
+        if (lower.contains("modernfix")) return "ModernFix";
+        if (lower.contains("fastquit")) return "FastQuit";
+        if (lower.contains("lazydfu")) return "LazyDFU";
+        if (lower.contains("krypton")) return "Krypton";
+        if (lower.contains("no-chat-reports")) return "No Chat Reports";
+        if (lower.contains("minihud")) return "MiniHUD";
+        if (lower.contains("journeymap")) return "JourneyMap";
         int dot = fileName.indexOf('-');
         if (dot > 0) {
             return fileName.substring(0, dot);

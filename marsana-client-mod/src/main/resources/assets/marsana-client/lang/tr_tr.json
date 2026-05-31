@@ -1,5 +1,7 @@
 {
   "key.marsana-client.menu": "Marsana Client Menüsü",
+  "key.marsana-client.zoom": "Zoom",
   "category.marsana-client": "Marsana Client",
+  "category.marsana-client.hud": "Marsana HUD",
   "marsana-client.tab.friends": "Arkadaşlar"
 }

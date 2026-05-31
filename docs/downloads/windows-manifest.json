@@ -1,5 +1,5 @@
 {
-  "version": "0.1.33",
+  "version": "0.1.34",
   "note": "Resmi Windows 9 sürümü yayımlanmamıştır; Windows 10 sonrası Windows 11 gelmiştir.",
   "source": "Marsana Launcher-0.1.33-win-x64.exe",
   "platforms": [
@@ -10,7 +10,7 @@
       "downloadName": "Marsana-Launcher-0.1.33-win11-Setup.exe",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": "64 bit · Tam destek · v0.1.33",
+      "note": "64 bit · Tam destek · v0.1.34",
       "minOs": "Windows 11"
     },
     {
@@ -20,7 +20,7 @@
       "downloadName": "Marsana-Launcher-0.1.33-win10-Setup.exe",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": "64 bit · Tam destek · v0.1.33",
+      "note": "64 bit · Tam destek · v0.1.34",
       "minOs": "Windows 10"
     },
     {
@@ -30,7 +30,7 @@
       "downloadName": "Marsana-Launcher-0.1.33-win81-Setup.exe",
       "badge": "Uyumluluk",
       "badgeClass": "legacy",
-      "note": "64 bit · Win 10+ önerilir · v0.1.33",
+      "note": "64 bit · Win 10+ önerilir · v0.1.34",
       "minOs": "Windows 8.1"
     },
     {
@@ -40,7 +40,7 @@
       "downloadName": "Marsana-Launcher-0.1.33-win7-Setup.exe",
       "badge": "Sınırlı",
       "badgeClass": "legacy",
-      "note": "64 bit · Win 10+ önerilir · v0.1.33",
+      "note": "64 bit · Win 10+ önerilir · v0.1.34",
       "minOs": "Windows 7 SP1"
     }
   ]

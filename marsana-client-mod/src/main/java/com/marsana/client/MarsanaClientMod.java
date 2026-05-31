@@ -3,6 +3,10 @@ package com.marsana.client;
 import com.marsana.client.config.MarsanaConfigManager;
 import com.marsana.client.cosmetics.CosmeticsManager;
 import com.marsana.client.friends.FriendsNetworking;
+import com.marsana.client.hud.HudFeatureRegistry;
+import com.marsana.client.hud.HudOverlayRenderer;
+import com.marsana.client.hud.ToggleSprintHandler;
+import com.marsana.client.hud.ZoomHandler;
 import com.marsana.client.keybind.MarsanaKeybinds;
 import com.marsana.client.mods.ModToggleManager;
 import net.fabricmc.api.ClientModInitializer;
@@ -16,8 +20,12 @@ public class MarsanaClientMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         MarsanaConfigManager.load();
+        HudFeatureRegistry.ensureDefaults();
         CosmeticsManager.initTextures();
         MarsanaKeybinds.register();
+        HudOverlayRenderer.register();
+        ZoomHandler.register();
+        ToggleSprintHandler.register();
         FriendsNetworking.registerClientHandlers();
         Runtime.getRuntime().addShutdownHook(new Thread(ModToggleManager::applyPendingFileToggles, "marsana-mod-sync"));
 

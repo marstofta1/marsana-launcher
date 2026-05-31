@@ -42,6 +42,7 @@ export function createPlayButton({ root, store, launchApi }) {
           glowingOres: !!state.modGlowingOres,
           roundTrees: !!state.modRoundTrees,
           crops3d: !!state.modCrops3d,
+          clientHudPack: !!state.modClientHudPack,
         },
         audioSettings:
           typeof s.masterVolume === 'number' || typeof s.musicVolume === 'number'

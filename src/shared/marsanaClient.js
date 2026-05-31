@@ -20,6 +20,7 @@ export const CLIENT_MOD_PRESET = Object.freeze({
   modGlowingOres: false,
   modRoundTrees: false,
   modCrops3d: false,
+  modClientHudPack: true,
 });
 
 /** Client modunda kullanıcıya gösterilen özellik özeti */
@@ -43,6 +44,11 @@ export const CLIENT_FEATURES = Object.freeze([
     id: 'voiceChat',
     title: 'Voice Chat',
     description: 'Simple Voice Chat — yakınlık sesli sohbet (V tuşu).',
+  },
+  {
+    id: 'clientHudPack',
+    title: 'Client HUD Paketi',
+    description: 'CPS, keystrokes, zoom (C) + Minimap ve 50+ client mod (Modrinth). H menüsünden aç/kapa.',
   },
 ]);
 

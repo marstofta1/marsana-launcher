@@ -7,10 +7,11 @@ const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
 const marsanaClientModService = require('./marsanaClientModService');
+const { CLIENT_HUD_MOD_SLUGS } = require('../../shared/clientHudModRegistry');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 23;
+const SHADER_BUNDLE_VERSION = 24;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -424,10 +425,11 @@ function normalizePresets(p) {
     roundTrees: !!(p && p.roundTrees),
     crops3d: !!(p && p.crops3d),
     marsanaClientMenu: !!(p && p.marsanaClientMenu),
+    clientHudPack: !!(p && p.clientHudPack),
   };
 }
 
-const OPTIONAL_LOADER_MOD_SLUGS = new Set([POLYTONE_SLUG]);
+const OPTIONAL_LOADER_MOD_SLUGS = new Set([POLYTONE_SLUG, ...CLIENT_HUD_MOD_SLUGS]);
 
 function polytoneSupportedForGameVersion(gameVersion) {
   // Polytone Modrinth'te en fazla 1.21.11'e kadar; 26.x için native jar yok.
@@ -470,6 +472,11 @@ function modrinthSlugsForPresets(p, gameVersion) {
   if (fullbrightNeedsPolytone(p, gameVersion)) add(POLYTONE_SLUG);
   if (betterLeavesNeedsCullLeaves(p)) add(CULL_LEAVES_SLUG);
   if (glowingOresNeedsContinuity(p)) add(CONTINUITY_SLUG);
+  if (p.clientHudPack) {
+    for (const slug of CLIENT_HUD_MOD_SLUGS) {
+      add(slug);
+    }
+  }
   return out;
 }
 
@@ -1519,7 +1526,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable' }) {
     const presets = normalizePresets(modPresets);
-    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d) {
+    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.clientHudPack) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
     }
 
@@ -1590,6 +1597,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
 
     const slugs = modrinthSlugsForPresets(presets, gameVersion);
+    if (presets.clientHudPack) {
+      status('Client HUD paketi: minimap ve client modlari indiriliyor (uyumlu olanlar)...');
+    }
     let jars = slugs.length ? await downloadModsFromSlugs({ modsDir, gameVersion, slugs }) : [];
     if (optifineMeta && Array.isArray(optifineMeta.jarNames)) {
       const seen = new Set(jars);
@@ -1621,6 +1631,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       if (menuJar && !jars.includes(menuJar)) {
         jars.push(menuJar);
       }
+      marsanaClientModService.seedHudFeatureDefaults(gameRoot);
       const cfg = marsanaClientModService.readConfig(gameRoot);
       marsanaClientModService.applyModToggleStates(modsDir, cfg);
     }
