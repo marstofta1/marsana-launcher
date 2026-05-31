@@ -1,6 +1,8 @@
 package com.marsana.client.menu;
 
 import com.marsana.client.cosmetics.CosmeticsManager;
+import com.marsana.client.friends.FriendsManager;
+import com.marsana.client.friends.FriendsNetworking;
 import com.marsana.client.mods.ModToggleManager;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -10,15 +12,19 @@ import net.minecraft.ChatFormatting;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MarsanaMenuScreen extends Screen {
-    private enum Tab { MODS, COSMETICS }
+    private enum Tab { MODS, COSMETICS, FRIENDS }
 
     private Tab activeTab = Tab.MODS;
     private final List<Button> dynamicButtons = new ArrayList<>();
     private Button modsTabButton;
     private Button cosmeticsTabButton;
+    private Button friendsTabButton;
     private int modScrollOffset = 0;
+    private int friendsScrollOffset = 0;
 
     public MarsanaMenuScreen() {
         super(Component.literal("Marsana Client"));
@@ -30,12 +36,15 @@ public class MarsanaMenuScreen extends Screen {
         int top = 28;
 
         modsTabButton = Button.builder(Component.literal("Modlar"), b -> switchTab(Tab.MODS))
-            .bounds(centerX - 155, top, 150, 20).build();
+            .bounds(centerX - 155, top, 100, 20).build();
         cosmeticsTabButton = Button.builder(Component.literal("Kozmetik"), b -> switchTab(Tab.COSMETICS))
-            .bounds(centerX + 5, top, 150, 20).build();
+            .bounds(centerX - 50, top, 100, 20).build();
+        friendsTabButton = Button.builder(Component.literal("Arkadaslar"), b -> switchTab(Tab.FRIENDS))
+            .bounds(centerX + 55, top, 100, 20).build();
 
         addRenderableWidget(modsTabButton);
         addRenderableWidget(cosmeticsTabButton);
+        addRenderableWidget(friendsTabButton);
         addRenderableWidget(Button.builder(Component.literal("Kapat"), b -> onClose())
             .bounds(centerX - 50, this.height - 32, 100, 20).build());
 
@@ -45,6 +54,7 @@ public class MarsanaMenuScreen extends Screen {
     private void switchTab(Tab tab) {
         activeTab = tab;
         modScrollOffset = 0;
+        friendsScrollOffset = 0;
         rebuildTabContent();
     }
 
@@ -57,10 +67,10 @@ public class MarsanaMenuScreen extends Screen {
 
     private void rebuildTabContent() {
         clearDynamicButtons();
-        if (activeTab == Tab.MODS) {
-            buildModsTab();
-        } else {
-            buildCosmeticsTab();
+        switch (activeTab) {
+            case MODS -> buildModsTab();
+            case COSMETICS -> buildCosmeticsTab();
+            case FRIENDS -> buildFriendsTab();
         }
     }
 
@@ -143,12 +153,103 @@ public class MarsanaMenuScreen extends Screen {
         }
     }
 
+    private void buildFriendsTab() {
+        int centerX = this.width / 2;
+        int y = 64;
+
+        int pending = FriendsManager.pendingRequestCount();
+        String requestsLabel = pending > 0 ? "Istekler (" + pending + ")" : "Istekler";
+        addRenderableWidget(Button.builder(Component.literal("Arkadas Ekle"), b -> openAddFriend())
+            .bounds(centerX - 160, y, 155, 20).build());
+        addRenderableWidget(Button.builder(Component.literal(requestsLabel), b -> openRequests())
+            .bounds(centerX + 5, y, 155, 20).build());
+        y += 28;
+
+        List<FriendsManager.FriendEntry> friends = FriendsManager.listFriends();
+        int visibleRows = Math.max(1, (this.height - 140) / 24);
+        int maxOffset = Math.max(0, friends.size() - visibleRows);
+        friendsScrollOffset = Math.min(friendsScrollOffset, maxOffset);
+
+        Set<String> online = onlinePlayerNames();
+
+        if (friendsScrollOffset > 0) {
+            Button up = Button.builder(Component.literal("^ Yukari"), b -> {
+                friendsScrollOffset = Math.max(0, friendsScrollOffset - 1);
+                rebuildTabContent();
+            }).bounds(centerX - 160, y, 155, 18).build();
+            addRenderableWidget(up);
+            dynamicButtons.add(up);
+            y += 22;
+        }
+
+        int end = Math.min(friends.size(), friendsScrollOffset + visibleRows);
+        for (int i = friendsScrollOffset; i < end; i++) {
+            FriendsManager.FriendEntry friend = friends.get(i);
+            boolean onlineNow = online.contains(friend.name().toLowerCase());
+            String status = onlineNow ? "Cevrimici" : "Cevrimdisi";
+            String label = friend.name() + " [" + status + "]";
+            int row = i - friendsScrollOffset;
+            Button msgBtn = Button.builder(Component.literal(label + " > Mesaj"), b -> openChat(friend))
+                .bounds(centerX - 160, y + row * 24, 320, 20).build();
+            addRenderableWidget(msgBtn);
+            dynamicButtons.add(msgBtn);
+        }
+
+        if (friends.isEmpty()) {
+            Button hint = Button.builder(Component.literal("Henuz arkadas yok — Arkadas Ekle"), b -> openAddFriend())
+                .bounds(centerX - 160, y, 320, 20).build();
+            addRenderableWidget(hint);
+            dynamicButtons.add(hint);
+        }
+
+        if (friendsScrollOffset + visibleRows < friends.size()) {
+            int scrollY = y + (end - friendsScrollOffset) * 24 + 4;
+            Button down = Button.builder(Component.literal("v Asagi"), b -> {
+                friendsScrollOffset = Math.min(maxOffset, friendsScrollOffset + 1);
+                rebuildTabContent();
+            }).bounds(centerX + 5, scrollY, 155, 18).build();
+            addRenderableWidget(down);
+            dynamicButtons.add(down);
+        }
+    }
+
+    private Set<String> onlinePlayerNames() {
+        if (this.minecraft == null || this.minecraft.getConnection() == null) {
+            return Set.of();
+        }
+        return this.minecraft.getConnection().getOnlinePlayers().stream()
+            .map(info -> info.getProfile().name().toLowerCase())
+            .collect(Collectors.toSet());
+    }
+
+    private void openAddFriend() {
+        if (this.minecraft != null) {
+            this.minecraft.setScreen(new AddFriendScreen(this));
+        }
+    }
+
+    private void openRequests() {
+        if (this.minecraft != null) {
+            this.minecraft.setScreen(new FriendRequestsScreen(this));
+        }
+    }
+
+    private void openChat(FriendsManager.FriendEntry friend) {
+        if (this.minecraft != null) {
+            this.minecraft.setScreen(new FriendChatScreen(this, friend.uuid(), friend.name()));
+        }
+    }
+
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         graphics.centeredText(this.font, this.title, this.width / 2, 12, 0x55FF88);
-        String subtitle = activeTab == Tab.MODS
-            ? "Moda tikla — shader/voice/fullbright aninda; Sodium sonraki baslatmada"
-            : "Ucretsiz pelerin secenekleri — sadece sen gorursun";
+        String subtitle = switch (activeTab) {
+            case MODS -> "Moda tikla — shader/voice/fullbright aninda; Sodium sonraki baslatmada";
+            case COSMETICS -> "Ucretsiz pelerin secenekleri — sadece sen gorursun";
+            case FRIENDS -> FriendsNetworking.isServerSupported()
+                ? "Sunucudaki oyunculara istek gonder, arkadaslarinla mesajlas"
+                : "Arkadaslik icin sunucuda Marsana Client modu gerekli";
+        };
         graphics.centeredText(this.font, subtitle, this.width / 2, 52, 0xAAAAAA);
         super.extractRenderState(graphics, mouseX, mouseY, delta);
     }
