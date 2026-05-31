@@ -7,11 +7,11 @@ const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
 const marsanaClientModService = require('./marsanaClientModService');
-const { CLIENT_HUD_MOD_SLUGS } = require('../../shared/clientHudModRegistry');
+const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../shared/clientHudModRegistry');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 24;
+const SHADER_BUNDLE_VERSION = 25;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -473,9 +473,8 @@ function modrinthSlugsForPresets(p, gameVersion) {
   if (betterLeavesNeedsCullLeaves(p)) add(CULL_LEAVES_SLUG);
   if (glowingOresNeedsContinuity(p)) add(CONTINUITY_SLUG);
   if (p.clientHudPack) {
-    for (const slug of CLIENT_HUD_MOD_SLUGS) {
-      add(slug);
-    }
+    for (const slug of CLIENT_HUD_REQUIRED_SLUGS) add(slug);
+    for (const slug of CLIENT_HUD_MOD_SLUGS) add(slug);
   }
   return out;
 }
