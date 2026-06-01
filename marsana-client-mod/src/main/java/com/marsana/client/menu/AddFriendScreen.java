@@ -131,12 +131,12 @@ public class AddFriendScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (nameInput != null && nameInput.keyPressed(event)) {
-            return true;
-        }
         if (nameInput != null && nameInput.isFocused()
             && (event.key() == InputConstants.KEY_RETURN || event.key() == InputConstants.KEY_NUMPADENTER)) {
             sendRequest(nameInput.getValue().trim());
+            return true;
+        }
+        if (nameInput != null && nameInput.keyPressed(event)) {
             return true;
         }
         return super.keyPressed(event);

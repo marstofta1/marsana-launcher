@@ -33,14 +33,15 @@ public final class HudOverlayRenderer {
 
     public static void register() {
         Identifier hudId = Identifier.fromNamespaceAndPath(MarsanaClientMod.MOD_ID, "overlay");
-        HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, hudId, HudOverlayRenderer::render);
+        // CHAT oncesi katman sohbet girisini bozuyor; CHAT sonrasina tasindi.
+        HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, hudId, HudOverlayRenderer::render);
         CpsTracker.register();
     }
 
     private static void render(GuiGraphicsExtractor graphics, net.minecraft.client.DeltaTracker tickCounter) {
         Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;
-        if (player == null || client.options.hideGui) {
+        if (player == null || client.options.hideGui || client.screen != null) {
             return;
         }
 

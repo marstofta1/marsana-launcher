@@ -96,12 +96,12 @@ public class FriendChatScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (messageInput != null && messageInput.keyPressed(event)) {
-            return true;
-        }
         if (messageInput != null && messageInput.isFocused()
             && (event.key() == InputConstants.KEY_RETURN || event.key() == InputConstants.KEY_NUMPADENTER)) {
             sendMessage();
+            return true;
+        }
+        if (messageInput != null && messageInput.keyPressed(event)) {
             return true;
         }
         return super.keyPressed(event);
