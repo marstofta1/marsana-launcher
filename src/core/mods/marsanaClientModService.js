@@ -161,6 +161,16 @@ function defaultHudFeatureStates() {
   return { ...DEFAULT_HUD_FEATURE_STATES };
 }
 
+/** Client HUD / H menusu yalnizca playMode === 'client' iken aktif olmali. */
+function sanitizeModPresetsForPlayMode(presets, playMode) {
+  const p = { ...(presets || {}) };
+  if (playMode !== 'client') {
+    p.marsanaClientMenu = false;
+    p.clientHudPack = false;
+  }
+  return p;
+}
+
 function isFeatureEnabled(gameRoot, featureId, defaultValue = true) {
   const cfg = readConfig(gameRoot);
   if (!cfg || !cfg.modStates || cfg.modStates[featureId] === undefined) {
@@ -186,4 +196,5 @@ module.exports = {
   FULLBRIGHT_FEATURE_ID,
   defaultHudFeatureStates,
   seedHudFeatureDefaults,
+  sanitizeModPresetsForPlayMode,
 };

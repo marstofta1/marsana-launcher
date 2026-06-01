@@ -1027,19 +1027,22 @@ function createLaunchService({
     });
 
     const memMb = clampMemory(opts.memoryMb);
-    const modPresets = opts.modPresets || {
-      optifine: false,
-      shaderFps: !!opts.shaderStack,
-      embossedBlocks: false,
-      voiceChat: false,
-      fullbrightUb: false,
-      betterLeaves: false,
-      glowingOres: false,
-      roundTrees: false,
-      crops3d: false,
-      marsanaClientMenu: opts.playMode === 'client',
-      clientHudPack: opts.playMode === 'client' || !!(opts.modPresets && opts.modPresets.clientHudPack),
-    };
+    const modPresets = marsanaClientModService.sanitizeModPresetsForPlayMode(
+      opts.modPresets || {
+        optifine: false,
+        shaderFps: !!opts.shaderStack,
+        embossedBlocks: false,
+        voiceChat: false,
+        fullbrightUb: false,
+        betterLeaves: false,
+        glowingOres: false,
+        roundTrees: false,
+        crops3d: false,
+        marsanaClientMenu: opts.playMode === 'client',
+        clientHudPack: opts.playMode === 'client',
+      },
+      opts.playMode
+    );
 
     // Forge installer'ı subprocess olarak çalıştırmak için javaPath'i önceden çöz.
     // Forge için sistem Java'sı (JAVA_HOME) yerine Mojang'ın tam doğru sürümünü

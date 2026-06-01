@@ -1,3 +1,5 @@
+import { sanitizeModPresetsForPlayMode } from '../../shared/marsanaClient.js';
+
 export function createPlayButton({ root, store, launchApi }) {
   root.innerHTML = `<button class="btn play" disabled data-role="play">OYNA</button>`;
   const btn = root.querySelector('[data-role="play"]');
@@ -31,19 +33,22 @@ export function createPlayButton({ root, store, launchApi }) {
         offlineName: state.offlineName,
         selectedLoader: loader,
         shaderSlug: state.selectedShader,
-        modPresets: {
-          marsanaClientMenu: state.playMode === 'client',
-          optifine: !!state.modOptifine,
-          shaderFps: !!state.modShaderFps,
-          embossedBlocks: !!state.modEmbossedBlocks,
-          voiceChat: !!state.modVoiceChat,
-          fullbrightUb: !!state.modFullbrightUb,
-          betterLeaves: !!state.modBetterLeaves,
-          glowingOres: !!state.modGlowingOres,
-          roundTrees: !!state.modRoundTrees,
-          crops3d: !!state.modCrops3d,
-          clientHudPack: !!state.modClientHudPack,
-        },
+        modPresets: sanitizeModPresetsForPlayMode(
+          {
+            marsanaClientMenu: state.playMode === 'client',
+            optifine: !!state.modOptifine,
+            shaderFps: !!state.modShaderFps,
+            embossedBlocks: !!state.modEmbossedBlocks,
+            voiceChat: !!state.modVoiceChat,
+            fullbrightUb: !!state.modFullbrightUb,
+            betterLeaves: !!state.modBetterLeaves,
+            glowingOres: !!state.modGlowingOres,
+            roundTrees: !!state.modRoundTrees,
+            crops3d: !!state.modCrops3d,
+            clientHudPack: state.playMode === 'client' && !!state.modClientHudPack,
+          },
+          state.playMode
+        ),
         audioSettings:
           typeof s.masterVolume === 'number' || typeof s.musicVolume === 'number'
             ? {

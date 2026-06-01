@@ -68,6 +68,31 @@ export function isClientMode(playMode) {
   return playMode === PLAY_MODES.CLIENT;
 }
 
+/** Gelişmiş launcher sekmesine geçince client paketi bayraklarını kapat. */
+export const LAUNCHER_MODE_RESET = Object.freeze({
+  playMode: PLAY_MODES.LAUNCHER,
+  modShaderFps: false,
+  modOptifine: false,
+  modEmbossedBlocks: false,
+  modVoiceChat: false,
+  modFullbrightUb: false,
+  modBetterLeaves: false,
+  modGlowingOres: false,
+  modRoundTrees: false,
+  modCrops3d: false,
+  modClientHudPack: false,
+});
+
+/** Client'a özel preset'ler launcher modunda asla aktif olmamalı. */
+export function sanitizeModPresetsForPlayMode(presets, playMode) {
+  const p = { ...(presets || {}) };
+  if (!isClientMode(playMode)) {
+    p.marsanaClientMenu = false;
+    p.clientHudPack = false;
+  }
+  return p;
+}
+
 export function applyClientPreset(base = {}) {
   return { ...base, ...CLIENT_MOD_PRESET, playMode: PLAY_MODES.CLIENT };
 }

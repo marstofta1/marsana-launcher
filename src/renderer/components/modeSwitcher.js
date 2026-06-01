@@ -3,6 +3,7 @@ import {
   CLIENT_FEATURES,
   applyClientPreset,
   isClientMode,
+  LAUNCHER_MODE_RESET,
 } from '../../shared/marsanaClient.js';
 
 const BRAND_LAUNCHER = 'Marsana Launcher';
@@ -68,7 +69,7 @@ export function createModeSwitcher({ root, store }) {
     if (mode === PLAY_MODES.CLIENT) {
       store.setState(applyClientPreset(store.getState()));
     } else {
-      store.setState({ playMode: PLAY_MODES.LAUNCHER });
+      store.setState(LAUNCHER_MODE_RESET);
     }
     updateBranding(mode);
     setActiveTab(mode);
