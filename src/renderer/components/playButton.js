@@ -1,4 +1,4 @@
-import { sanitizeModPresetsForPlayMode } from '../../shared/marsanaClient.js';
+import { sanitizeModPresetsForPlayMode, PLAY_MODES } from '../../shared/marsanaClient.js';
 
 export function createPlayButton({ root, store, launchApi }) {
   root.innerHTML = `<button class="btn play" disabled data-role="play">OYNA</button>`;
@@ -56,7 +56,8 @@ export function createPlayButton({ root, store, launchApi }) {
                 musicVolume: typeof s.musicVolume === 'number' ? s.musicVolume / 100 : null,
               }
             : null,
-        playMode: state.playMode || 'client',
+        playMode:
+          state.playMode === PLAY_MODES.LAUNCHER ? PLAY_MODES.LAUNCHER : PLAY_MODES.CLIENT,
         selectedCosmetic: state.selectedCosmetic || 'none',
       });
     } catch (err) {

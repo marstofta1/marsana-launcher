@@ -7,13 +7,14 @@ const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
 const marsanaClientModService = require('./marsanaClientModService');
+const modIsolationService = require('./modIsolationService');
 const hudDepsService = require('./hudDepsService');
 const modCompatibilityService = require('./modCompatibilityService');
 const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../shared/clientHudModRegistry');
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 33;
+const SHADER_BUNDLE_VERSION = 34;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -1622,7 +1623,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { jars };
   }
 
-  async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable' }) {
+  async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable', playMode }) {
     const presets = normalizePresets(modPresets);
     if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.clientHudPack) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
@@ -1634,6 +1635,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const customId = customIdFor(gameVersion, presets, resolvedShaderSlug, { loaderPrefix });
     const versionDir = path.join(gameRoot, 'versions', customId);
     const modsDir = path.join(gameRoot, 'mods');
+    modIsolationService.applyClientPackVisibility(modsDir, presets, playMode);
     const shaderpacksDir = path.join(gameRoot, 'shaderpacks');
     const resourcepacksDir = path.join(gameRoot, 'resourcepacks');
     const versionJsonPath = path.join(versionDir, `${customId}.json`);
@@ -1661,6 +1663,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       shaderSlug: resolvedShaderSlug,
     });
     if (cached) {
+      modIsolationService.applyClientPackVisibility(modsDir, presets, playMode);
       if (presets.shaderFps && !presets.optifine && cached.shaderpacks[0]) {
         activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename: cached.shaderpacks[0] });
       }

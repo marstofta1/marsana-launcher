@@ -69,6 +69,20 @@ export function isClientMode(playMode) {
 }
 
 /** Gelişmiş launcher sekmesine geçince client paketi bayraklarını kapat. */
+export function normalizePersistedSelection(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object') return snapshot;
+  if (!isClientMode(snapshot.playMode)) {
+    return {
+      ...snapshot,
+      ...LAUNCHER_MODE_RESET,
+      selectedLoader: snapshot.selectedLoader || 'vanilla',
+      selectedShader: snapshot.selectedShader,
+      selectedCosmetic: snapshot.selectedCosmetic,
+    };
+  }
+  return snapshot;
+}
+
 export const LAUNCHER_MODE_RESET = Object.freeze({
   playMode: PLAY_MODES.LAUNCHER,
   modShaderFps: false,

@@ -20,6 +20,7 @@ import {
   DEFAULT_PLAY_MODE,
   CLIENT_MOD_PRESET,
   DEFAULT_COSMETIC,
+  normalizePersistedSelection,
 } from '../shared/marsanaClient.js';
 import { wireHowToPlayGuide } from './components/howToPlayGuide.js';
 import {
@@ -84,7 +85,7 @@ async function bootstrap() {
   const seededState = { ...initialState };
   if (persistedSettings.rememberSelection) {
     const last = loadLastSelection();
-    if (last) Object.assign(seededState, last);
+    if (last) Object.assign(seededState, normalizePersistedSelection(last));
   }
   const store = createStore({ ...seededState, settings: persistedSettings });
   updateBranding(store.getState().playMode);
@@ -109,7 +110,7 @@ async function bootstrap() {
     }
     prevRemember = nowRemember;
     if (!nowRemember) return;
-    const snap = {
+    const snap = normalizePersistedSelection({
       playMode: state.playMode || DEFAULT_PLAY_MODE,
       selectedCosmetic: state.selectedCosmetic || DEFAULT_COSMETIC,
       selectedLoader: state.selectedLoader,
@@ -124,7 +125,7 @@ async function bootstrap() {
       modRoundTrees: !!state.modRoundTrees,
       modCrops3d: !!state.modCrops3d,
       modClientHudPack: !!state.modClientHudPack,
-    };
+    });
     const ser = JSON.stringify(snap);
     if (ser !== lastSerialized) {
       lastSerialized = ser;

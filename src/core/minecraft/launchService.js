@@ -13,6 +13,7 @@ const { LauncherError, Codes } = require('../infra/errors');
 const marsanaClientModService = require('../mods/marsanaClientModService');
 const hudDepsService = require('../mods/hudDepsService');
 const modCompatibilityService = require('../mods/modCompatibilityService');
+const modIsolationService = require('../mods/modIsolationService');
 
 const MIN_MEM_MB = 1024;
 const DEFAULT_MEM_MB = 2048;
@@ -168,7 +169,7 @@ function createLaunchService({
     return { assetIndexId };
   }
 
-  async function buildFabricBetaSpec({ version, modPresets, shaderSlug, emit }) {
+  async function buildFabricBetaSpec({ version, modPresets, shaderSlug, playMode, emit }) {
     const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false, roundTrees: false, crops3d: false };
     const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.clientHudPack);
     if (useMods) {
@@ -183,6 +184,7 @@ function createLaunchService({
         gameVersion: effectiveVersion,
         emit,
         modPresets: presets,
+        playMode,
         shaderSlug,
         fabricChannel: 'beta',
       });
@@ -286,7 +288,7 @@ function createLaunchService({
     };
   }
 
-  async function buildFabricSpec({ version, modPresets, shaderSlug, emit }) {
+  async function buildFabricSpec({ version, modPresets, shaderSlug, playMode, emit }) {
     const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false, roundTrees: false, crops3d: false };
     const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.clientHudPack);
     if (!useFabric) {
@@ -303,6 +305,7 @@ function createLaunchService({
       gameVersion: effectiveVersion,
       emit,
       modPresets: presets,
+      playMode,
       shaderSlug,
     });
     return {
@@ -852,7 +855,7 @@ function createLaunchService({
     };
   }
 
-  async function buildLaunchPlan({ version, selectedLoader, modPresets, shaderSlug, javaPath, emit }) {
+  async function buildLaunchPlan({ version, selectedLoader, modPresets, playMode, shaderSlug, javaPath, emit }) {
     const loader = selectedLoader || 'vanilla';
     // modPresets.shaderFps / embossedBlocks tüm loader'larda paylaşılan
     // flag'lerdir: Fabric için shaderStackService.ensure içinde işlenir; Forge
@@ -914,7 +917,7 @@ function createLaunchService({
       return buildLegacyFabricSpec({ version, emit });
     }
     if (loader === 'fabric-beta') {
-      const plan = await buildFabricBetaSpec({ version, modPresets, shaderSlug, emit });
+      const plan = await buildFabricBetaSpec({ version, modPresets, shaderSlug, playMode, emit });
       applyLoaderModsState('fabric');
       finalizeFabricModsDir(effectiveModGameVersion(version));
       return plan;
@@ -985,7 +988,7 @@ function createLaunchService({
         extra: {},
       };
     }
-    const fabricPlan = await buildFabricSpec({ version, modPresets, shaderSlug, emit });
+    const fabricPlan = await buildFabricSpec({ version, modPresets, shaderSlug, playMode, emit });
     applyLoaderModsState('fabric');
     finalizeFabricModsDir(effectiveModGameVersion(version));
     return fabricPlan;
@@ -1027,6 +1030,7 @@ function createLaunchService({
     });
 
     const memMb = clampMemory(opts.memoryMb);
+    const playMode = opts.playMode === 'launcher' ? 'launcher' : opts.playMode === 'client' ? 'client' : 'launcher';
     const modPresets = marsanaClientModService.sanitizeModPresetsForPlayMode(
       opts.modPresets || {
         optifine: false,
@@ -1038,11 +1042,19 @@ function createLaunchService({
         glowingOres: false,
         roundTrees: false,
         crops3d: false,
-        marsanaClientMenu: opts.playMode === 'client',
-        clientHudPack: opts.playMode === 'client',
+        marsanaClientMenu: playMode === 'client',
+        clientHudPack: playMode === 'client',
       },
-      opts.playMode
+      playMode
     );
+
+    const modsDirPath = path.join(paths.gameRoot, 'mods');
+    const iso = modIsolationService.applyClientPackVisibility(modsDirPath, modPresets, playMode);
+    if (iso.stashed > 0 && emit && emit.status) {
+      emit.status({
+        text: `Gelişmiş Launcher: Marsana Client paketi (${iso.stashed} mod) bu oturumda devre dışı bırakıldı.`,
+      });
+    }
 
     // Forge installer'ı subprocess olarak çalıştırmak için javaPath'i önceden çöz.
     // Forge için sistem Java'sı (JAVA_HOME) yerine Mojang'ın tam doğru sürümünü
@@ -1068,6 +1080,7 @@ function createLaunchService({
       version: opts.version,
       selectedLoader: opts.selectedLoader,
       modPresets,
+      playMode,
       shaderSlug: opts.shaderSlug,
       javaPath,
       emit,
