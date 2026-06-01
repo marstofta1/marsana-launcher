@@ -16,6 +16,14 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public final class HudOverlayRenderer {
+    /** Minecraft 26.x metin rengi ARGB (alfa zorunlu; 0xFFFFFF yaziyi gorunmez yapar). */
+    private static final int TEXT_WHITE = 0xFFFFFFFF;
+    private static final int TEXT_DIM = 0xFFAAAAAA;
+    private static final int TEXT_DARK = 0xFF111111;
+    private static final int ACCENT = 0xFF55FF88;
+    private static final int KEY_BG = 0xFF2A2A2A;
+    private static final int KEY_BG_PRESSED = 0xFF55FF88;
+
     private static final DateTimeFormatter CLOCK_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static int frameCounter;
     private static int lastFps;
@@ -69,7 +77,7 @@ public final class HudOverlayRenderer {
 
         if (HudFeatureRegistry.isEnabled(HudFeatureIds.CPS)) {
             String cps = "CPS: " + CpsTracker.leftCps() + " | " + CpsTracker.rightCps();
-            graphics.text(client.font, cps, sw - client.font.width(cps) - 4, 4, 0xFFFFFF);
+            graphics.text(client.font, cps, sw - client.font.width(cps) - 4, 4, TEXT_WHITE);
         }
 
         if (HudFeatureRegistry.isEnabled(HudFeatureIds.ARMOR)) {
@@ -83,17 +91,17 @@ public final class HudOverlayRenderer {
         if (HudFeatureRegistry.isEnabled(HudFeatureIds.CROSSHAIR)) {
             int cx = sw / 2 + 8;
             int cy = sh / 2 + 8;
-            graphics.text(client.font, "+", cx, cy, 0x55FF88);
+            graphics.text(client.font, "+", cx, cy, ACCENT);
         }
 
         if (HudFeatureRegistry.isEnabled(HudFeatureIds.REACH)) {
             String reach = String.format("Reach: %.1f", 3.0);
-            graphics.text(client.font, reach, sw / 2 - client.font.width(reach) / 2, sh - 52, 0xAAAAAA);
+            graphics.text(client.font, reach, sw / 2 - client.font.width(reach) / 2, sh - 52, TEXT_DIM);
         }
     }
 
     private static void drawTopLeftStack(GuiGraphicsExtractor graphics, Minecraft client, int sw, int row, String text) {
-        graphics.text(client.font, text, 4, 4 + row * 10, 0xFFFFFF);
+        graphics.text(client.font, text, 4, 4 + row * 10, TEXT_WHITE);
     }
 
     private static void updateFps() {
@@ -136,7 +144,7 @@ public final class HudOverlayRenderer {
                 line += " (" + left + "/" + max + ")";
             }
             int w = client.font.width(line);
-            graphics.text(client.font, line, sw - w - 4, y, 0xFFFFFF);
+            graphics.text(client.font, line, sw - w - 4, y, TEXT_WHITE);
             y += 10;
             idx++;
         }
@@ -166,8 +174,8 @@ public final class HudOverlayRenderer {
     private static void drawKey(GuiGraphicsExtractor graphics, Minecraft client, int x, int y, String label, boolean pressed) {
         int w = Math.max(20, client.font.width(label) + 8);
         int h = 18;
-        int bg = pressed ? 0xFF55FF88 : 0xFF222222;
+        int bg = pressed ? KEY_BG_PRESSED : KEY_BG;
         graphics.fill(x, y, x + w, y + h, bg);
-        graphics.text(client.font, label, x + (w - client.font.width(label)) / 2, y + 5, pressed ? 0x111111 : 0xFFFFFF);
+        graphics.text(client.font, label, x + (w - client.font.width(label)) / 2, y + 5, pressed ? TEXT_DARK : TEXT_WHITE);
     }
 }
