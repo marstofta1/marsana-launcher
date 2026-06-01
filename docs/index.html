@@ -275,8 +275,17 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v0.2.1 — Oyun başlatma hatası düzeltmesi</span>
+            <span class="release-version">v0.2.2 — Sodium çekirdek modu düzeltmesi</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li><code>sodium-extra</code> ile gerçek <code>sodium</code> jar'ı karıştırılıp siliniyordu; dedupe düzeltildi.</li>
+            <li>Sodium veya Iris eksikse launcher otomatik yeniden indirir.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v0.2.1 — Oyun başlatma hatası düzeltmesi</span>
           </div>
           <ul class="release-changes">
             <li><code>path is not defined</code> hatası giderildi — mod uyumluluk temizliği artık oyunu başlatmayı engellemez.</li>

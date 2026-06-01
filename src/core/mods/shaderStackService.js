@@ -13,7 +13,7 @@ const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../share
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 30;
+const SHADER_BUNDLE_VERSION = 31;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -773,6 +773,33 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return out;
   }
 
+  async function ensureShaderCoreMods({ modsDir, gameVersion, presets, status, jars }) {
+    let out = Array.isArray(jars) ? jars.slice() : [];
+    if (!presets.shaderFps || presets.optifine) return out;
+
+    const need = [];
+    if (!modCompatibilityService.coreSodiumJarPresent(modsDir)) need.push('sodium');
+    if (!modCompatibilityService.coreIrisJarPresent(modsDir)) need.push('iris');
+    if (need.length) {
+      status(`Shader cekirdegi eksik (${need.join(', ')}), indiriliyor...`);
+      const coreJars = await downloadModsFromSlugs({ modsDir, gameVersion, slugs: need });
+      out = [...new Set([...out, ...coreJars])];
+    }
+
+    const hasFabricApi = fs.existsSync(modsDir) &&
+      fs.readdirSync(modsDir).some((f) => /^fabric-api/i.test(f) && f.endsWith('.jar'));
+    if (!hasFabricApi) {
+      status('Fabric API eksik, indiriliyor...');
+      const apiJars = await downloadModsFromSlugs({ modsDir, gameVersion, slugs: ['fabric-api'] });
+      out = [...new Set([...out, ...apiJars])];
+    }
+
+    if (modCompatibilityService.isMc26GameVersion(gameVersion)) {
+      modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
+    }
+    return out;
+  }
+
   function cachedReady({ versionDir, modsDir, shaderpacksDir, resourcepacksDir, gameVersion, versionJsonPath, readyPath, modPresets, shaderSlug }) {
     const existing = readBundle(modsDir);
     const expectedPack = modPresets.shaderFps && !modPresets.optifine ? shaderPackLocalName(shaderSlug) : null;
@@ -791,6 +818,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       (existing.shaderpacks || []).some((name) => /§/.test(String(name))) ||
       !clientHudDependenciesOk(modsDir, modPresets) ||
       (modPresets.marsanaClientMenu && !marsanaClientModService.marsanaClientJarPresent(modsDir)) ||
+      (modPresets.shaderFps &&
+        !modPresets.optifine &&
+        !modCompatibilityService.coreSodiumJarPresent(modsDir)) ||
+      (modPresets.shaderFps &&
+        !modPresets.optifine &&
+        !modCompatibilityService.coreIrisJarPresent(modsDir)) ||
       (!polytoneSupportedForGameVersion(gameVersion) &&
         (existing.jars || []).some((name) => /^polytone/i.test(String(name))))
     ) {
@@ -1632,17 +1665,25 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename: cached.shaderpacks[0] });
       }
       applyModResourcePackPresets({ gameRoot, gameVersion, presets, resourcepacksDir });
+      let bundle = readBundle(modsDir);
+      let cacheJars = bundle && bundle.jars;
+      cacheJars = await ensureShaderCoreMods({
+        modsDir,
+        gameVersion,
+        presets,
+        status,
+        jars: cacheJars,
+      });
       if (presets.clientHudPack) {
-        let bundle = readBundle(modsDir);
-        const mergedJars = await ensureClothConfigForHudAsync({
+        cacheJars = await ensureClothConfigForHudAsync({
           modsDir,
           gameVersion,
           status,
-          jars: bundle && bundle.jars,
+          jars: cacheJars,
         });
-        if (bundle) {
-          writeBundle(modsDir, { ...bundle, jars: mergedJars, updatedAt: Date.now() });
-        }
+      }
+      if (bundle && cacheJars) {
+        writeBundle(modsDir, { ...bundle, jars: cacheJars, updatedAt: Date.now() });
       }
       if (presets.marsanaClientMenu && repoRoot) {
         const menuJar = marsanaClientModService.installBundledMod({
@@ -1652,10 +1693,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           onNotice: status,
         });
         if (menuJar) {
-          let bundle = readBundle(modsDir);
+          bundle = readBundle(modsDir);
           if (bundle) {
-            const jars = [...new Set([...(bundle.jars || []), menuJar])];
-            writeBundle(modsDir, { ...bundle, jars, updatedAt: Date.now() });
+            cacheJars = [...new Set([...(cacheJars || []), menuJar])];
+            writeBundle(modsDir, { ...bundle, jars: cacheJars, updatedAt: Date.now() });
           }
         }
         marsanaClientModService.seedHudFeatureDefaults(gameRoot);
@@ -1704,6 +1745,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (modCompatibilityService.isMc26GameVersion(gameVersion)) {
       modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     }
+    jars = await ensureShaderCoreMods({ modsDir, gameVersion, presets, status, jars });
     if (optifineMeta && Array.isArray(optifineMeta.jarNames)) {
       const seen = new Set(jars);
       for (const name of optifineMeta.jarNames) {

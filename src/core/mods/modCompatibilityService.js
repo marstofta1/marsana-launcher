@@ -5,13 +5,24 @@ const path = require('path');
 
 const PROTECTED_JAR_PREFIXES = Object.freeze(['marsana-client', 'cloth-config']);
 
-const SHADER_STACK_PREFIXES = Object.freeze([
-  'iris',
-  'sodium',
-  'oculus',
-  'rubidium',
-  'embeddium',
-  'continuity',
+/** Dedupe aileleri — sodium-extra, sodium-\d ile karistirilmaz. */
+const MOD_DEDUPE_FAMILIES = Object.freeze([
+  { id: 'fabric-api', test: (name) => /^fabric-api/i.test(name) },
+  { id: 'iris', test: (name) => /^iris-\d/i.test(name) },
+  { id: 'sodium', test: (name) => /^sodium-\d/i.test(name) },
+  { id: 'oculus', test: (name) => /^oculus-/i.test(name) },
+  { id: 'rubidium', test: (name) => /^rubidium-/i.test(name) },
+  { id: 'embeddium', test: (name) => /^embeddium-/i.test(name) },
+  { id: 'continuity', test: (name) => /^continuity-/i.test(name) },
+]);
+
+const SHADER_CORE_WITHOUT_MC26 = Object.freeze([
+  /^iris-\d/i,
+  /^sodium-\d/i,
+  /^oculus-/i,
+  /^rubidium-/i,
+  /^embeddium-/i,
+  /^continuity-/i,
 ]);
 
 function isMc26GameVersion(gameVersion) {
@@ -30,6 +41,13 @@ function hasMc26Tag(lower) {
   return /mc26\.|\+mc26|mc26\.1|\b26\.1|\+26\.|_26\.|-26\./i.test(lower);
 }
 
+function isActiveJarEntry(entry) {
+  return (
+    (entry.endsWith('.jar') || entry.endsWith('.jar.disabled')) &&
+    !entry.includes('.marsana-stashed-')
+  );
+}
+
 /** Dosya adindan 26.x disi (1.21/1.20/mc1.20 vb.) mod jar'i mi? */
 function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
   if (!isMc26GameVersion(gameVersion)) return false;
@@ -38,15 +56,11 @@ function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
   if (hasMc26Tag(lower)) return false;
   if (/fabric-api.*26\.1/i.test(lower)) return false;
 
-  // +mc1.20.1, mc1.21.11 (iris-1.7.6+mc1.20.1 vb.)
   if (/\+mc1\.|mc1\.(1[0-9]|20|21|22)/i.test(lower)) return true;
   if (/\+1\.(20|21)\.|_1\.(20|21)\./i.test(lower)) return true;
   if (/\b1\.21\.|\b1\.20\.|\b1\.19\.|\b1\.18\.|\b1\.17\./i.test(lower)) return true;
 
-  // Iris/Sodium: 26 etiketi yoksa eski surum kabul et
-  if (SHADER_STACK_PREFIXES.some((p) => lower.startsWith(`${p}-`) || lower.startsWith(`${p}_`))) {
-    return true;
-  }
+  if (SHADER_CORE_WITHOUT_MC26.some((re) => re.test(lower))) return true;
 
   return false;
 }
@@ -65,10 +79,9 @@ function mc26JarScore(name) {
   return 0;
 }
 
-function dedupeModFamily(modsDir, prefix) {
-  const re = new RegExp(`^${prefix}`, 'i');
+function dedupeModFamily(modsDir, family) {
   const entries = fs.readdirSync(modsDir).filter(
-    (f) => re.test(f) && (f.endsWith('.jar') || f.endsWith('.jar.disabled') || f.includes('.marsana-stashed-'))
+    (f) => family.test(f) && (f.endsWith('.jar') || f.endsWith('.jar.disabled') || f.includes('.marsana-stashed-'))
   );
   if (entries.length <= 1) return null;
 
@@ -91,14 +104,26 @@ function dedupeModFamily(modsDir, prefix) {
 
 function dedupeFabricApiJars(modsDir) {
   if (!fs.existsSync(modsDir)) return null;
-  return dedupeModFamily(modsDir, 'fabric-api');
+  const family = MOD_DEDUPE_FAMILIES.find((f) => f.id === 'fabric-api');
+  return dedupeModFamily(modsDir, family);
 }
 
 function dedupeShaderStackMods(modsDir) {
   if (!fs.existsSync(modsDir)) return;
-  for (const prefix of SHADER_STACK_PREFIXES) {
-    dedupeModFamily(modsDir, prefix);
+  for (const family of MOD_DEDUPE_FAMILIES) {
+    if (family.id === 'fabric-api') continue;
+    dedupeModFamily(modsDir, family);
   }
+}
+
+function coreSodiumJarPresent(modsDir) {
+  if (!fs.existsSync(modsDir)) return false;
+  return fs.readdirSync(modsDir).some((f) => /^sodium-\d/i.test(f) && isActiveJarEntry(f));
+}
+
+function coreIrisJarPresent(modsDir) {
+  if (!fs.existsSync(modsDir)) return false;
+  return fs.readdirSync(modsDir).some((f) => /^iris-\d/i.test(f) && isActiveJarEntry(f));
 }
 
 /** 26.x'te yanlis MC surumlu jar'lari ve fazla kopyalari temizle. */
@@ -129,4 +154,6 @@ module.exports = {
   purgeIncompatibleModJars,
   dedupeFabricApiJars,
   dedupeShaderStackMods,
+  coreSodiumJarPresent,
+  coreIrisJarPresent,
 };
