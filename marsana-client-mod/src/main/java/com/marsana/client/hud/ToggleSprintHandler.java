@@ -19,7 +19,7 @@ public final class ToggleSprintHandler {
         if (player == null || client.screen != null) {
             return;
         }
-        if (player.input.keyPresses.forward() && !player.isSneaking() && !player.isUsingItem()) {
+        if (player.input.keyPresses.forward() && !player.input.keyPresses.shift() && !player.isUsingItem()) {
             player.setSprinting(true);
         }
     }

@@ -2,6 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const AdmZip = require('adm-zip');
 
 const CONFIG_FILE = 'marsana-client.json';
 const CONFIG_SCHEMA_VERSION = 1;
@@ -28,6 +29,20 @@ function bundledJarPath(repoRoot, gameVersion) {
   if (fs.existsSync(exact)) return exact;
   const fallback = path.join(bundledModsRoot(repoRoot), 'marsana-client-26.1.jar');
   return fs.existsSync(fallback) ? fallback : null;
+}
+
+/** Gömülü jar CPS/HUD sınıflarını içeriyor mu (eski build uyarısı). */
+function bundledJarIncludesHud(jarPath) {
+  if (!jarPath || !fs.existsSync(jarPath)) return false;
+  try {
+    const zip = new AdmZip(jarPath);
+    return zip.getEntries().some((e) => {
+      const name = e.entryName.replace(/\\/g, '/');
+      return name === 'com/marsana/client/hud/HudOverlayRenderer.class';
+    });
+  } catch {
+    return false;
+  }
 }
 
 function configPath(gameRoot) {
@@ -70,6 +85,12 @@ function installBundledMod({ repoRoot, modsDir, gameVersion, onNotice }) {
       );
     }
     return null;
+  }
+  const hudReady = bundledJarIncludesHud(src);
+  if (!hudReady && onNotice) {
+    onNotice(
+      'Marsana Client jar eski — CPS/HUD yok. Gelistirici: npm run build:client-mod (Java 25).'
+    );
   }
   fs.mkdirSync(modsDir, { recursive: true });
   const destName = path.basename(src);
@@ -153,6 +174,7 @@ module.exports = {
   bundledModsRoot,
   modLineForGameVersion,
   bundledJarPath,
+  bundledJarIncludesHud,
   configPath,
   readConfig,
   writeConfig,

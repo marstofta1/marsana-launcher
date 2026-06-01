@@ -275,8 +275,17 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v0.2.2 — Sodium çekirdek modu düzeltmesi</span>
+            <span class="release-version">v0.2.3 — CPS ve Marsana HUD düzeltmesi</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li><strong>CPS / HUD:</strong> Gömülü <code>marsana-client</code> jar yenilendi; CPS sayacı, keystrokes, FPS ve diğer overlay'ler Fabric 26.1 <code>HudElementRegistry</code> ile çizilir.</li>
+            <li>Eski jar'da HUD paketi yoktu; launcher kurulumda eksik jar uyarısı verir.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v0.2.2 — Sodium çekirdek modu düzeltmesi</span>
           </div>
           <ul class="release-changes">
             <li><code>sodium-extra</code> ile gerçek <code>sodium</code> jar'ı karıştırılıp siliniyordu; dedupe düzeltildi.</li>

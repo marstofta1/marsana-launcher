@@ -1,10 +1,13 @@
 package com.marsana.client.hud;
 
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import com.marsana.client.MarsanaClientMod;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
@@ -21,7 +24,8 @@ public final class HudOverlayRenderer {
     private HudOverlayRenderer() {}
 
     public static void register() {
-        HudRenderCallback.EVENT.register(HudOverlayRenderer::render);
+        Identifier hudId = Identifier.fromNamespaceAndPath(MarsanaClientMod.MOD_ID, "overlay");
+        HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, hudId, HudOverlayRenderer::render);
         CpsTracker.register();
     }
 
@@ -42,7 +46,13 @@ public final class HudOverlayRenderer {
             drawTopLeftStack(graphics, client, sw, 0, "FPS: " + lastFps);
         }
         if (HudFeatureRegistry.isEnabled(HudFeatureIds.PING)) {
-            int ping = client.getConnection() != null ? client.getConnection().getLatency() : 0;
+            int ping = 0;
+            if (client.getConnection() != null) {
+                var info = client.getConnection().getPlayerInfo(player.getUUID());
+                if (info != null) {
+                    ping = info.getLatency();
+                }
+            }
             drawTopLeftStack(graphics, client, sw, stackRow++, "Ping: " + ping + "ms");
         }
         if (HudFeatureRegistry.isEnabled(HudFeatureIds.COORDS)) {

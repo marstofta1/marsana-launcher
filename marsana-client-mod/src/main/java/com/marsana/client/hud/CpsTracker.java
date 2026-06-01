@@ -20,15 +20,23 @@ public final class CpsTracker {
     }
 
     private static void onTick(Minecraft client) {
-        if (client.player == null || client.screen != null) {
+        if (client.player == null) {
+            leftWasDown = false;
+            rightWasDown = false;
             return;
         }
         long now = System.currentTimeMillis();
         trimOld(now);
 
+        boolean leftDown = client.options.keyAttack.isDown();
+        boolean rightDown = client.options.keyUse.isDown();
         long window = client.getWindow().handle();
-        boolean leftDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
-        boolean rightDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
+        if (!leftDown) {
+            leftDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+        }
+        if (!rightDown) {
+            rightDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
+        }
 
         if (leftDown && !leftWasDown) {
             LEFT_CLICKS.addLast(now);
