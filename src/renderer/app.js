@@ -156,7 +156,11 @@ async function bootstrap() {
 
   for (const c of components) await c.mount();
 
-  createModeSwitcher({ root: $('mode-switcher-slot'), store }).mount();
+  createModeSwitcher({
+    root: $('mode-switcher-slot'),
+    store,
+    applyModIsolation: api.applyModIsolation,
+  }).mount();
 
   wireHowToPlayGuide({
     button: $('how-to-play-trigger'),

@@ -1049,7 +1049,7 @@ function createLaunchService({
     );
 
     const modsDirPath = path.join(paths.gameRoot, 'mods');
-    const iso = modIsolationService.applyClientPackVisibility(modsDirPath, modPresets, playMode);
+    const iso = modIsolationService.enforceModIsolation(modsDirPath, modPresets, playMode);
     if (iso.stashed > 0 && emit && emit.status) {
       emit.status({
         text: `Gelişmiş Launcher: Marsana Client paketi (${iso.stashed} mod) bu oturumda devre dışı bırakıldı.`,
@@ -1189,6 +1189,8 @@ function createLaunchService({
     } catch (e) {
       logger.warn('Ses ayarları options.txt yazımı başarısız', { err: e.message });
     }
+
+    modIsolationService.enforceModIsolation(modsDirPath, modPresets, playMode);
 
     emit.status({ text: 'Oyun başlatılıyor — gerekli dosyalar indiriliyor...' });
     await client.launch(launchOpts);

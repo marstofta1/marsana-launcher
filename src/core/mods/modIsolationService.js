@@ -101,6 +101,32 @@ function applyClientPackVisibility(modsDir, modPresets, playMode) {
   return { stashed, restored };
 }
 
+function activeClientPackJarsPresent(modsDir) {
+  if (!modsDir || !fs.existsSync(modsDir)) return false;
+  return fs.readdirSync(modsDir).some(
+    (entry) =>
+      entry.endsWith('.jar') &&
+      !entry.endsWith('.jar.disabled') &&
+      isClientPackJar(entry)
+  );
+}
+
+/** Launcher modunda client jar sızıntısını engelle; client modunda paketi geri yükle. */
+function enforceModIsolation(modsDir, modPresets, playMode) {
+  const result = applyClientPackVisibility(modsDir, modPresets, playMode);
+  if (playMode === 'client') return result;
+
+  if (!modsDir || !fs.existsSync(modsDir)) return result;
+
+  for (const entry of fs.readdirSync(modsDir)) {
+    if (!entry.endsWith('.jar') || entry.endsWith('.jar.disabled')) continue;
+    if (!isClientPackJar(entry)) continue;
+    if (stashFile(modsDir, entry)) result.stashed += 1;
+  }
+
+  return result;
+}
+
 function shouldUseClientPack(modPresets, playMode) {
   const sanitized = marsanaClientModService.sanitizeModPresetsForPlayMode(modPresets, playMode);
   return (
@@ -112,5 +138,7 @@ module.exports = {
   CLIENT_PACK_STASH_SUFFIX,
   isClientPackJar,
   applyClientPackVisibility,
+  activeClientPackJarsPresent,
+  enforceModIsolation,
   shouldUseClientPack,
 };

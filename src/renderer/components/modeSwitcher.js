@@ -23,7 +23,7 @@ export function updateBranding(playMode) {
   }
 }
 
-export function createModeSwitcher({ root, store }) {
+export function createModeSwitcher({ root, store, applyModIsolation }) {
   root.innerHTML = `
     <div class="mode-switcher" data-role="mode-switcher">
       <button type="button" class="mode-tab active" data-mode="client">
@@ -65,7 +65,7 @@ export function createModeSwitcher({ root, store }) {
     clientFeatures.hidden = mode !== PLAY_MODES.CLIENT;
   }
 
-  function switchTo(mode) {
+  async function switchTo(mode) {
     if (mode === PLAY_MODES.CLIENT) {
       store.setState(applyClientPreset(store.getState()));
     } else {
@@ -73,6 +73,21 @@ export function createModeSwitcher({ root, store }) {
     }
     updateBranding(mode);
     setActiveTab(mode);
+
+    if (typeof applyModIsolation === 'function') {
+      try {
+        const state = store.getState();
+        await applyModIsolation({
+          playMode: mode,
+          modPresets: {
+            marsanaClientMenu: mode === PLAY_MODES.CLIENT,
+            clientHudPack: mode === PLAY_MODES.CLIENT && !!state.modClientHudPack,
+          },
+        });
+      } catch {
+        /* mods klasörü henüz yoksa veya izolasyon başarısız — launch'ta tekrar denenir */
+      }
+    }
   }
 
   for (const tab of tabs) {

@@ -28,7 +28,7 @@ function registerAllHandlers({ ipcMain, shell, container, getWindow }) {
     ipcMain,
     recommendedServersService: container.recommendedServersService,
   });
-  registerSystemHandlers({ ipcMain, shell });
+  registerSystemHandlers({ ipcMain, shell, paths: container.paths });
   registerUpdateHandlers({ ipcMain, getWindow });
 }
 
