@@ -15,7 +15,7 @@ const allowedEventChannels = new Set(RENDERER_EVENT_CHANNELS);
 
 const api = Object.freeze({
   auth: Object.freeze({
-    login: () => ipcRenderer.invoke(AUTH.LOGIN),
+    login: (method) => ipcRenderer.invoke(AUTH.LOGIN, method),
     current: () => ipcRenderer.invoke(AUTH.CURRENT),
     logout: () => ipcRenderer.invoke(AUTH.LOGOUT),
     refresh: () => ipcRenderer.invoke(AUTH.REFRESH),

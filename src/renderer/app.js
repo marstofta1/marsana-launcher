@@ -134,7 +134,7 @@ async function bootstrap() {
   });
 
   const components = [
-    createAccountCard({ root: $('account-slot'), store, auth: api.auth }),
+    createAccountCard({ root: $('account-slot'), store, auth: api.auth, openExternal: api.openExternal }),
     createVersionSelector({ root: $('version-slot'), store, versionsApi: api.versions }),
     createMemorySlider({ root: $('memory-slot'), store }),
     createModsPanel({ root: $('mods-slot'), store }),

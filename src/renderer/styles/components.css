@@ -47,7 +47,94 @@
   gap: 10px;
 }
 
+.account .user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .account .user .name { font-weight: 600; }
+
+.account .user-via {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.account .auth-intro {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 10px;
+}
+
+.account .auth-methods {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.account .auth-method {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 8px;
+  min-height: 52px;
+  font-size: 12px;
+  line-height: 1.2;
+  color: #fff;
+  border: 1px solid transparent;
+}
+
+.account .auth-method-label {
+  font-weight: 700;
+}
+
+.account .auth-method--microsoft {
+  background: #0078d4;
+}
+.account .auth-method--microsoft:hover:not(:disabled) {
+  background: #106ebe;
+}
+
+.account .auth-method--xbox {
+  background: #107c10;
+}
+.account .auth-method--xbox:hover:not(:disabled) {
+  background: #0b6a0b;
+}
+
+.account .auth-method--playstation {
+  background: #003791;
+}
+.account .auth-method--playstation:hover:not(:disabled) {
+  background: #002a6e;
+}
+
+.account .auth-hint {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.account .link-btn {
+  display: inline;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.account .link-btn:hover {
+  color: var(--accent-hover, var(--accent));
+}
 
 .account .user .avatar {
   width: 32px;

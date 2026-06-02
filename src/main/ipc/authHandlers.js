@@ -3,8 +3,8 @@
 const { AUTH } = require('../../shared/ipcChannels');
 
 function registerAuthHandlers({ ipcMain, authService, analyticsService }) {
-  ipcMain.handle(AUTH.LOGIN, async () => {
-    const account = await authService.login();
+  ipcMain.handle(AUTH.LOGIN, async (_event, method) => {
+    const account = await authService.login(method);
     if (analyticsService) analyticsService.trackLogin();
     return account;
   });

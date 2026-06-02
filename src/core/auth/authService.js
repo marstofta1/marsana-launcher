@@ -11,14 +11,19 @@ function toPublicView(account) {
     uuid: account.uuid,
     xuid: account.xuid || null,
     expiresAt: account.expiresAt,
+    loginMethod: account.loginMethod || 'microsoft',
   };
 }
 
 function createAuthService({ store, authProvider, logger }) {
-  async function login() {
-    const account = await authProvider.interactiveLogin();
+  async function login(method) {
+    const account = await authProvider.interactiveLogin(method);
     store.save(account);
-    logger.info('Account logged in', { name: account.name, uuid: account.uuid });
+    logger.info('Account logged in', {
+      name: account.name,
+      uuid: account.uuid,
+      loginMethod: account.loginMethod,
+    });
     return toPublicView(account);
   }
 
@@ -27,8 +32,12 @@ function createAuthService({ store, authProvider, logger }) {
     if (!cached) return null;
     const refreshed = await authProvider.refresh(cached.refreshToken);
     if (refreshed) {
-      store.save(refreshed);
-      return toPublicView(refreshed);
+      const merged = {
+        ...refreshed,
+        loginMethod: cached.loginMethod || refreshed.loginMethod || 'microsoft',
+      };
+      store.save(merged);
+      return toPublicView(merged);
     }
     return toPublicView(cached);
   }

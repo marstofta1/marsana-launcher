@@ -1,3 +1,5 @@
+import { AUTH_METHOD_OPTIONS } from '../../shared/authMethods.js';
+
 function cleanUuid(uuid) {
   return String(uuid || '').replace(/-/g, '');
 }
@@ -10,6 +12,11 @@ function formatUuid(uuid) {
   const c = cleanUuid(uuid);
   if (c.length !== 32) return uuid || '';
   return `${c.slice(0, 8)}-${c.slice(8, 12)}-${c.slice(12, 16)}-${c.slice(16, 20)}-${c.slice(20)}`;
+}
+
+function loginMethodLabel(method) {
+  const option = AUTH_METHOD_OPTIONS.find((o) => o.id === method);
+  return option ? option.shortLabel : 'Microsoft';
 }
 
 export function createPlayerProfileCard({ root, store }) {
@@ -32,7 +39,7 @@ export function createPlayerProfileCard({ root, store }) {
         <div class="profile-info">
           <div class="profile-name">${user.name}</div>
           <div class="profile-tag">
-            <span class="profile-badge">Microsoft</span>
+            <span class="profile-badge">${loginMethodLabel(user.loginMethod)}</span>
             <span class="profile-badge ghost">Java Edition</span>
           </div>
           <div class="profile-meta">
@@ -49,7 +56,7 @@ export function createPlayerProfileCard({ root, store }) {
     lastUuid = null;
     root.innerHTML = `
       <h3>Profil</h3>
-      <p class="hint">Microsoft hesabıyla giriş yaptığında skin'in ve hesap bilgilerin burada görünür.</p>
+      <p class="hint">Microsoft, Xbox veya PlayStation (Microsoft eşleştirmeli) hesabınla giriş yaptığında skin'in ve hesap bilgilerin burada görünür.</p>
     `;
   }
 

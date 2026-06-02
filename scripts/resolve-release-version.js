@@ -33,13 +33,15 @@ function resolveReleaseVersion(plannedVersion) {
 
 /** package.json sürümünün yayınlanabilir olup olmadığını doğrular. */
 function assertPublishableVersion(version) {
-  const resolved = resolveReleaseVersion(version);
-  if (resolved !== String(version).trim()) {
+  const v = parseVersion(String(version).trim());
+  const cap = parseVersion(`${MINOR_SERIES_CAP.major}.${MINOR_SERIES_CAP.minor}.${MINOR_SERIES_CAP.patch}`);
+  // 0.1.40+ eski seride yayinlanmaz; 0.2.x ve uzeri serbest.
+  if (v.major === cap.major && v.minor === cap.minor && v.patch >= cap.patch) {
     throw new Error(
       `Surum ${version} yayinlanamaz. 0.1.40 ve uzeri yerine ${NEXT_MAJOR_RELEASE} kullanin.`
     );
   }
-  return resolved;
+  return v.raw;
 }
 
 module.exports = {

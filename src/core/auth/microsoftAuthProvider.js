@@ -2,10 +2,13 @@
 
 const { Auth } = require('msmc');
 const { LauncherError, Codes } = require('../infra/errors');
+const {
+  normalizeAuthMethod,
+  getAuthMethodOption,
+  AUTH_METHODS,
+} = require('../../shared/authMethods.cjs');
 
-const PROMPT = 'select_account';
-
-function toAccount(xboxManager, mcToken) {
+function toAccount(xboxManager, mcToken, loginMethod) {
   const expiresIn = mcToken.expires_in ? mcToken.expires_in * 1000 : 24 * 60 * 60 * 1000;
   return {
     name: mcToken.profile.name,
@@ -14,17 +17,22 @@ function toAccount(xboxManager, mcToken) {
     refreshToken: xboxManager.msToken.refresh_token,
     expiresAt: Date.now() + expiresIn,
     xuid: mcToken.profile.xuid || null,
+    loginMethod: loginMethod || AUTH_METHODS.MICROSOFT,
   };
 }
 
 function createMicrosoftAuthProvider() {
-  function explainMsmcError(err) {
+  function explainMsmcError(err, option) {
     if (!err) return 'bilinmeyen hata';
     if (err.ts === 'error.auth.minecraft.profile') {
-      return (
+      let msg =
         'Bu Microsoft hesabı Minecraft Java Edition\'a sahip değil. ' +
-        'Java Edition satın almalısın (minecraft.net) veya Game Pass\'in varsa önce xbox.com üzerinden Java Edition\'ı etkinleştirmelisin.'
-      );
+        'Java Edition satın almalısın (minecraft.net) veya Game Pass\'in varsa önce xbox.com üzerinden Java Edition\'ı etkinleştirmelisin.';
+      if (option.id === AUTH_METHODS.PLAYSTATION) {
+        msg +=
+          ' PlayStation hesabın Java\'ya bağlı değilse önce PSN ↔ Microsoft eşleştirmesi yap.';
+      }
+      return msg;
     }
     if (err.ts === 'error.auth.xsts.userNotFound') {
       return 'Bu Microsoft hesabının Xbox profili yok. xbox.com üzerinden Xbox profili oluştur.';
@@ -39,25 +47,33 @@ function createMicrosoftAuthProvider() {
     return err.message || err.code || 'bilinmeyen hata';
   }
 
-  async function interactiveLogin() {
+  async function interactiveLogin(method) {
+    const option = getAuthMethodOption(method);
+    const loginMethod = normalizeAuthMethod(method);
     try {
-      const authManager = new Auth(PROMPT);
-      const xboxManager = await authManager.launch('electron');
+      const authManager = new Auth(option.prompt);
+      const xboxManager = await authManager.launch('electron', {
+        width: 520,
+        height: 720,
+        title: option.windowTitle,
+        resizable: true,
+      });
       const mcToken = await xboxManager.getMinecraft();
-      return toAccount(xboxManager, mcToken);
+      return toAccount(xboxManager, mcToken, loginMethod);
     } catch (err) {
-      console.error('[auth] Microsoft girişi başarısız:', err);
-      throw new LauncherError(Codes.AUTH_FAILED, explainMsmcError(err), err);
+      console.error('[auth] Giriş başarısız:', loginMethod, err);
+      throw new LauncherError(Codes.AUTH_FAILED, explainMsmcError(err, option), err);
     }
   }
 
   async function refresh(refreshToken) {
     if (!refreshToken) return null;
     try {
-      const authManager = new Auth(PROMPT);
+      const authManager = new Auth('select_account');
       const xboxManager = await authManager.refresh(refreshToken);
       const mcToken = await xboxManager.getMinecraft();
-      return toAccount(xboxManager, mcToken);
+      const cached = toAccount(xboxManager, mcToken);
+      return cached;
     } catch {
       return null;
     }
