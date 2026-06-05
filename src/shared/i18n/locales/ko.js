@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports = {
+export default {
   common: {
     play: '플레이',
     close: '닫기',

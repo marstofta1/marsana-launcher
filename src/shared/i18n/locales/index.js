@@ -1,13 +1,11 @@
-'use strict';
+import tr from './tr.js';
+import en from './en.js';
+import fr from './fr.js';
+import de from './de.js';
+import zh from './zh.js';
+import ja from './ja.js';
+import ko from './ko.js';
+import it from './it.js';
+import ru from './ru.js';
 
-module.exports = {
-  tr: require('./tr'),
-  en: require('./en'),
-  fr: require('./fr'),
-  de: require('./de'),
-  zh: require('./zh'),
-  ja: require('./ja'),
-  ko: require('./ko'),
-  it: require('./it'),
-  ru: require('./ru'),
-};
+export default { tr, en, fr, de, zh, ja, ko, it, ru };

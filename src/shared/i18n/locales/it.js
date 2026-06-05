@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports = {
+export default {
   common: {
     play: 'Gioca',
     close: 'Chiudi',

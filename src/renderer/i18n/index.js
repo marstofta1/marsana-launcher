@@ -1,12 +1,8 @@
-import { createRequire } from 'module';
+import localeModules from '../../shared/i18n/locales/index.js';
+import { createTranslator, buildMessagesRegistry } from '../../shared/i18n/translate.js';
+import { LOCALES, HTML_LANG, DEFAULT_LOCALE } from '../../shared/i18n/constants.js';
 
-const require = createRequire(import.meta.url);
-
-const locales = require('../../shared/i18n/locales/index.js');
-const { createTranslator, buildMessagesRegistry } = require('../../shared/i18n/translate.js');
-const { LOCALES, HTML_LANG, DEFAULT_LOCALE } = require('../../shared/i18n/constants.js');
-
-const messagesByLocale = buildMessagesRegistry(locales);
+const messagesByLocale = buildMessagesRegistry(localeModules);
 
 /** index.html ve data-i18n öğelerini güncelle. */
 export function applyStaticI18n(t) {

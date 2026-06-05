@@ -1,9 +1,7 @@
-'use strict';
-
 /** Varsayılan dil — ilk açılışta Türkçe. */
-const DEFAULT_LOCALE = 'tr';
+export const DEFAULT_LOCALE = 'tr';
 
-const LOCALES = Object.freeze([
+export const LOCALES = Object.freeze([
   { id: 'tr', native: 'Türkçe' },
   { id: 'en', native: 'English' },
   { id: 'fr', native: 'Français' },
@@ -15,9 +13,9 @@ const LOCALES = Object.freeze([
   { id: 'ru', native: 'Русский' },
 ]);
 
-const LOCALE_IDS = new Set(LOCALES.map((l) => l.id));
+export const LOCALE_IDS = new Set(LOCALES.map((l) => l.id));
 
-const HTML_LANG = Object.freeze({
+export const HTML_LANG = Object.freeze({
   tr: 'tr',
   en: 'en',
   fr: 'fr',
@@ -29,15 +27,7 @@ const HTML_LANG = Object.freeze({
   ru: 'ru',
 });
 
-function normalizeLocale(locale) {
+export function normalizeLocale(locale) {
   const id = String(locale || DEFAULT_LOCALE).toLowerCase().split('-')[0];
   return LOCALE_IDS.has(id) ? id : DEFAULT_LOCALE;
 }
-
-module.exports = {
-  DEFAULT_LOCALE,
-  LOCALES,
-  LOCALE_IDS,
-  HTML_LANG,
-  normalizeLocale,
-};
