@@ -1,13 +1,7 @@
 'use strict';
 
 const { LauncherError, Codes } = require('../infra/errors');
-
-function mergeLibraries(parentLibs = [], loaderLibs = []) {
-  const map = new Map();
-  for (const lib of parentLibs) if (lib && lib.name) map.set(lib.name, lib);
-  for (const lib of loaderLibs) if (lib && lib.name) map.set(lib.name, lib);
-  return [...map.values()];
-}
+const { mergeLibraries } = require('./libraryMerge');
 
 function mergeArgumentsModern(parent, loaderProfile) {
   if (parent.minecraftArguments && !parent.arguments) {

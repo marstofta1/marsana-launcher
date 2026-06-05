@@ -2,6 +2,21 @@ import { isOrnitheVersionBlocked } from '../../shared/versionCompatibility.js';
 
 const MAX_LOG_LINES = 500;
 
+function launchFailureHint(logLines) {
+  const text = (logLines || []).slice(-100).join('\n');
+  if (/duplicate ASM classes/i.test(text)) {
+    return 'Fabric sınıf yolu çakışması (çift ASM). Launcher güncellenince profil otomatik düzelir — tekrar Oyna.';
+  }
+  if (/Incompatible mods found/i.test(text)) {
+    return 'Mod uyumsuzluğu — eksik bağımlılık veya sürüm çakışması. Logdaki mod adlarına bakın.';
+  }
+  const caused = text.match(/Caused by: ([^\n]+)/);
+  if (caused) return caused[1].trim().slice(0, 220);
+  const ex = text.match(/Exception in thread[^\n]*\n([^\n]+)/);
+  if (ex) return ex[1].trim().slice(0, 220);
+  return '';
+}
+
 export function createStatusPanel({ root, store, events }) {
   root.innerHTML = `
     <div class="status-text" data-role="text">Hazır.</div>
@@ -47,13 +62,16 @@ export function createStatusPanel({ root, store, events }) {
     });
     events.onStdout((line) => appendLog(String(line)));
     events.onClose(({ code }) => {
-      const { selectedLoader, selectedVersion, lastLaunchLoader, lastLaunchVersion } = store.getState();
+      const { selectedLoader, selectedVersion, lastLaunchLoader, lastLaunchVersion, logLines } =
+        store.getState();
       const loader = lastLaunchLoader || selectedLoader;
       const version = lastLaunchVersion || selectedVersion;
       const crashed = code === 4294967295 || code === -1;
       let statusText = loader === 'bedrock'
         ? 'Minecraft Bedrock başlatıldı.'
         : `Oyun kapandı (kod: ${code}).`;
+      const hint = code === 1 || crashed ? launchFailureHint(logLines) : '';
+      if (hint) statusText = `${statusText} ${hint}`;
       if (crashed && loader === 'ornithe') {
         if (isOrnitheVersionBlocked(version)) {
           statusText =

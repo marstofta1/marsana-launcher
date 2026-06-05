@@ -1,6 +1,7 @@
 'use strict';
 
 const { LauncherError, Codes } = require('../infra/errors');
+const { mergeLibraries } = require('./libraryMerge');
 
 const QUILT_META = 'https://meta.quiltmc.org/v3/versions/loader';
 
@@ -10,13 +11,6 @@ function loaderListUrl(gameVersion) {
 
 function profileJsonUrl(gameVersion, loaderVersion) {
   return `${QUILT_META}/${encodeURIComponent(gameVersion)}/${encodeURIComponent(loaderVersion)}/profile/json`;
-}
-
-function mergeLibraries(parentLibs = [], quiltLibs = []) {
-  const map = new Map();
-  for (const lib of parentLibs) if (lib && lib.name) map.set(lib.name, lib);
-  for (const lib of quiltLibs) if (lib && lib.name) map.set(lib.name, lib);
-  return [...map.values()];
 }
 
 function mergeArguments(parent, quiltProfile) {

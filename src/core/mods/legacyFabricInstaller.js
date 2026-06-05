@@ -1,6 +1,7 @@
 'use strict';
 
 const { LauncherError, Codes } = require('../infra/errors');
+const { mergeLibraries } = require('./libraryMerge');
 
 const LEGACY_FABRIC_META = 'https://meta.legacyfabric.net/v2/versions';
 
@@ -13,13 +14,6 @@ function profileJsonUrl(gameVersion, loaderVersion) {
 }
 
 const SUPPORTED_GAME_URL = `${LEGACY_FABRIC_META}/game`;
-
-function mergeLibraries(parentLibs = [], fabricLibs = []) {
-  const map = new Map();
-  for (const lib of parentLibs) if (lib && lib.name) map.set(lib.name, lib);
-  for (const lib of fabricLibs) if (lib && lib.name) map.set(lib.name, lib);
-  return [...map.values()];
-}
 
 // Legacy Fabric desteklenen sürümler (1.3 – 1.13) eski "minecraftArguments"
 // (string) formatında manifest döndürür. Profile JSON yeni "arguments"

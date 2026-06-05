@@ -1,6 +1,7 @@
 'use strict';
 
 const { LauncherError, Codes } = require('../infra/errors');
+const { mergeLibraries } = require('./libraryMerge');
 
 const FABRIC_META = 'https://meta.fabricmc.net/v2/versions/loader';
 
@@ -10,13 +11,6 @@ function loaderListUrl(gameVersion) {
 
 function profileJsonUrl(gameVersion, loaderVersion) {
   return `${FABRIC_META}/${encodeURIComponent(gameVersion)}/${encodeURIComponent(loaderVersion)}/profile/json`;
-}
-
-function mergeLibraries(parentLibs = [], fabricLibs = []) {
-  const map = new Map();
-  for (const lib of parentLibs) if (lib && lib.name) map.set(lib.name, lib);
-  for (const lib of fabricLibs) if (lib && lib.name) map.set(lib.name, lib);
-  return [...map.values()];
 }
 
 function mergeArguments(parent, fabricProfile) {

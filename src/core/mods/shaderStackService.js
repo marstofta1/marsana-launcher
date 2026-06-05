@@ -1749,6 +1749,13 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         marsanaClientModService.applyModToggleStates(modsDir, cfg);
       }
       status(`Mod profili (önbellek): ${resolvedShaderSlug} shader hazır, başlatılıyor...`);
+      await installFabricProfile({
+        gameVersion,
+        customId,
+        versionDir,
+        versionJsonPath,
+        fabricChannel,
+      });
       modIsolationService.enforceModIsolation(modsDir, presets, playMode);
       return { customId: cached.customId, assetIndexId: cached.assetIndexId };
     }

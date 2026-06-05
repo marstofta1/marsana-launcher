@@ -275,8 +275,17 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v0.3.5 — Fabric Kotlin / Mod Menu bağımlılıkları</span>
+            <span class="release-version">v0.3.6 — Fabric ASM çakışması düzeltmesi</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li>Fabric profil birleştirmede çift ASM kütüphanesi (ör. 9.6 + 9.10.1) artık tek sürüme indirgeniyor; açılışta <em>kod: 1</em> çökmesi giderildi.</li>
+            <li>Önbellekten başlatırken Fabric profili yenileniyor; oyun kapanınca logdan kısa hata özeti gösteriliyor.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v0.3.5 — Fabric Kotlin / Mod Menu bağımlılıkları</span>
           </div>
           <ul class="release-changes">
             <li>Client HUD paketi artık <strong>fabric-language-kotlin</strong> ve <strong>Mod Menu</strong> modlarını zorunlu kuruyor; eksik kütüphane hatası giderildi.</li>
