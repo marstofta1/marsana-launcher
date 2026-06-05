@@ -7,13 +7,16 @@
  * 1.21.x-only modlar (MaLiLib, Litematica, Figura vb.) bilerek listede yok;
  * 26.1.2'de yanlis surum indirilmesini onler.
  */
-const CLIENT_HUD_REQUIRED_SLUGS = Object.freeze(['cloth-config']);
+const CLIENT_HUD_REQUIRED_SLUGS = Object.freeze([
+  'cloth-config',
+  'fabric-language-kotlin',
+  'modmenu',
+]);
 
 const CLIENT_HUD_MOD_SLUGS = Object.freeze([
   'xaeros-minimap',
   'xaeros-world-map',
   'appleskin',
-  'modmenu',
   'betterf3',
   'dynamic-fps',
   'shulkerboxtooltip',
@@ -43,7 +46,6 @@ const CLIENT_HUD_MOD_SLUGS = Object.freeze([
   'inventory-tweaks-renewed',
   'stackdeobfuscator',
   'carpet-fixes',
-  'fabric-language-kotlin',
   'placeholder-api',
 ]);
 

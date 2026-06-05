@@ -18,6 +18,63 @@ function clothConfigJarPresent(modsDir) {
   );
 }
 
+function fabricKotlinJarPresent(modsDir) {
+  if (!fs.existsSync(modsDir)) return false;
+  return fs.readdirSync(modsDir).some(
+    (f) => /^fabric-language-kotlin/i.test(f) && f.endsWith('.jar') && !f.endsWith('.jar.disabled')
+  );
+}
+
+function modmenuJarPresent(modsDir) {
+  if (!fs.existsSync(modsDir)) return false;
+  return fs.readdirSync(modsDir).some(
+    (f) => /^modmenu/i.test(f) && f.endsWith('.jar') && !f.endsWith('.jar.disabled')
+  );
+}
+
+/** Kotlin tabanli modlar kurulu ama fabric-language-kotlin yoksa true. */
+const KOTLIN_DEPENDENT_JAR_PATTERNS = Object.freeze([
+  /zoomify/i,
+  /optigui/i,
+  /particle.?core/i,
+  /fzzy.?config/i,
+  /^capes-\d/i,
+]);
+
+function activeModJarNames(modsDir) {
+  if (!fs.existsSync(modsDir)) return [];
+  return fs.readdirSync(modsDir).filter(
+    (f) => f.endsWith('.jar') && !f.endsWith('.jar.disabled') && !f.includes('.marsana-stashed-')
+  );
+}
+
+function kotlinRuntimeDepNeeded(modsDir) {
+  if (fabricKotlinJarPresent(modsDir)) return false;
+  return activeModJarNames(modsDir).some((name) =>
+    KOTLIN_DEPENDENT_JAR_PATTERNS.some((re) => re.test(name))
+  );
+}
+
+function modmenuRuntimeDepNeeded(modsDir) {
+  if (modmenuJarPresent(modsDir)) return false;
+  return activeModJarNames(modsDir).some((name) => /modlistmemory/i.test(name));
+}
+
+function fabricHudRuntimeDepsNeeded(modsDir, { clientHudPack = false } = {}) {
+  if (clientHudPack) return true;
+  return kotlinRuntimeDepNeeded(modsDir) || modmenuRuntimeDepNeeded(modsDir);
+}
+
+function fabricHudRuntimeDepsOk(modsDir, { clientHudPack = false } = {}) {
+  if (!fabricHudRuntimeDepsNeeded(modsDir, { clientHudPack })) return true;
+  const needKotlin = clientHudPack || kotlinRuntimeDepNeeded(modsDir);
+  const needModmenu = clientHudPack || modmenuRuntimeDepNeeded(modsDir);
+  if (needKotlin && !fabricKotlinJarPresent(modsDir)) return false;
+  if (needModmenu && !modmenuJarPresent(modsDir)) return false;
+  if (clientHudPack && !clothConfigJarPresent(modsDir)) return false;
+  return true;
+}
+
 function reenableClothConfigJar(modsDir) {
   if (!fs.existsSync(modsDir)) return false;
   for (const entry of fs.readdirSync(modsDir)) {
@@ -92,6 +149,12 @@ function installBundledClothConfig({ repoRoot, modsDir, gameVersion, onNotice })
 module.exports = {
   CLOTH_CONFIG_BUNDLED,
   clothConfigJarPresent,
+  fabricKotlinJarPresent,
+  modmenuJarPresent,
+  fabricHudRuntimeDepsNeeded,
+  fabricHudRuntimeDepsOk,
+  kotlinRuntimeDepNeeded,
+  modmenuRuntimeDepNeeded,
   reenableClothConfigJar,
   recoverFabricModsFromMisstash,
   installBundledClothConfig,
