@@ -24,7 +24,7 @@ function renderServerCard(server, { onCopyAddress, onOpenExternal, t }) {
       <h3 class="server-name">${escapeHtml(server.name)}</h3>
       <span class="server-badge">${server.capacity ? t('servers.players', { count: server.capacity }) : ''}</span>
     </div>
-    <p class="server-description">${escapeHtml(server.description || '')}</p>
+    <p class="server-description">${escapeHtml(t(`servers.list.${server.id}.description`))}</p>
     <div class="server-address" data-role="address">
       <span class="server-address-label">${t('servers.address')}</span>
       <code>${escapeHtml(server.address)}</code>

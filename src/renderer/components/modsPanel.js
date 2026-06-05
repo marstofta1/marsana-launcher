@@ -13,19 +13,19 @@ import {
 } from '../../shared/versionCompatibility.js';
 
 const LOADER_OPTIONS = [
-  { value: 'vanilla', label: 'Vanilla', hint: 'Saf Minecraft — hiçbir loader veya mod yüklenmez. Mojang\'ın resmi sürümü olduğu gibi başlar.' },
-  { value: 'bedrock', label: 'Bedrock (Windows)', hint: 'Minecraft for Windows (Microsoft Store). Marsana hesabı gerekmez; oyun açıldıktan sonra Microsoft/Xbox ile giriş yaparsınız. Java modları uygulanmaz.' },
-  { value: 'fabric', label: 'Fabric', hint: 'Modrinth modları (Sodium, Iris, OptiFine for Fabric, vs.). Aşağıdaki seçenekler aktif olur.' },
-  { value: 'fabric-beta', label: 'Fabric (Beta)', hint: 'Fabric\'in beta kanalı yükleyicisi. Mod seçenekleri Fabric ile aynıdır; kararlı sürüm yerine beta loader kullanılır.' },
-  { value: 'forge', label: 'Forge', hint: 'Klasik Forge loader (boş profil). Modlarınızı mods/ klasörüne kendiniz eklersiniz.' },
-  { value: 'forge-optifine', label: 'Forge + OptiFine', hint: 'Forge loader + optifine.net’ten klasik OptiFine.jar otomatik indirilir.' },
-  { value: 'neoforge', label: 'NeoForge', hint: 'Forge’un modern çatalı (1.20.2+). Boş profil; modlarınızı mods/ klasörüne kendiniz eklersiniz.' },
-  { value: 'quilt', label: 'Quilt', hint: 'Fabric’in çatalı; çoğu Fabric modu Quilt ile uyumludur. Boş profil olarak başlar.' },
-  { value: 'legacy-fabric', label: 'Legacy Fabric', hint: 'Eski Minecraft sürümleri (1.3 – 1.13.2) için Fabric çatalı. Sürüm listesi otomatik filtrelenir; boş profil olarak başlar.' },
-  { value: 'liteloader', label: 'LiteLoader', hint: 'Klasik LiteLoader (1.6 – 1.12). Sürüm listesi desteklenen sürümlerle filtrelenir; modları mods/ klasörüne kendiniz eklersiniz.' },
-  { value: 'nilloader', label: 'NilLoader', hint: 'Vanilla üzerine Java agent olarak eklenen hafif mod loader. Tüm vanilla sürümlerinde çalışır; modları mods/ klasörüne kendiniz eklersiniz.' },
-  { value: 'ornithe', label: 'Ornithe (deneysel)', hint: 'Ornithe 0.1.2 şu an dünya/sunucuya girerken çökebiliyor. 1.12.2 modları için Legacy Fabric önerilir.' },
-  { value: 'rift', label: 'Rift (deneysel)', hint: 'Minecraft 1.13 / 1.13.2 için eski mod loader. dimdev.org kapalı; topluluk yansısı kullanılır. Fabric önerilir.' },
+  { value: 'vanilla' },
+  { value: 'bedrock' },
+  { value: 'fabric' },
+  { value: 'fabric-beta' },
+  { value: 'forge' },
+  { value: 'forge-optifine' },
+  { value: 'neoforge' },
+  { value: 'quilt' },
+  { value: 'legacy-fabric' },
+  { value: 'liteloader' },
+  { value: 'nilloader' },
+  { value: 'ornithe' },
+  { value: 'rift' },
 ];
 
 const FABRIC_LOADERS = new Set(['fabric', 'fabric-beta']);
@@ -62,9 +62,9 @@ export function createModsPanel({ root, store, i18n }) {
       <div class="loader-option">
         <label class="field radio">
           <input type="radio" name="loader" value="${opt.value}" data-role="loader-${opt.value}" />
-          <span>${opt.label}</span>
+          <span></span>
         </label>
-        <p class="hint mods-hint" data-role="hint-loader-${opt.value}">${opt.hint}</p>
+        <p class="hint mods-hint" data-role="hint-loader-${opt.value}"></p>
       </div>
     `
   ).join('');
@@ -229,6 +229,10 @@ export function createModsPanel({ root, store, i18n }) {
 
   let syncing = false;
 
+  function modT(key, params) {
+    return i18n.t(`mods.${key}`, params);
+  }
+
   function publish() {
     store.setState({
       selectedLoader: currentLoader(),
@@ -245,13 +249,7 @@ export function createModsPanel({ root, store, i18n }) {
     });
   }
 
-  const SHADER_PICKER_HINTS = {
-    fabric: 'Fabric: Iris + Sodium ile seçilen paket otomatik kurulur ve oyunda etkinleştirilir.',
-    'fabric-beta': 'Fabric (Beta): Iris + Sodium ile seçilen paket otomatik kurulur ve oyunda etkinleştirilir.',
-    quilt: 'Quilt: Iris + Sodium ile seçilen paket otomatik kurulur ve oyunda etkinleştirilir.',
-    forge: 'Forge: Oculus + Rubidium ile seçilen paket otomatik kurulur (Oculus ayarlarına yazılır).',
-    neoforge: 'NeoForge: Iris + Sodium ile seçilen paket otomatik kurulur.',
-  };
+  const SHADER_PICKER_LOADERS = new Set(['fabric', 'fabric-beta', 'quilt', 'forge', 'neoforge']);
 
   function updateShaderPickerVisibility() {
     const loader = currentLoader();
@@ -261,20 +259,15 @@ export function createModsPanel({ root, store, i18n }) {
 
     const active = loaderSupportsShaderFps && shaderCb.checked && !shaderCb.disabled;
     shaderPicker.disabled = !active;
-    shaderPicker.title = active
-      ? ''
-      : 'Shader paketi seçmek için Shader + FPS seçeneğini işaretleyin.';
+    shaderPicker.title = active ? '' : modT('shaderPickerDisabledTitle');
 
-    if (hintShaderPicker && SHADER_PICKER_HINTS[loader]) {
-      hintShaderPicker.textContent = SHADER_PICKER_HINTS[loader];
+    if (hintShaderPicker) {
+      if (SHADER_PICKER_LOADERS.has(loader)) {
+        hintShaderPicker.textContent = modT(`shaderPickerHints.${loader}`);
+      } else {
+        hintShaderPicker.textContent = modT('shaderPackHint');
+      }
     }
-  }
-
-  function currentLoader() {
-    for (const opt of LOADER_OPTIONS) {
-      if (loaderRadioEls[opt.value].checked) return opt.value;
-    }
-    return DEFAULT_LOADER;
   }
 
   function applyMutualExclusion() {
@@ -284,13 +277,18 @@ export function createModsPanel({ root, store, i18n }) {
         store.setState({ modShaderFps: false });
       }
       shaderCb.disabled = true;
-      shaderCb.title = 'OptiFine seçiliyken Shader + FPS kullanılamaz.';
+      shaderCb.title = modT('shaderBlockedByOptifine');
     } else {
       shaderCb.disabled = !shaderFpsSupported(store.getState().selectedVersion);
-      shaderCb.title = shaderCb.disabled
-        ? 'Bu seçenek için Minecraft 1.16 veya üstü bir sürüm seçin.'
-        : '';
+      shaderCb.title = shaderCb.disabled ? modT('shaderNeedsVersion') : '';
     }
+  }
+
+  function currentLoader() {
+    for (const opt of LOADER_OPTIONS) {
+      if (loaderRadioEls[opt.value].checked) return opt.value;
+    }
+    return DEFAULT_LOADER;
   }
 
   function applyVersionGates() {
@@ -310,7 +308,7 @@ export function createModsPanel({ root, store, i18n }) {
     const c3Ok = !isSnapshot && crops3dSupported(v);
 
     if (isSnapshot) {
-      const reason = 'Snapshot/eski sürümlerde mod ekosistemi (Iris, Sodium, Continuity) yayınlanmaz; stable bir sürüm seçin.';
+      const reason = modT('tooltips.snapshot');
       if (optifineCb.checked) {
         optifineCb.checked = false;
         store.setState({ modOptifine: false });
@@ -377,30 +375,14 @@ export function createModsPanel({ root, store, i18n }) {
     roundTreesCb.disabled = !rtOk;
     crops3dCb.disabled = !c3Ok;
 
-    optifineCb.title = opOk
-      ? ''
-      : 'OptiFine paketi için Minecraft 1.16 veya üstü bir sürüm seçin.';
-    embossedCb.title = emOk
-      ? ''
-      : 'Bu seçenek için Minecraft 1.18 veya üstü bir sürüm seçin (Continuity uyumu).';
-    voiceChatCb.title = vcOk
-      ? ''
-      : 'Voice Chat için Minecraft 1.16 veya üstü bir sürüm seçin.';
-    fullbrightUbCb.title = fbOk
-      ? ''
-      : 'Fullbright UB bu sürüm için desteklenmiyor.';
-    betterLeavesCb.title = blOk
-      ? ''
-      : 'Better Leaves bu sürüm için desteklenmiyor.';
-    glowingOresCb.title = goOk
-      ? ''
-      : 'Glowing Ores için Minecraft 1.17 veya üstü bir sürüm seçin.';
-    roundTreesCb.title = rtOk
-      ? ''
-      : 'Round Trees bu sürüm için desteklenmiyor.';
-    crops3dCb.title = c3Ok
-      ? ''
-      : '3D crops Revamped bu sürüm için desteklenmiyor.';
+    optifineCb.title = opOk ? '' : modT('tooltips.optifineVersion');
+    embossedCb.title = emOk ? '' : modT('tooltips.embossedVersion');
+    voiceChatCb.title = vcOk ? '' : modT('tooltips.voiceChatVersion');
+    fullbrightUbCb.title = fbOk ? '' : modT('tooltips.fullbrightUnsupported');
+    betterLeavesCb.title = blOk ? '' : modT('tooltips.betterLeavesUnsupported');
+    glowingOresCb.title = goOk ? '' : modT('tooltips.glowingOresVersion');
+    roundTreesCb.title = rtOk ? '' : modT('tooltips.roundTreesUnsupported');
+    crops3dCb.title = c3Ok ? '' : modT('tooltips.crops3dUnsupported');
 
     if (!opOk && optifineCb.checked) {
       optifineCb.checked = false;
@@ -439,86 +421,98 @@ export function createModsPanel({ root, store, i18n }) {
     updateShaderPickerVisibility();
   }
 
-  // Her loader için hangi mod row'ları görünür ve mods-title:
   const ROWS_BY_LOADER = {
     fabric: {
       rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
-      title: 'Fabric Modları',
-      shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
-      embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
+      titleKey: 'titles.fabric',
+      shaderLabelKey: 'shaderLabels.fabric',
+      embossedLabelKey: 'embossedLabels.fabric',
     },
     'fabric-beta': {
       rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
-      title: 'Fabric (Beta) Modları',
-      shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
-      embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
+      titleKey: 'titles.fabric-beta',
+      shaderLabelKey: 'shaderLabels.fabric-beta',
+      embossedLabelKey: 'embossedLabels.fabric-beta',
     },
     quilt: {
       rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
-      title: 'Quilt Modları',
-      shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
-      embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity)',
+      titleKey: 'titles.quilt',
+      shaderLabelKey: 'shaderLabels.quilt',
+      embossedLabelKey: 'embossedLabels.quilt',
     },
     forge: {
       rows: ['shaderFps', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
-      title: 'Forge Modları',
-      shaderLabel: 'Shader + FPS (Embeddium + Oculus + seçilen shader paketi — ⚠ Mac\'te Oculus OpenGL 1282 hatası verebilir; NeoForge veya Fabric önerilir)',
-      embossedLabel: 'Kabartmalı / bağlı bloklar (Continuity Forge — sadece 1.20.1)',
+      titleKey: 'titles.forge',
+      shaderLabelKey: 'shaderLabels.forge',
+      embossedLabelKey: 'embossedLabels.forge',
     },
     'forge-optifine': {
       rows: ['embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
-      title: 'Forge + OptiFine Modları',
-      shaderLabel: '',
-      embossedLabel: "Kabartmalı / bağlı bloklar (OptiFine içeride zaten CTM destekler — ek mod gerek yok)",
+      titleKey: 'titles.forge-optifine',
+      shaderLabelKey: null,
+      embossedLabelKey: 'embossedLabels.forge-optifine',
     },
     neoforge: {
       rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
-      title: 'NeoForge Modları',
-      shaderLabel: 'Shader + FPS (Sodium + Iris + seçilen shader paketi)',
-      embossedLabel: 'Kabartmalı / bağlı bloklar (NeoForge\'da native Continuity yok — desteklenmiyor)',
+      titleKey: 'titles.neoforge',
+      shaderLabelKey: 'shaderLabels.neoforge',
+      embossedLabelKey: 'embossedLabels.neoforge',
     },
     'legacy-fabric': {
       rows: [],
-      title: 'Legacy Fabric',
-      shaderLabel: '',
-      embossedLabel: '',
+      titleKey: 'titles.legacy-fabric',
+      shaderLabelKey: null,
+      embossedLabelKey: null,
     },
     liteloader: {
       rows: [],
-      title: 'LiteLoader',
-      shaderLabel: '',
-      embossedLabel: '',
+      titleKey: 'titles.liteloader',
+      shaderLabelKey: null,
+      embossedLabelKey: null,
     },
     nilloader: {
       rows: [],
-      title: 'NilLoader',
-      shaderLabel: '',
-      embossedLabel: '',
+      titleKey: 'titles.nilloader',
+      shaderLabelKey: null,
+      embossedLabelKey: null,
     },
     ornithe: {
       rows: [],
-      title: 'Ornithe',
-      shaderLabel: '',
-      embossedLabel: '',
+      titleKey: 'titles.ornithe',
+      shaderLabelKey: null,
+      embossedLabelKey: null,
     },
     rift: {
       rows: [],
-      title: 'Rift',
-      shaderLabel: '',
-      embossedLabel: '',
+      titleKey: 'titles.rift',
+      shaderLabelKey: null,
+      embossedLabelKey: null,
     },
     vanilla: {
       rows: ['fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
-      title: 'Vanilla Modları',
-      shaderLabel: '',
-      embossedLabel: '',
+      titleKey: 'titles.vanilla',
+      shaderLabelKey: null,
+      embossedLabelKey: null,
     },
     bedrock: {
       rows: [],
-      title: 'Minecraft Bedrock',
-      shaderLabel: '',
-      embossedLabel: '',
+      titleKey: 'titles.bedrock',
+      shaderLabelKey: null,
+      embossedLabelKey: null,
     },
+  };
+
+  const LOADER_WARNING_KEYS = {
+    forge: 'loaderWarnings.forge',
+    neoforge: 'loaderWarnings.neoforge',
+    quilt: 'loaderWarnings.quilt',
+    'legacy-fabric': 'loaderWarnings.legacy-fabric',
+    liteloader: 'loaderWarnings.liteloader',
+    nilloader: 'loaderWarnings.nilloader',
+    ornithe: 'loaderWarnings.ornithe',
+    rift: 'loaderWarnings.rift',
+    vanilla: 'loaderWarnings.vanilla',
+    bedrock: 'loaderWarnings.bedrock',
   };
 
   function applyLoaderState() {
@@ -595,58 +589,34 @@ export function createModsPanel({ root, store, i18n }) {
       store.setState({ modCrops3d: false });
     }
 
-    modsTitle.textContent = config.title;
-    if (config.shaderLabel) shaderLabel.textContent = config.shaderLabel;
-    if (config.embossedLabel) embossedLabel.textContent = config.embossedLabel;
+    modsTitle.textContent = modT(config.titleKey);
+    if (config.shaderLabelKey) {
+      const shaderText = modT(config.shaderLabelKey);
+      if (shaderText) shaderLabel.textContent = shaderText;
+    }
+    if (config.embossedLabelKey) {
+      const embossedText = modT(config.embossedLabelKey);
+      if (embossedText) embossedLabel.textContent = embossedText;
+    }
     modsOptionsBox.style.display = config.rows.length > 0 ? '' : 'none';
 
-    // Loader hint metni
     if (FABRIC_LOADERS.has(loader)) {
       loaderWarning.style.display = 'none';
       loaderWarning.textContent = '';
     } else {
       loaderWarning.style.display = '';
-      if (loader === 'forge') {
-        loaderWarning.textContent =
-          'Forge loader otomatik kurulacak. Shader + FPS için Rubidium (Sodium fork) + Oculus (Iris fork) indirilir; en iyi destek Minecraft 1.20.1 ve daha eski sürümlerdedir.';
-      } else if (loader === 'neoforge') {
-        loaderWarning.textContent =
-          'NeoForge (Forge\'un modern çatalı) otomatik kurulacak. Shader + FPS için Iris ve Sodium\'un NeoForge sürümleri indirilir (1.21.2 ve üzeri önerilir).';
-      } else if (loader === 'quilt') {
-        loaderWarning.textContent =
-          'Quilt loader otomatik kurulacak. Shader + FPS Fabric ekosistemiyle çalışır (Iris + Sodium).';
-      } else if (loader === 'legacy-fabric') {
-        loaderWarning.textContent =
-          'Legacy Fabric otomatik kurulacak. Kayıtlar ve ayarlar profiles/legacy-fabric-<sürüm>/ altında tutulur. Modları mods/ klasörüne kendiniz eklersiniz.';
-      } else if (loader === 'liteloader') {
-        loaderWarning.textContent =
-          'LiteLoader otomatik kurulacak. Kayıtlar ve ayarlar profiles/liteloader-<sürüm>/ altında tutulur. Modları mods/ klasörüne kendiniz eklersiniz.';
-      } else if (loader === 'nilloader') {
-        loaderWarning.textContent =
-          'NilLoader Java agent olarak indirilir ve vanilla profil üzerinde çalışır. Modları mods/ klasörüne kendiniz eklersiniz.';
-      } else if (loader === 'ornithe') {
-        loaderWarning.textContent =
-          'Ornithe deneysel: ana menü açılabilir ancak dünya/sunucuya girerken Calamus hatasıyla çökebilir. ' +
-          '1.12.2 modları için Legacy Fabric kullanmanız önerilir.';
-      } else if (loader === 'rift') {
-        loaderWarning.textContent =
-          'Rift otomatik kurulacak. Kayıtlar ve ayarlar profiles/rift-<sürüm>/ altında tutulur. Yalnızca 1.13 ve 1.13.2 desteklenir.';
-      } else if (loader === 'vanilla') {
-        loaderWarning.textContent =
-          'Vanilla seçili — Minecraft resmi profille başlar. Kaynak paketi modları (Fullbright, Better Leaves, Glowing Ores, Round Trees, 3D crops) seçiliyse otomatik indirilir; parıltı için Fabric+Continuity veya OptiFine gerekir.';
-      } else if (loader === 'bedrock') {
-        loaderWarning.textContent =
-          'Bedrock (Minecraft for Windows) Microsoft Store uygulaması olarak başlatılır. ' +
-          'Sürüm seçimi gerekmez; güncellemeler Store/Xbox üzerinden gelir. Yalnızca Windows desteklenir.';
-      } else {
-        // forge-optifine
+      if (loader === 'forge-optifine') {
         const v = store.getState().selectedVersion;
         if (!forgeOptifineLikelySupported(v)) {
-          loaderWarning.textContent =
-            `⚠ OptiFine "${v}" sürümünü desteklemiyor. OptiFine en son 1.21.9'a kadar yayınlandı — daha eski bir sürüm seçin veya "Forge" (OptiFine'sız) profilini kullanın.`;
+          loaderWarning.textContent = modT('loaderWarnings.forgeOptifineUnsupported', { version: v });
         } else {
-          loaderWarning.textContent =
-            'Forge + klasik OptiFine.jar otomatik indirilecek. OptiFine kendi shader ve CTM sistemini içerir; Shader + FPS ile aynı anda kullanılamaz.';
+          loaderWarning.textContent = modT('loaderWarnings.forgeOptifineOk');
+        }
+      } else {
+        const warnKey = LOADER_WARNING_KEYS[loader];
+        loaderWarning.textContent = warnKey ? modT(warnKey) : '';
+        if (!warnKey) {
+          loaderWarning.style.display = 'none';
         }
       }
     }
@@ -718,17 +688,14 @@ export function createModsPanel({ root, store, i18n }) {
       if (labelSpan) labelSpan.textContent = t(`loaders.${opt.value}.label`);
       if (hint) hint.textContent = t(`loaders.${opt.value}.hint`);
     }
-    if (shaderLabel) shaderLabel.textContent = t('mods.shaderFps');
     const hintShader = root.querySelector('[data-role="hint-shader"]');
     if (hintShader) hintShader.textContent = t('mods.shaderFpsHint');
     const shaderPackLabel = shaderPickerBlock?.querySelector('label.field > span');
     if (shaderPackLabel) shaderPackLabel.textContent = t('mods.shaderPack');
-    if (hintShaderPicker) hintShaderPicker.textContent = t('mods.shaderPackHint');
     const optifineSpan = root.querySelector('[data-role="row-optifine"] label span');
     if (optifineSpan) optifineSpan.textContent = t('mods.optifine');
     const hintOptifine = root.querySelector('[data-role="hint-optifine"]');
     if (hintOptifine) hintOptifine.textContent = t('mods.optifineHint');
-    if (embossedLabel) embossedLabel.textContent = t('mods.embossed');
     const hintEmbossed = root.querySelector('[data-role="hint-embossed"]');
     if (hintEmbossed) hintEmbossed.textContent = t('mods.embossedHint');
     const voiceSpan = root.querySelector('[data-role="row-voiceChat"] label span');
@@ -755,6 +722,28 @@ export function createModsPanel({ root, store, i18n }) {
     if (cropsSpan) cropsSpan.textContent = t('mods.crops3d');
     const hintCrops = root.querySelector('[data-role="hint-crops3d"]');
     if (hintCrops) hintCrops.textContent = t('mods.crops3dHint');
+    if (shaderLabel) {
+      const loader = currentLoader();
+      const config = ROWS_BY_LOADER[loader] || ROWS_BY_LOADER.fabric;
+      if (config.shaderLabelKey) {
+        const shaderText = modT(config.shaderLabelKey);
+        if (shaderText) shaderLabel.textContent = shaderText;
+      } else {
+        shaderLabel.textContent = t('mods.shaderFps');
+      }
+    }
+    if (embossedLabel) {
+      const loader = currentLoader();
+      const config = ROWS_BY_LOADER[loader] || ROWS_BY_LOADER.fabric;
+      if (config.embossedLabelKey) {
+        const embossedText = modT(config.embossedLabelKey);
+        if (embossedText) embossedLabel.textContent = embossedText;
+      } else {
+        embossedLabel.textContent = t('mods.embossed');
+      }
+    }
+    applyLoaderState();
+    applyVersionGates();
     updateShaderPickerVisibility();
   }
 
