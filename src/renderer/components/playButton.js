@@ -1,13 +1,14 @@
 import { sanitizeModPresetsForPlayMode, PLAY_MODES } from '../../shared/marsanaClient.js';
 
-export function createPlayButton({ root, store, launchApi }) {
-  root.innerHTML = `<button class="btn play" disabled data-role="play">OYNA</button>`;
+export function createPlayButton({ root, store, launchApi, i18n }) {
+  root.innerHTML = `<button class="btn play" disabled data-role="play"></button>`;
   const btn = root.querySelector('[data-role="play"]');
 
-  // Launch sırasında store.setState() çağrıları subscribers'ı tetikleyip
-  // updateDisabled'ı çalıştırıyor; bu flag olmadan buton hemen yeniden aktif
-  // oluyor ve kullanıcı OYNA'ya art arda basıp paralel launch tetikleyebiliyor.
   let isLaunching = false;
+
+  function applyLabels() {
+    btn.textContent = i18n.t('play.button');
+  }
 
   async function handleClick() {
     if (isLaunching) return;
@@ -18,7 +19,7 @@ export function createPlayButton({ root, store, launchApi }) {
     isLaunching = true;
     btn.disabled = true;
     store.setState({
-      statusText: 'Başlatılıyor...',
+      statusText: i18n.t('common.loading'),
       logLines: [],
       progressPercent: 0,
       lastLaunchLoader: loader,
@@ -61,7 +62,7 @@ export function createPlayButton({ root, store, launchApi }) {
         selectedCosmetic: state.selectedCosmetic || 'none',
       });
     } catch (err) {
-      store.setState({ statusText: 'Hata: ' + (err.message || err) });
+      store.setState({ statusText: i18n.t('common.error', { message: err.message || err }) });
     } finally {
       isLaunching = false;
       updateDisabled(store.getState());
@@ -76,19 +77,23 @@ export function createPlayButton({ root, store, launchApi }) {
     const loader = state.selectedLoader || 'fabric';
     if (loader === 'bedrock') {
       btn.disabled = false;
-      btn.title = 'Minecraft for Windows (Store) uygulamasını açar. Oyuna kendi Microsoft/Xbox hesabınızla giriş yaparsınız.';
+      btn.title = i18n.t('play.bedrockTitle');
       return;
     }
     btn.title = '';
-    const needsVersion = true;
-    btn.disabled = !state.user || (needsVersion && !state.selectedVersion);
+    btn.disabled = !state.user || !state.selectedVersion;
   }
 
   btn.addEventListener('click', handleClick);
 
   function mount() {
+    applyLabels();
     updateDisabled(store.getState());
-    return store.subscribe(updateDisabled);
+    const unsubs = [
+      store.subscribe(updateDisabled),
+      i18n.onChange(applyLabels),
+    ];
+    return () => unsubs.forEach((u) => u());
   }
 
   return { mount };

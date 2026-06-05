@@ -6,7 +6,7 @@ import {
   isOrnitheVersionBlocked,
 } from '../../shared/versionCompatibility.js';
 
-export function createVersionSelector({ root, store, versionsApi }) {
+export function createVersionSelector({ root, store, versionsApi, i18n }) {
   let manifest = null;
   let loaderSupportedCache = {};
   let loaderSupportedFetching = {};
@@ -14,7 +14,7 @@ export function createVersionSelector({ root, store, versionsApi }) {
 
   root.innerHTML = `
     <label class="field" data-role="version-field">
-      <span>Sürüm</span>
+      <span data-role="version-label">Sürüm</span>
       <div class="row">
         <select data-role="type">
           <option value="release">Sadece release</option>
@@ -24,17 +24,26 @@ export function createVersionSelector({ root, store, versionsApi }) {
         <select data-role="version"><option>Yükleniyor...</option></select>
       </div>
     </label>
-    <p class="hint mods-hint" data-role="bedrock-version-hint" style="display:none;">
-      Bedrock sürümü Microsoft Store / Xbox uygulaması üzerinden otomatik güncellenir; sürüm seçimi gerekmez.
-    </p>
+    <p class="hint mods-hint" data-role="bedrock-version-hint" style="display:none;"></p>
     <p class="hint mods-hint" data-role="filter-hint" style="display:none;"></p>
   `;
 
   const typeSelect = root.querySelector('[data-role="type"]');
   const versionSelect = root.querySelector('[data-role="version"]');
   const versionField = root.querySelector('[data-role="version-field"]');
+  const versionLabel = root.querySelector('[data-role="version-label"]');
   const bedrockVersionHint = root.querySelector('[data-role="bedrock-version-hint"]');
   const filterHint = root.querySelector('[data-role="filter-hint"]');
+
+  function applyStaticI18n() {
+    if (versionLabel) versionLabel.textContent = i18n.t('version.label');
+    if (typeSelect.options[0]) typeSelect.options[0].textContent = i18n.t('version.releaseOnly');
+    if (typeSelect.options[1]) typeSelect.options[1].textContent = i18n.t('version.snapshotOnly');
+    if (typeSelect.options[2]) typeSelect.options[2].textContent = i18n.t('version.all');
+    if (bedrockVersionHint) bedrockVersionHint.textContent = i18n.t('version.bedrockHint');
+  }
+
+  applyStaticI18n();
 
   function typeOf(versionId) {
     if (!manifest) return 'release';
@@ -96,13 +105,14 @@ export function createVersionSelector({ root, store, versionsApi }) {
   }
 
   function loaderFilterLabel(loader) {
-    const labels = {
-      'legacy-fabric': 'Legacy Fabric destekli sürümler',
-      ornithe: 'Ornithe destekli sürümler',
-      liteloader: 'LiteLoader destekli sürümler',
-      rift: 'Rift destekli sürümler (1.13 / 1.13.2)',
+    const keys = {
+      'legacy-fabric': 'versionFilters.legacyFabric',
+      ornithe: 'versionFilters.ornithe',
+      liteloader: 'versionFilters.liteloader',
+      rift: 'versionFilters.rift',
     };
-    return labels[loader] || `${loader} destekli sürümler`;
+    if (keys[loader]) return i18n.t(keys[loader]);
+    return i18n.t('versionFilters.loaderGeneric', { loader });
   }
 
   function updateFilterHint(state) {
@@ -112,49 +122,37 @@ export function createVersionSelector({ root, store, versionsApi }) {
       parts.push(loaderFilterLabel(snap.loader));
     }
     if (snap.loader === 'forge-optifine' || snap.modOptifine) {
-      parts.push('OptiFine uyumlu sürümler');
+      parts.push(i18n.t('versionFilters.optifine'));
     }
     if (snap.modShaderFps) {
       parts.push(
         snap.loader === 'neoforge'
-          ? 'NeoForge Shader + FPS uyumlu sürümler (1.20.1+ veya 1.20.2+)'
+          ? i18n.t('versionFilters.shaderFpsNeoForge')
           : snap.loader === 'forge'
-            ? 'Forge Shader + FPS uyumlu sürümler'
-            : 'Shader + FPS uyumlu sürümler'
+            ? i18n.t('versionFilters.shaderFpsForge')
+            : i18n.t('versionFilters.shaderFps')
       );
     }
     if (snap.modEmbossedBlocks) {
       parts.push(
         snap.loader === 'forge'
-          ? 'Forge kabartma (1.20.1)'
-          : 'Kabartmalı blok uyumlu sürümler'
+          ? i18n.t('versionFilters.embossedForge')
+          : i18n.t('versionFilters.embossed')
       );
     }
-    if (snap.modVoiceChat) {
-      parts.push('Voice Chat uyumlu sürümler');
-    }
-    if (snap.modFullbrightUb) {
-      parts.push('Fullbright UB uyumlu sürümler');
-    }
-    if (snap.modBetterLeaves) {
-      parts.push('Better Leaves uyumlu sürümler');
-    }
-    if (snap.modGlowingOres) {
-      parts.push('Glowing Ores uyumlu sürümler (1.17+)');
-    }
-    if (snap.modRoundTrees) {
-      parts.push('Round Trees uyumlu sürümler');
-    }
-    if (snap.modCrops3d) {
-      parts.push('3D crops Revamped uyumlu sürümler');
-    }
+    if (snap.modVoiceChat) parts.push(i18n.t('versionFilters.voiceChat'));
+    if (snap.modFullbrightUb) parts.push(i18n.t('versionFilters.fullbrightUb'));
+    if (snap.modBetterLeaves) parts.push(i18n.t('versionFilters.betterLeaves'));
+    if (snap.modGlowingOres) parts.push(i18n.t('versionFilters.glowingOres'));
+    if (snap.modRoundTrees) parts.push(i18n.t('versionFilters.roundTrees'));
+    if (snap.modCrops3d) parts.push(i18n.t('versionFilters.crops3d'));
     if (parts.length === 0) {
       filterHint.style.display = 'none';
       filterHint.textContent = '';
       return;
     }
     filterHint.style.display = '';
-    filterHint.textContent = `Seçiminize göre filtreleniyor: ${parts.join(', ')}.`;
+    filterHint.textContent = i18n.t('versionFilters.filtering', { parts: parts.join(', ') });
   }
 
   function updateBedrockUi(state) {
@@ -191,7 +189,8 @@ export function createVersionSelector({ root, store, versionsApi }) {
 
     if (filteredLoader) {
       if (!loaderSupportedCache[loader]) {
-        versionSelect.innerHTML = `<option>${loaderFilterLabel(loader)} alınıyor...</option>`;
+        const label = loaderFilterLabel(loader);
+        versionSelect.innerHTML = `<option>${i18n.t('versionFilters.fetching', { label })}</option>`;
         ensureLoaderSupported(loader).then(() => renderOptions());
         return;
       }
@@ -253,33 +252,43 @@ export function createVersionSelector({ root, store, versionsApi }) {
   versionSelect.addEventListener('change', publishSelected);
 
   async function mount() {
-    store.setState({ statusText: 'Sürüm listesi alınıyor...' });
+    store.setState({ statusText: i18n.t('status.fetchingVersionList') });
     try {
       manifest = await versionsApi.list();
       lastFilterKey = filterKey(store.getState());
       if (needsLoaderFilter()) ensureLoaderSupported(currentLoader());
       renderOptions();
-      store.setState({ statusText: 'Hazır.' });
+      store.setState({ statusText: i18n.t('common.ready') });
     } catch (err) {
-      store.setState({ statusText: 'Sürüm listesi alınamadı: ' + err.message });
+      store.setState({
+        statusText: i18n.t('status.versionListFailed', { error: err.message }),
+      });
     }
 
-    store.subscribe((state) => {
-      updateBedrockUi(state);
-      const nextKey = filterKey(state);
-      if ((state.selectedLoader || '') === 'bedrock') {
-        if (state.selectedVersion !== null) {
-          store.setState({ selectedVersion: null, selectedVersionType: 'release' });
+    const unsubs = [
+      store.subscribe((state) => {
+        updateBedrockUi(state);
+        const nextKey = filterKey(state);
+        if ((state.selectedLoader || '') === 'bedrock') {
+          if (state.selectedVersion !== null) {
+            store.setState({ selectedVersion: null, selectedVersionType: 'release' });
+          }
+          return;
         }
-        return;
-      }
-      if (nextKey === lastFilterKey) return;
-      lastFilterKey = nextKey;
-      if (needsLoaderFilter(state.selectedLoader)) {
-        ensureLoaderSupported(state.selectedLoader || 'legacy-fabric');
-      }
-      renderOptions();
-    });
+        if (nextKey === lastFilterKey) return;
+        lastFilterKey = nextKey;
+        if (needsLoaderFilter(state.selectedLoader)) {
+          ensureLoaderSupported(state.selectedLoader || 'legacy-fabric');
+        }
+        renderOptions();
+      }),
+      i18n.onChange(() => {
+        applyStaticI18n();
+        renderOptions();
+      }),
+    ];
+
+    return () => unsubs.forEach((u) => u());
   }
 
   return { mount };

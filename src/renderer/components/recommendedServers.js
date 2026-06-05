@@ -1,20 +1,20 @@
 const SERVER_SEARCH_URL = 'https://topminecraftservers.org/#google_vignette';
 
-function primaryActionFor(server) {
+function primaryActionFor(server, t) {
   if (server.provider === 'aternos' && server.providerDashboardUrl) {
-    return { label: 'Sunucuyu Uyandır', url: server.providerDashboardUrl };
+    return { label: t('servers.wake'), url: server.providerDashboardUrl };
   }
   if (server.websiteUrl) {
-    return { label: 'Web Sitesi', url: server.websiteUrl };
+    return { label: t('servers.website'), url: server.websiteUrl };
   }
   return null;
 }
 
-function renderServerCard(server, { onCopyAddress, onOpenExternal }) {
+function renderServerCard(server, { onCopyAddress, onOpenExternal, t }) {
   const card = document.createElement('div');
   card.className = 'server-card';
 
-  const action = primaryActionFor(server);
+  const action = primaryActionFor(server, t);
   const actionButton = action
     ? `<button class="btn primary" data-role="external">${escapeHtml(action.label)}</button>`
     : '';
@@ -22,15 +22,15 @@ function renderServerCard(server, { onCopyAddress, onOpenExternal }) {
   card.innerHTML = `
     <div class="server-card-header">
       <h3 class="server-name">${escapeHtml(server.name)}</h3>
-      <span class="server-badge">${server.capacity ? `${server.capacity} kişi` : ''}</span>
+      <span class="server-badge">${server.capacity ? t('servers.players', { count: server.capacity }) : ''}</span>
     </div>
     <p class="server-description">${escapeHtml(server.description || '')}</p>
     <div class="server-address" data-role="address">
-      <span class="server-address-label">Adres:</span>
+      <span class="server-address-label">${t('servers.address')}</span>
       <code>${escapeHtml(server.address)}</code>
     </div>
     <div class="server-actions">
-      <button class="btn ghost" data-role="copy">Adresi Kopyala</button>
+      <button class="btn ghost" data-role="copy">${t('servers.copy')}</button>
       ${actionButton}
     </div>
   `;
@@ -70,19 +70,22 @@ async function copyToClipboard(text) {
   document.body.removeChild(ta);
 }
 
-export function createRecommendedServers({ root, store, serversApi, openExternal }) {
+export function createRecommendedServers({ root, store, serversApi, openExternal, i18n }) {
+  let cachedServers = null;
+  let loadFailed = false;
+
   async function onCopyAddress(server, button) {
     try {
       await copyToClipboard(server.address);
       const original = button.textContent;
-      button.textContent = 'Kopyalandı ✓';
+      button.textContent = i18n.t('servers.copied');
       button.disabled = true;
       setTimeout(() => {
         button.textContent = original;
         button.disabled = false;
       }, 1500);
     } catch {
-      store.setState({ statusText: 'Adres kopyalanamadı.' });
+      store.setState({ statusText: i18n.t('servers.copyFailed') });
     }
   }
 
@@ -95,9 +98,9 @@ export function createRecommendedServers({ root, store, serversApi, openExternal
     const header = document.createElement('div');
     header.className = 'servers-header';
     header.innerHTML = `
-      <h3 class="section-title servers-header-title">Önerilen Sunucular</h3>
+      <h3 class="section-title servers-header-title">${i18n.t('servers.title')}</h3>
       <button type="button" class="btn ghost servers-search-link" data-role="search-servers" title="${SERVER_SEARCH_URL}">
-        Daha fazla sunucu
+        ${i18n.t('servers.searchMore')}
       </button>
     `;
     header.querySelector('[data-role="search-servers"]').addEventListener('click', () => {
@@ -111,7 +114,7 @@ export function createRecommendedServers({ root, store, serversApi, openExternal
     root.appendChild(renderHeader());
     const hint = document.createElement('p');
     hint.className = 'hint';
-    hint.textContent = message || 'Önerilen sunucu yok.';
+    hint.textContent = message || i18n.t('servers.empty');
     root.appendChild(hint);
   }
 
@@ -120,24 +123,43 @@ export function createRecommendedServers({ root, store, serversApi, openExternal
     root.appendChild(renderHeader());
     const container = document.createElement('div');
     container.className = 'server-list';
+    const t = i18n.t;
     for (const server of servers) {
-      container.appendChild(renderServerCard(server, { onCopyAddress, onOpenExternal }));
+      container.appendChild(renderServerCard(server, { onCopyAddress, onOpenExternal, t }));
     }
     root.appendChild(container);
+  }
+
+  function refreshView() {
+    if (loadFailed) {
+      renderEmpty();
+      return;
+    }
+    if (!cachedServers || cachedServers.length === 0) {
+      renderEmpty(i18n.t('servers.emptyHint'));
+      return;
+    }
+    renderList(cachedServers);
   }
 
   async function mount() {
     try {
       const list = await serversApi.list();
-      if (!Array.isArray(list) || list.length === 0) {
-        renderEmpty('Önerilen sunucu yok. Aşağıdaki bağlantıdan binlerce sunucu arasından arayabilirsin.');
-        return;
+      cachedServers = Array.isArray(list) ? list : [];
+      if (cachedServers.length === 0) {
+        renderEmpty(i18n.t('servers.emptyHint'));
+      } else {
+        renderList(cachedServers);
       }
-      renderList(list);
     } catch (err) {
-      store.setState({ statusText: 'Sunucu listesi alınamadı: ' + (err.message || err) });
+      loadFailed = true;
+      store.setState({
+        statusText: `${i18n.t('servers.loadError')} ${err.message || err}`,
+      });
       renderEmpty();
     }
+
+    return i18n.onChange(refreshView);
   }
 
   return { mount };

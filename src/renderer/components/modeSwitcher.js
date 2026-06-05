@@ -6,12 +6,10 @@ import {
   LAUNCHER_MODE_RESET,
 } from '../../shared/marsanaClient.js';
 
-const BRAND_LAUNCHER = 'Marsana Launcher';
-const BRAND_CLIENT = 'Marsana Client';
-
-export function updateBranding(playMode) {
+export function updateBranding(playMode, t) {
+  const tr = typeof t === 'function' ? t : (key) => key;
   const client = isClientMode(playMode);
-  document.title = client ? BRAND_CLIENT : BRAND_LAUNCHER;
+  document.title = client ? tr('brand.client') : tr('brand.launcher');
   document.body.classList.toggle('mode-client', client);
   document.body.classList.toggle('mode-launcher', !client);
 
@@ -19,50 +17,70 @@ export function updateBranding(playMode) {
   if (brandName) {
     const ver = brandName.querySelector('.app-version');
     const verHtml = ver ? ver.outerHTML : '';
-    brandName.innerHTML = `${client ? BRAND_CLIENT : BRAND_LAUNCHER} ${verHtml}`;
+    brandName.innerHTML = `${client ? tr('brand.client') : tr('brand.launcher')} ${verHtml}`;
   }
 }
 
-export function createModeSwitcher({ root, store, applyModIsolation }) {
-  root.innerHTML = `
+export function createModeSwitcher({ root, store, applyModIsolation, i18n }) {
+  function buildMarkup() {
+    const t = i18n.t;
+    return `
     <div class="mode-switcher" data-role="mode-switcher">
       <button type="button" class="mode-tab active" data-mode="client">
-        <span class="mode-tab-title">Marsana Client</span>
-        <span class="mode-tab-sub">Hazır paket — H menüsü, FPS, Fullbright, Voice Chat</span>
+        <span class="mode-tab-title">${t('mode.clientTitle')}</span>
+        <span class="mode-tab-sub">${t('mode.clientSub')}</span>
       </button>
       <button type="button" class="mode-tab" data-mode="launcher">
-        <span class="mode-tab-title">Gelişmiş Launcher</span>
-        <span class="mode-tab-sub">Loader ve modları kendin seç</span>
+        <span class="mode-tab-title">${t('mode.launcherTitle')}</span>
+        <span class="mode-tab-sub">${t('mode.launcherSub')}</span>
       </button>
     </div>
     <div class="client-features" data-role="client-features" hidden>
-      <p class="client-features-lead">
-        Marsana Client, en iyi oyun deneyimi için önceden yapılandırılmış Fabric paketidir. Oyna'ya basman yeterli.
-      </p>
+      <p class="client-features-lead">${t('mode.clientLead')}</p>
       <ul class="client-features-list">
         ${CLIENT_FEATURES.map(
           (f) => `
           <li class="client-feature-item">
             <span class="client-feature-check" aria-hidden="true">✓</span>
             <div>
-              <strong>${f.title}</strong>
-              <span class="client-feature-desc">${f.description}</span>
+              <strong>${t(`clientFeatures.${f.id}.title`)}</strong>
+              <span class="client-feature-desc">${t(`clientFeatures.${f.id}.description`)}</span>
             </div>
           </li>`
         ).join('')}
       </ul>
     </div>
   `;
+  }
 
-  const switcher = root.querySelector('[data-role="mode-switcher"]');
-  const clientFeatures = root.querySelector('[data-role="client-features"]');
-  const tabs = [...root.querySelectorAll('.mode-tab')];
+  function renderShell() {
+    root.innerHTML = buildMarkup();
+    wireTabs();
+  }
+
+  let tabs = [];
+  let switcher = null;
+  let clientFeatures = null;
+
+  function wireTabs() {
+    switcher = root.querySelector('[data-role="mode-switcher"]');
+    clientFeatures = root.querySelector('[data-role="client-features"]');
+    tabs = [...root.querySelectorAll('.mode-tab')];
+
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => {
+        const mode = tab.dataset.mode;
+        if (store.getState().playMode === mode) return;
+        switchTo(mode);
+      });
+    }
+  }
 
   function setActiveTab(mode) {
     for (const tab of tabs) {
       tab.classList.toggle('active', tab.dataset.mode === mode);
     }
-    clientFeatures.hidden = mode !== PLAY_MODES.CLIENT;
+    if (clientFeatures) clientFeatures.hidden = mode !== PLAY_MODES.CLIENT;
   }
 
   async function switchTo(mode) {
@@ -71,7 +89,7 @@ export function createModeSwitcher({ root, store, applyModIsolation }) {
     } else {
       store.setState(LAUNCHER_MODE_RESET);
     }
-    updateBranding(mode);
+    updateBranding(mode, i18n.t);
     setActiveTab(mode);
 
     if (typeof applyModIsolation === 'function') {
@@ -85,28 +103,28 @@ export function createModeSwitcher({ root, store, applyModIsolation }) {
           },
         });
       } catch {
-        /* mods klasörü henüz yoksa veya izolasyon başarısız — launch'ta tekrar denenir */
+        /* ignore */
       }
     }
-  }
-
-  for (const tab of tabs) {
-    tab.addEventListener('click', () => {
-      const mode = tab.dataset.mode;
-      if (store.getState().playMode === mode) return;
-      switchTo(mode);
-    });
   }
 
   function renderFromStore(state) {
     const mode = state.playMode || PLAY_MODES.CLIENT;
     setActiveTab(mode);
-    updateBranding(mode);
+    updateBranding(mode, i18n.t);
   }
 
   function mount() {
+    renderShell();
     renderFromStore(store.getState());
-    return store.subscribe(renderFromStore);
+    const unsubs = [
+      store.subscribe(renderFromStore),
+      i18n.onChange(() => {
+        renderShell();
+        renderFromStore(store.getState());
+      }),
+    ];
+    return () => unsubs.forEach((u) => u());
   }
 
   return { mount };

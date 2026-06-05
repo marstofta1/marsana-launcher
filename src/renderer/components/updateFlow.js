@@ -1,7 +1,4 @@
-const LABEL_UPDATE = 'Güncelle';
-const LABEL_RESTART = 'Yeniden başlat';
-
-export function wireUpdateFlow({ button, overlay, updates }) {
+export function wireUpdateFlow({ button, overlay, updates, i18n }) {
   const titleEl = overlay.querySelector('[data-role="title"]');
   const messageEl = overlay.querySelector('[data-role="message"]');
   const barWrap = overlay.querySelector('[data-role="progress-wrap"]');
@@ -10,15 +7,15 @@ export function wireUpdateFlow({ button, overlay, updates }) {
 
   function setButtonMode({ available, version }) {
     if (available) {
-      button.textContent = LABEL_UPDATE;
+      button.textContent = i18n.t('update.labelUpdate');
       button.title = version
-        ? `Sürüm ${version} mevcut — indir ve kur`
-        : 'Güncellemeyi indir ve kur';
+        ? i18n.t('update.updateAvailable', { version })
+        : i18n.t('update.downloadUpdate');
       button.classList.add('has-update');
       return;
     }
-    button.textContent = LABEL_RESTART;
-    button.title = 'Launcher\'ı yeniden başlat';
+    button.textContent = i18n.t('update.labelRestart');
+    button.title = i18n.t('update.restartLauncher');
     button.classList.remove('has-update');
   }
 
@@ -41,8 +38,8 @@ export function wireUpdateFlow({ button, overlay, updates }) {
 
     if (phase === 'error') {
       overlay.classList.add('is-error');
-      titleEl.textContent = 'Güncelleme başarısız';
-      messageEl.textContent = message || 'Bilinmeyen hata';
+      titleEl.textContent = i18n.t('update.titleError');
+      messageEl.textContent = message || i18n.t('update.unknownError');
       barWrap.style.display = 'none';
       dismiss.classList.remove('hidden');
       overlay.setAttribute('aria-busy', 'false');
@@ -51,7 +48,7 @@ export function wireUpdateFlow({ button, overlay, updates }) {
 
     overlay.classList.remove('is-error');
     dismiss.classList.add('hidden');
-    titleEl.textContent = 'Güncelleme ve yeniden başlatma';
+    titleEl.textContent = i18n.t('update.title');
     messageEl.textContent = message || '';
 
     if (phase === 'downloading') {
@@ -83,8 +80,8 @@ export function wireUpdateFlow({ button, overlay, updates }) {
     overlay.setAttribute('aria-hidden', 'false');
     overlay.setAttribute('aria-busy', 'true');
     dismiss.classList.add('hidden');
-    titleEl.textContent = 'Güncelleme ve yeniden başlatma';
-    messageEl.textContent = 'Başlatılıyor…';
+    titleEl.textContent = i18n.t('update.title');
+    messageEl.textContent = i18n.t('update.starting');
     barWrap.style.display = 'none';
     bar.style.width = '0%';
 
@@ -93,7 +90,7 @@ export function wireUpdateFlow({ button, overlay, updates }) {
     try {
       const res = await updates.run();
       if (!res || !res.ok) {
-        applyPhase({ phase: 'error', message: (res && res.message) || 'İşlem tamamlanamadı.' });
+        applyPhase({ phase: 'error', message: (res && res.message) || i18n.t('update.failed') });
         offPhase();
         return;
       }
@@ -102,7 +99,10 @@ export function wireUpdateFlow({ button, overlay, updates }) {
         return;
       }
     } catch (err) {
-      applyPhase({ phase: 'error', message: err && err.message ? err.message : String(err) });
+      applyPhase({
+        phase: 'error',
+        message: err && err.message ? err.message : String(err),
+      });
       offPhase();
       return;
     }
@@ -114,4 +114,5 @@ export function wireUpdateFlow({ button, overlay, updates }) {
 
   setButtonMode({ available: false });
   void refreshUpdateButtonLabel();
+  i18n.onChange(refreshUpdateButtonLabel);
 }

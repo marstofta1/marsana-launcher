@@ -1,4 +1,4 @@
-import { AUTH_METHOD_OPTIONS } from '../../shared/authMethods.js';
+import { AUTH_METHODS, AUTH_METHOD_OPTIONS } from '../../shared/authMethods.js';
 
 function avatarUrl(uuid) {
   const clean = (uuid || '').replace(/-/g, '');
@@ -10,14 +10,20 @@ function userCardFingerprint(user) {
   return `${user.uuid}\0${user.name}\0${user.loginMethod || ''}`;
 }
 
-function loginMethodLabel(method) {
-  const option = AUTH_METHOD_OPTIONS.find((o) => o.id === method);
-  return option ? option.shortLabel : 'Microsoft';
-}
+const OPENING_KEYS = {
+  [AUTH_METHODS.MICROSOFT]: 'auth.openingMicrosoft',
+  [AUTH_METHODS.XBOX]: 'auth.openingXbox',
+  [AUTH_METHODS.PLAYSTATION]: 'auth.openingPlaystation',
+};
 
-export function createAccountCard({ root, store, auth, openExternal }) {
+export function createAccountCard({ root, store, auth, openExternal, i18n }) {
   let lastFingerprint = null;
   let loggingIn = false;
+
+  function methodLabel(method) {
+    const id = method || AUTH_METHODS.MICROSOFT;
+    return i18n.t(`account.${id}`);
+  }
 
   function renderLoggedIn(user) {
     root.innerHTML = '';
@@ -41,14 +47,14 @@ export function createAccountCard({ root, store, auth, openExternal }) {
 
     const via = document.createElement('span');
     via.className = 'user-via';
-    via.textContent = loginMethodLabel(user.loginMethod);
+    via.textContent = methodLabel(user.loginMethod);
     meta.appendChild(via);
 
     wrap.appendChild(meta);
 
     const logoutBtn = document.createElement('button');
     logoutBtn.className = 'btn ghost';
-    logoutBtn.textContent = 'Çıkış';
+    logoutBtn.textContent = i18n.t('common.logout');
     logoutBtn.addEventListener('click', async () => {
       await auth.logout();
       store.setState({ user: null });
@@ -61,12 +67,18 @@ export function createAccountCard({ root, store, auth, openExternal }) {
   async function handleLogin(option) {
     if (loggingIn) return;
     loggingIn = true;
-    store.setState({ statusText: option.statusOpening });
+    const openingKey = OPENING_KEYS[option.id] || OPENING_KEYS[AUTH_METHODS.MICROSOFT];
+    store.setState({ statusText: i18n.t(openingKey) });
     try {
       const user = await auth.login(option.id);
-      store.setState({ user, statusText: `Giriş başarılı: ${user.name}` });
+      store.setState({
+        user,
+        statusText: i18n.t('auth.loginSuccess', { name: user.name }),
+      });
     } catch (err) {
-      store.setState({ statusText: 'Giriş başarısız: ' + (err.message || err) });
+      store.setState({
+        statusText: i18n.t('auth.loginFailed', { error: err.message || err }),
+      });
     } finally {
       loggingIn = false;
     }
@@ -77,7 +89,7 @@ export function createAccountCard({ root, store, auth, openExternal }) {
 
     const intro = document.createElement('p');
     intro.className = 'auth-intro';
-    intro.textContent = 'Java Edition için hesabınla giriş yap:';
+    intro.textContent = i18n.t('auth.loginIntro');
     root.appendChild(intro);
 
     const grid = document.createElement('div');
@@ -91,7 +103,7 @@ export function createAccountCard({ root, store, auth, openExternal }) {
 
       const label = document.createElement('span');
       label.className = 'auth-method-label';
-      label.textContent = option.label;
+      label.textContent = methodLabel(option.id);
       btn.appendChild(label);
 
       btn.addEventListener('click', () => handleLogin(option));
@@ -100,16 +112,16 @@ export function createAccountCard({ root, store, auth, openExternal }) {
 
     root.appendChild(grid);
 
-    const psOption = AUTH_METHOD_OPTIONS.find((o) => o.id === 'playstation');
-    if (psOption?.helpHint) {
+    const psOption = AUTH_METHOD_OPTIONS.find((o) => o.id === AUTH_METHODS.PLAYSTATION);
+    if (psOption?.helpUrl) {
       const hint = document.createElement('p');
       hint.className = 'auth-hint';
-      hint.textContent = psOption.helpHint + ' ';
-      if (psOption.helpUrl && openExternal) {
+      hint.textContent = `${i18n.t('auth.psHelpHint')} `;
+      if (openExternal) {
         const link = document.createElement('button');
         link.type = 'button';
         link.className = 'link-btn';
-        link.textContent = 'Nasıl bağlanır?';
+        link.textContent = i18n.t('auth.howToLink');
         link.addEventListener('click', () => openExternal(psOption.helpUrl));
         hint.appendChild(link);
       }
@@ -125,9 +137,15 @@ export function createAccountCard({ root, store, auth, openExternal }) {
     else renderAnonymous();
   }
 
+  function remountI18n() {
+    lastFingerprint = null;
+    update(store.getState());
+  }
+
   function mount() {
     update(store.getState());
-    return store.subscribe(update);
+    const unsubs = [store.subscribe(update), i18n.onChange(remountI18n)];
+    return () => unsubs.forEach((u) => u());
   }
 
   return { mount };

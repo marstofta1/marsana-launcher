@@ -56,7 +56,7 @@ const SHADER_OPTIONS = [
 ];
 const DEFAULT_SHADER_SLUG = 'complementary-reimagined';
 
-export function createModsPanel({ root, store }) {
+export function createModsPanel({ root, store, i18n }) {
   const loaderRadios = LOADER_OPTIONS.map(
     (opt) => `
       <div class="loader-option">
@@ -708,6 +708,58 @@ export function createModsPanel({ root, store }) {
     if (loaderWarning && client) loaderWarning.style.display = 'none';
   }
 
+  function applyModsI18n() {
+    const t = i18n.t;
+    if (loaderSectionTitle) loaderSectionTitle.textContent = t('mods.loaderSection');
+    if (modsTitle) modsTitle.textContent = t('mods.modOptions');
+    for (const opt of LOADER_OPTIONS) {
+      const labelSpan = loaderRadioEls[opt.value]?.closest('label')?.querySelector('span');
+      const hint = root.querySelector(`[data-role="hint-loader-${opt.value}"]`);
+      if (labelSpan) labelSpan.textContent = t(`loaders.${opt.value}.label`);
+      if (hint) hint.textContent = t(`loaders.${opt.value}.hint`);
+    }
+    if (shaderLabel) shaderLabel.textContent = t('mods.shaderFps');
+    const hintShader = root.querySelector('[data-role="hint-shader"]');
+    if (hintShader) hintShader.textContent = t('mods.shaderFpsHint');
+    const shaderPackLabel = shaderPickerBlock?.querySelector('label.field > span');
+    if (shaderPackLabel) shaderPackLabel.textContent = t('mods.shaderPack');
+    if (hintShaderPicker) hintShaderPicker.textContent = t('mods.shaderPackHint');
+    const optifineSpan = root.querySelector('[data-role="row-optifine"] label span');
+    if (optifineSpan) optifineSpan.textContent = t('mods.optifine');
+    const hintOptifine = root.querySelector('[data-role="hint-optifine"]');
+    if (hintOptifine) hintOptifine.textContent = t('mods.optifineHint');
+    if (embossedLabel) embossedLabel.textContent = t('mods.embossed');
+    const hintEmbossed = root.querySelector('[data-role="hint-embossed"]');
+    if (hintEmbossed) hintEmbossed.textContent = t('mods.embossedHint');
+    const voiceSpan = root.querySelector('[data-role="row-voiceChat"] label span');
+    if (voiceSpan) voiceSpan.textContent = t('mods.voiceChat');
+    const hintVoice = root.querySelector('[data-role="hint-voiceChat"]');
+    if (hintVoice) hintVoice.textContent = t('mods.voiceChatHint');
+    const fullbrightSpan = root.querySelector('[data-role="row-fullbrightUb"] label span');
+    if (fullbrightSpan) fullbrightSpan.textContent = t('mods.fullbrightUb');
+    const hintFullbright = root.querySelector('[data-role="hint-fullbrightUb"]');
+    if (hintFullbright) hintFullbright.textContent = t('mods.fullbrightUbHint');
+    const leavesSpan = root.querySelector('[data-role="row-betterLeaves"] label span');
+    if (leavesSpan) leavesSpan.textContent = t('mods.betterLeaves');
+    const hintLeaves = root.querySelector('[data-role="hint-betterLeaves"]');
+    if (hintLeaves) hintLeaves.textContent = t('mods.betterLeavesHint');
+    const oresSpan = root.querySelector('[data-role="row-glowingOres"] label span');
+    if (oresSpan) oresSpan.textContent = t('mods.glowingOres');
+    const hintOres = root.querySelector('[data-role="hint-glowingOres"]');
+    if (hintOres) hintOres.textContent = t('mods.glowingOresHint');
+    const treesSpan = root.querySelector('[data-role="row-roundTrees"] label span');
+    if (treesSpan) treesSpan.textContent = t('mods.roundTrees');
+    const hintTrees = root.querySelector('[data-role="hint-roundTrees"]');
+    if (hintTrees) hintTrees.textContent = t('mods.roundTreesHint');
+    const cropsSpan = root.querySelector('[data-role="row-crops3d"] label span');
+    if (cropsSpan) cropsSpan.textContent = t('mods.crops3d');
+    const hintCrops = root.querySelector('[data-role="hint-crops3d"]');
+    if (hintCrops) hintCrops.textContent = t('mods.crops3dHint');
+    updateShaderPickerVisibility();
+  }
+
+  applyModsI18n();
+
   function renderFromStore(state) {
     const loader = state.selectedLoader || DEFAULT_LOADER;
     for (const opt of LOADER_OPTIONS) {
@@ -740,9 +792,13 @@ export function createModsPanel({ root, store }) {
     if (!initial.selectedShader) patch.selectedShader = DEFAULT_SHADER_SLUG;
     if (Object.keys(patch).length > 0) store.setState(patch);
     renderFromStore(store.getState());
-    return store.subscribe((state) => {
-      renderFromStore(state);
-    });
+    const unsubs = [
+      store.subscribe((state) => {
+        renderFromStore(state);
+      }),
+      i18n.onChange(applyModsI18n),
+    ];
+    return () => unsubs.forEach((u) => u());
   }
 
   return { mount };

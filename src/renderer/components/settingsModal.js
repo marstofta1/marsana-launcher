@@ -7,6 +7,7 @@ const DAY_END_HOUR = 19;
 
 export const DEFAULT_SETTINGS = Object.freeze({
   theme: 'night',           // 'night' | 'day' | 'auto'
+  language: 'tr',           // tr | en | fr | de | zh | ja | ko | it | ru
   masterVolume: 100,        // 0-100
   musicVolume: 50,          // 0-100
   animations: true,
@@ -99,78 +100,100 @@ export function startAutoThemeWatcher(store) {
   }, 60 * 1000);
 }
 
-export function wireSettingsModal({ button, modalRoot, store }) {
+export function wireSettingsModal({ button, modalRoot, store, i18n }) {
+  const { t, LOCALES: localeOptions } = i18n;
+
   function render() {
     const s = store.getState().settings || { ...DEFAULT_SETTINGS };
+    const lang = s.language || 'tr';
     modalRoot.innerHTML = `
       <div class="modal-overlay" data-role="overlay">
         <div class="modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-          <h2 id="settingsTitle">Ayarlar</h2>
+          <h2 id="settingsTitle">${t('settings.title')}</h2>
 
           <div class="settings-group">
-            <span class="settings-group-label">Tema</span>
+            <span class="settings-group-label">${t('settings.language')}</span>
+            <div class="settings-row">
+              <select class="settings-select" data-role="language">
+                ${localeOptions
+                  .map(
+                    (loc) =>
+                      `<option value="${loc.id}" ${lang === loc.id ? 'selected' : ''}>${loc.native}</option>`
+                  )
+                  .join('')}
+              </select>
+            </div>
+            <p class="settings-hint">${t('settings.languageHint')}</p>
+          </div>
+
+          <div class="settings-group">
+            <span class="settings-group-label">${t('settings.theme')}</span>
             <div class="settings-row settings-theme-row">
               <label class="settings-toggle ${s.theme === 'night' ? 'active' : ''}" data-role="theme-night">
                 <span class="settings-toggle-icon">🌙</span>
-                <span>Gece</span>
+                <span>${t('settings.themeNight')}</span>
               </label>
               <label class="settings-toggle ${s.theme === 'day' ? 'active' : ''}" data-role="theme-day">
                 <span class="settings-toggle-icon">☀️</span>
-                <span>Gündüz</span>
+                <span>${t('settings.themeDay')}</span>
               </label>
               <label class="settings-toggle ${s.theme === 'auto' ? 'active' : ''}" data-role="theme-auto">
                 <span class="settings-toggle-icon">🕒</span>
-                <span>Otomatik</span>
+                <span>${t('settings.themeAuto')}</span>
               </label>
             </div>
             <p class="settings-hint">
-              Otomatik: ${DAY_START_HOUR.toString().padStart(2, '0')}:00 — ${DAY_END_HOUR.toString().padStart(2, '0')}:00 arası gündüz, dışı gece (cihaz saatine göre).
+              ${t('settings.themeAutoHint', {
+                dayStart: String(DAY_START_HOUR).padStart(2, '0'),
+                dayEnd: String(DAY_END_HOUR).padStart(2, '0'),
+              })}
             </p>
           </div>
 
           <div class="settings-group">
-            <span class="settings-group-label">Ana Ses</span>
+            <span class="settings-group-label">${t('settings.masterVolume')}</span>
             <div class="settings-slider-row">
               <input type="range" min="0" max="100" step="1" value="${s.masterVolume}" data-role="masterVolume" />
               <span class="settings-slider-value" data-role="masterVolume-val">${s.masterVolume}%</span>
             </div>
-            <p class="settings-hint">Minecraft içindeki tüm sesleri etkiler.</p>
+            <p class="settings-hint">${t('settings.masterVolumeHint')}</p>
           </div>
 
           <div class="settings-group">
-            <span class="settings-group-label">Müzik Sesi</span>
+            <span class="settings-group-label">${t('settings.musicVolume')}</span>
             <div class="settings-slider-row">
               <input type="range" min="0" max="100" step="1" value="${s.musicVolume}" data-role="musicVolume" />
               <span class="settings-slider-value" data-role="musicVolume-val">${s.musicVolume}%</span>
             </div>
-            <p class="settings-hint">Arka plan müziği; ana sesin altında uygulanır.</p>
+            <p class="settings-hint">${t('settings.musicVolumeHint')}</p>
           </div>
 
           <div class="settings-group">
             <label class="settings-checkbox">
               <input type="checkbox" data-role="animations" ${s.animations ? 'checked' : ''} />
-              <span>Animasyonlar açık</span>
+              <span>${t('settings.animations')}</span>
             </label>
-            <p class="settings-hint">Yumuşak geçişler ve hover efektleri.</p>
+            <p class="settings-hint">${t('settings.animationsHint')}</p>
           </div>
 
           <div class="settings-group">
             <label class="settings-checkbox">
               <input type="checkbox" data-role="rememberSelection" ${s.rememberSelection ? 'checked' : ''} />
-              <span>Seçimleri hatırla</span>
+              <span>${t('settings.rememberSelection')}</span>
             </label>
-            <p class="settings-hint">Mod yükleyici, shader paketi ve mod seçenekleri bir sonraki açılışta aynı kalır. Kapalıyken her açılışta Fabric + Shader + FPS seçili gelir.</p>
+            <p class="settings-hint">${t('settings.rememberSelectionHint')}</p>
           </div>
 
           <div class="modal-actions">
-            <button class="btn ghost" data-role="cancel">Kapat</button>
-            <button class="btn primary" data-role="save">Kaydet</button>
+            <button class="btn ghost" data-role="cancel">${t('common.close')}</button>
+            <button class="btn primary" data-role="save">${t('common.save')}</button>
           </div>
         </div>
       </div>
     `;
 
     const overlay = modalRoot.querySelector('[data-role="overlay"]');
+    const languageSelect = modalRoot.querySelector('[data-role="language"]');
     const masterSlider = modalRoot.querySelector('[data-role="masterVolume"]');
     const masterVal = modalRoot.querySelector('[data-role="masterVolume-val"]');
     const musicSlider = modalRoot.querySelector('[data-role="musicVolume"]');
@@ -207,6 +230,13 @@ export function wireSettingsModal({ button, modalRoot, store }) {
     });
     rememberCb.addEventListener('change', () => {
       setDraft({ rememberSelection: rememberCb.checked });
+    });
+    languageSelect.addEventListener('change', () => {
+      const language = languageSelect.value;
+      setDraft({ language });
+      const nextSettings = { ...store.getState().settings, language };
+      saveSettings(nextSettings);
+      store.setState({ settings: nextSettings });
     });
     function selectTheme(value, el) {
       themeNight.classList.toggle('active', el === themeNight);

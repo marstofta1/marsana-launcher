@@ -1,5 +1,6 @@
 import * as api from './api.js';
 import { createStore } from './state/store.js';
+import { initI18n } from './i18n/index.js';
 
 import { createAccountCard } from './components/accountCard.js';
 import { createVersionSelector } from './components/versionSelector.js';
@@ -34,32 +35,6 @@ import {
   clearLastSelection,
 } from './components/settingsModal.js';
 
-const initialState = Object.freeze({
-  user: null,
-  selectedVersion: null,
-  playMode: DEFAULT_PLAY_MODE,
-  selectedCosmetic: DEFAULT_COSMETIC,
-  selectedLoader: CLIENT_MOD_PRESET.selectedLoader,
-  selectedShader: CLIENT_MOD_PRESET.selectedShader,
-  memoryMb: 2048,
-  offline: false,
-  offlineName: '',
-  modOptifine: CLIENT_MOD_PRESET.modOptifine,
-  modShaderFps: CLIENT_MOD_PRESET.modShaderFps,
-  modEmbossedBlocks: CLIENT_MOD_PRESET.modEmbossedBlocks,
-  modVoiceChat: CLIENT_MOD_PRESET.modVoiceChat,
-  modFullbrightUb: CLIENT_MOD_PRESET.modFullbrightUb,
-  modBetterLeaves: CLIENT_MOD_PRESET.modBetterLeaves,
-  modGlowingOres: CLIENT_MOD_PRESET.modGlowingOres,
-  modRoundTrees: CLIENT_MOD_PRESET.modRoundTrees,
-  modCrops3d: CLIENT_MOD_PRESET.modCrops3d,
-  modClientHudPack: CLIENT_MOD_PRESET.modClientHudPack,
-  statusText: 'Hazır.',
-  progressPercent: 0,
-  logLines: [],
-  settings: { ...DEFAULT_SETTINGS },
-});
-
 function $(id) {
   const el = document.getElementById(id);
   if (!el) throw new Error(`Slot bulunamadı: #${id}`);
@@ -80,25 +55,49 @@ async function bootstrap() {
     }
   }
 
-  // "Seçimleri hatırla" açıkken son kayıtlı loader/mod snapshot'unu initial
-  // state'e enjekte et. Kapalıyken varsayılan Marsana Client preset'i gelir.
-  const seededState = { ...initialState };
+  const seededState = {
+    user: null,
+    selectedVersion: null,
+    playMode: DEFAULT_PLAY_MODE,
+    selectedCosmetic: DEFAULT_COSMETIC,
+    selectedLoader: CLIENT_MOD_PRESET.selectedLoader,
+    selectedShader: CLIENT_MOD_PRESET.selectedShader,
+    memoryMb: 2048,
+    offline: false,
+    offlineName: '',
+    modOptifine: CLIENT_MOD_PRESET.modOptifine,
+    modShaderFps: CLIENT_MOD_PRESET.modShaderFps,
+    modEmbossedBlocks: CLIENT_MOD_PRESET.modEmbossedBlocks,
+    modVoiceChat: CLIENT_MOD_PRESET.modVoiceChat,
+    modFullbrightUb: CLIENT_MOD_PRESET.modFullbrightUb,
+    modBetterLeaves: CLIENT_MOD_PRESET.modBetterLeaves,
+    modGlowingOres: CLIENT_MOD_PRESET.modGlowingOres,
+    modRoundTrees: CLIENT_MOD_PRESET.modRoundTrees,
+    modCrops3d: CLIENT_MOD_PRESET.modCrops3d,
+    modClientHudPack: CLIENT_MOD_PRESET.modClientHudPack,
+    statusText: '',
+    progressPercent: 0,
+    logLines: [],
+    settings: { ...DEFAULT_SETTINGS, ...persistedSettings },
+  };
+
   if (persistedSettings.rememberSelection) {
     const last = loadLastSelection();
     if (last) Object.assign(seededState, normalizePersistedSelection(last));
   }
-  const store = createStore({ ...seededState, settings: persistedSettings });
-  updateBranding(store.getState().playMode);
+
+  const store = createStore(seededState);
+  const i18n = initI18n(store);
+  store.setState({ statusText: i18n.t('common.ready') });
+  updateBranding(store.getState().playMode, i18n.t);
 
   wireUpdateFlow({
     button: $('update-trigger'),
     overlay: $('update-overlay'),
     updates: api.updates,
+    i18n,
   });
 
-  // Store değişimlerini dinle: "Seçimleri hatırla" açıkken loader/preset
-  // değiştiğinde otomatik kaydet; setting kapatıldığında saklananı temizle.
-  // lastSerialized — aynı snapshot'u tekrar tekrar yazmamak için.
   let prevRemember = !!persistedSettings.rememberSelection;
   let lastSerialized = null;
   store.subscribe((state) => {
@@ -134,24 +133,25 @@ async function bootstrap() {
   });
 
   const components = [
-    createAccountCard({ root: $('account-slot'), store, auth: api.auth, openExternal: api.openExternal }),
-    createVersionSelector({ root: $('version-slot'), store, versionsApi: api.versions }),
-    createMemorySlider({ root: $('memory-slot'), store }),
-    createModsPanel({ root: $('mods-slot'), store }),
-    createLaunchOptions({ root: $('launch-options-slot'), store }),
-    createPlayButton({ root: $('play-slot'), store, launchApi: api.launch }),
+    createAccountCard({ root: $('account-slot'), store, auth: api.auth, openExternal: api.openExternal, i18n }),
+    createVersionSelector({ root: $('version-slot'), store, versionsApi: api.versions, i18n }),
+    createMemorySlider({ root: $('memory-slot'), store, i18n }),
+    createModsPanel({ root: $('mods-slot'), store, i18n }),
+    createLaunchOptions({ root: $('launch-options-slot'), store, i18n }),
+    createPlayButton({ root: $('play-slot'), store, launchApi: api.launch, i18n }),
     createStatusPanel({ root: $('status-slot'), store, events: api.events }),
-    createPlayerProfileCard({ root: $('profile-slot'), store }),
-    createCosmeticsPanel({ root: $('cosmetics-slot'), store }),
-    createWebsiteLinksPanel({ root: $('website-links-slot'), openExternal: api.openExternal }),
+    createPlayerProfileCard({ root: $('profile-slot'), store, i18n }),
+    createCosmeticsPanel({ root: $('cosmetics-slot'), store, i18n }),
+    createWebsiteLinksPanel({ root: $('website-links-slot'), openExternal: api.openExternal, i18n }),
     createRecommendedServers({
       root: $('servers-slot'),
       store,
       serversApi: api.servers,
       openExternal: api.openExternal,
+      i18n,
     }),
-    createFirstRunNotice({ root: $('modal-slot') }),
-    createBottomLinks({ root: $('bottom-links-slot'), openExternal: api.openExternal }),
+    createFirstRunNotice({ root: $('modal-slot'), i18n }),
+    createBottomLinks({ root: $('bottom-links-slot'), openExternal: api.openExternal, i18n }),
   ];
 
   for (const c of components) await c.mount();
@@ -160,17 +160,20 @@ async function bootstrap() {
     root: $('mode-switcher-slot'),
     store,
     applyModIsolation: api.applyModIsolation,
+    i18n,
   }).mount();
 
   wireHowToPlayGuide({
     button: $('how-to-play-trigger'),
     modalRoot: $('how-to-play-slot'),
+    i18n,
   });
 
   wireSettingsModal({
     button: $('settings-trigger'),
     modalRoot: $('settings-modal-slot'),
     store,
+    i18n,
   });
 
   startAutoThemeWatcher(store);

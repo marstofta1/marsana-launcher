@@ -1,4 +1,3 @@
-import { AUTH_METHOD_OPTIONS } from '../../shared/authMethods.js';
 
 function cleanUuid(uuid) {
   return String(uuid || '').replace(/-/g, '');
@@ -14,24 +13,24 @@ function formatUuid(uuid) {
   return `${c.slice(0, 8)}-${c.slice(8, 12)}-${c.slice(12, 16)}-${c.slice(16, 20)}-${c.slice(20)}`;
 }
 
-function loginMethodLabel(method) {
-  const option = AUTH_METHOD_OPTIONS.find((o) => o.id === method);
-  return option ? option.shortLabel : 'Microsoft';
-}
-
-export function createPlayerProfileCard({ root, store }) {
+export function createPlayerProfileCard({ root, store, i18n }) {
   let lastUuid = null;
+
+  function loginMethodLabel(method) {
+    const id = method || 'microsoft';
+    return i18n.t(`account.${id}`);
+  }
 
   function renderLoggedIn(user) {
     if (user.uuid === lastUuid) return;
     lastUuid = user.uuid;
     root.innerHTML = `
-      <h3>Profil</h3>
+      <h3>${i18n.t('profile.title')}</h3>
       <div class="profile-body">
         <div class="profile-skin">
           <img
             class="profile-skin-img"
-            alt="${user.name} 3B vücut"
+            alt="${user.name} 3B"
             src="${bodyRenderUrl(user.uuid)}"
             onerror="this.style.visibility='hidden'"
           />
@@ -40,7 +39,7 @@ export function createPlayerProfileCard({ root, store }) {
           <div class="profile-name">${user.name}</div>
           <div class="profile-tag">
             <span class="profile-badge">${loginMethodLabel(user.loginMethod)}</span>
-            <span class="profile-badge ghost">Java Edition</span>
+            <span class="profile-badge ghost">${i18n.t('profile.javaEdition')}</span>
           </div>
           <div class="profile-meta">
             <span class="profile-meta-label">UUID</span>
@@ -55,8 +54,8 @@ export function createPlayerProfileCard({ root, store }) {
     if (lastUuid === null) return;
     lastUuid = null;
     root.innerHTML = `
-      <h3>Profil</h3>
-      <p class="hint">Microsoft, Xbox veya PlayStation (Microsoft eşleştirmeli) hesabınla giriş yaptığında skin'in ve hesap bilgilerin burada görünür.</p>
+      <h3>${i18n.t('profile.title')}</h3>
+      <p class="hint">${i18n.t('profile.anonymousHint')}</p>
     `;
   }
 
@@ -65,10 +64,16 @@ export function createPlayerProfileCard({ root, store }) {
     else renderAnonymous();
   }
 
+  function remountI18n() {
+    lastUuid = null;
+    update(store.getState());
+  }
+
   function mount() {
     renderAnonymous();
     update(store.getState());
-    return store.subscribe(update);
+    const unsubs = [store.subscribe(update), i18n.onChange(remountI18n)];
+    return () => unsubs.forEach((u) => u());
   }
 
   return { mount };

@@ -1,5 +1,5 @@
 {
-  "version": "0.2.9",
+  "version": "0.3.0",
   "releaseVersion": "0.1.24",
   "note": "IPA dosyasi App Store disi sideload ile kurulur (Sideloadly, AltStore vb.). Apple hesabi gerekir.",
   "source": "Marsana.Launcher-0.1.24-ios.ipa",
@@ -11,50 +11,50 @@
       "id": "ios18",
       "title": "iOS 18",
       "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-ios.ipa",
-      "downloadName": "Marsana-Launcher-0.2.9-ios18.ipa",
+      "downloadName": "Marsana-Launcher-0.3.0-ios18.ipa",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": ".ipa · Sideloadly/AltStore · v0.2.9",
+      "note": ".ipa · Sideloadly/AltStore · v0.3.0",
       "minOs": "iOS 18"
     },
     {
       "id": "ios17",
       "title": "iOS 17",
       "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-ios.ipa",
-      "downloadName": "Marsana-Launcher-0.2.9-ios17.ipa",
+      "downloadName": "Marsana-Launcher-0.3.0-ios17.ipa",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": ".ipa · Sideloadly/AltStore · v0.2.9",
+      "note": ".ipa · Sideloadly/AltStore · v0.3.0",
       "minOs": "iOS 17"
     },
     {
       "id": "ios16",
       "title": "iOS 16",
       "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-ios.ipa",
-      "downloadName": "Marsana-Launcher-0.2.9-ios16.ipa",
+      "downloadName": "Marsana-Launcher-0.3.0-ios16.ipa",
       "badge": "Desteklenir",
       "badgeClass": "ready",
-      "note": ".ipa · Sideloadly/AltStore · v0.2.9",
+      "note": ".ipa · Sideloadly/AltStore · v0.3.0",
       "minOs": "iOS 16"
     },
     {
       "id": "ios15",
       "title": "iOS 15",
       "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-ios.ipa",
-      "downloadName": "Marsana-Launcher-0.2.9-ios15.ipa",
+      "downloadName": "Marsana-Launcher-0.3.0-ios15.ipa",
       "badge": "Desteklenir",
       "badgeClass": "legacy",
-      "note": ".ipa · Sideloadly/AltStore · v0.2.9",
+      "note": ".ipa · Sideloadly/AltStore · v0.3.0",
       "minOs": "iOS 15"
     },
     {
       "id": "ios14",
       "title": "iOS 14",
       "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-ios.ipa",
-      "downloadName": "Marsana-Launcher-0.2.9-ios14.ipa",
+      "downloadName": "Marsana-Launcher-0.3.0-ios14.ipa",
       "badge": "Desteklenir",
       "badgeClass": "legacy",
-      "note": ".ipa · Sideloadly/AltStore · v0.2.9",
+      "note": ".ipa · Sideloadly/AltStore · v0.3.0",
       "minOs": "iOS 14"
     }
   ]
