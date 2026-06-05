@@ -43,7 +43,7 @@ const OPTIFINE_PROJECT = 'optifine-for-fabric';
 const KNOWN_SHADER_SLUGS = new Set([
   'complementary-reimagined', 'complementary-unbound', 'bsl-shaders',
   'photon-shader', 'solas-shader', 'bliss-shader', 'rethinking-voxels',
-  'makeup-ultra-fast-shaders', 'super-duper-vanilla', 'insanity-shader',
+  'makeup-ultra-fast-shaders', 'potato-shaders', 'super-duper-vanilla', 'insanity-shader',
   'pastel-shaders', 'mellow', 'astralex', 'nostalgia-shader',
   'miniature-shader', 'vanillaa', 'hysteria-shaders', 'kappa-shader',
   'spooklementary',

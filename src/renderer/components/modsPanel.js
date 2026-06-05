@@ -42,6 +42,7 @@ const SHADER_OPTIONS = [
   { slug: 'bliss-shader',              label: 'Bliss Shaders' },
   { slug: 'rethinking-voxels',         label: 'Rethinking Voxels' },
   { slug: 'makeup-ultra-fast-shaders', label: 'MakeUp – Ultra Fast' },
+  { slug: 'potato-shaders',            label: 'Potato Shaders' },
   { slug: 'super-duper-vanilla',       label: 'Super Duper Vanilla' },
   { slug: 'insanity-shader',           label: 'Insanity Shader' },
   { slug: 'pastel-shaders',            label: 'Pastel Shaders' },
