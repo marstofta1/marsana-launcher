@@ -14,7 +14,7 @@ const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../share
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 35;
+const SHADER_BUNDLE_VERSION = 36;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -196,12 +196,25 @@ function glowingOresVariantLabel(version) {
   return 'unknown';
 }
 
-function glowingOresVersionMatchesGame(version, gameVersion) {
-  const gvs = version.game_versions || [];
-  if (gvs.includes(gameVersion)) return true;
-  const m = String(gameVersion).match(/^(\d+\.\d+)$/);
-  if (m && gvs.includes(`${m[1]}.1`)) return true;
-  return false;
+function pickGlowingOresVersion(versions, { gameVersion, wantBorder }) {
+  if (!Array.isArray(versions) || versions.length === 0) return null;
+  const candidates = modrinthGameVersionCandidates(gameVersion);
+  const eligible = versions.filter((v) => versionListsAnyGame(v, candidates));
+  if (eligible.length === 0) return null;
+
+  const preferred = wantBorder ? 'border' : 'default';
+  let pool = eligible.filter((v) => glowingOresVariantLabel(v) === preferred);
+  if (pool.length === 0 && !wantBorder) {
+    pool = eligible.filter((v) => glowingOresVariantLabel(v) !== 'border');
+  }
+  if (pool.length === 0) pool = eligible;
+
+  pool.sort((a, b) => {
+    const cr = modrinthCandidateRank(a, candidates) - modrinthCandidateRank(b, candidates);
+    if (cr !== 0) return cr;
+    return Date.parse(b.date_published || '') - Date.parse(a.date_published || '');
+  });
+  return pool[0] || null;
 }
 
 // Modrinth'te en yeni sürüm "Border" (yalnızca Continuity); OptiFine yolu "Default" ister.
@@ -311,22 +324,6 @@ function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
 function ensureResourcePackCompatibleForGame({ resourcepacksDir, localName, gameVersion }) {
   if (!localName || !resourcepacksDir) return;
   patchResourcePackZipForGameVersion(path.join(resourcepacksDir, localName), gameVersion);
-}
-
-function pickGlowingOresVersion(versions, { gameVersion, wantBorder }) {
-  if (!Array.isArray(versions) || versions.length === 0) return null;
-  let eligible = versions.filter((v) => glowingOresVersionMatchesGame(v, gameVersion));
-  if (eligible.length === 0) eligible = versions.slice();
-
-  const preferred = wantBorder ? 'border' : 'default';
-  let pool = eligible.filter((v) => glowingOresVariantLabel(v) === preferred);
-  if (pool.length === 0 && !wantBorder) {
-    pool = eligible.filter((v) => glowingOresVariantLabel(v) !== 'border');
-  }
-  if (pool.length === 0) pool = eligible;
-
-  pool.sort((a, b) => Date.parse(b.date_published || '') - Date.parse(a.date_published || ''));
-  return pool[0] || null;
 }
 
 function customIdFor(gameVersion, presets, shaderSlug, { loaderPrefix = 'marsana' } = {}) {
@@ -628,6 +625,7 @@ function applyModResourcePackPresets({ gameRoot, gameVersion, presets, resourcep
     if (!entries.includes(entry)) entries.push(entry);
   }
   writeResourcePacksLine(optionsPath, entries);
+  if (needContinuity) ensureContinuityResourcePacks(gameRoot);
 }
 
 function ensureFileResourcePackInOptions(gameRoot, filename) {
@@ -1300,14 +1298,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   }
 
   async function downloadGlowingOresResourcePack({ resourcepacksDir, gameVersion, onNotice, useContinuity = true }) {
-    const expanded = (function expand(v) {
-      const m = String(v).match(/^(\d+\.\d+)$/);
-      return m ? [v, `${v}.1`] : [v];
-    })(gameVersion);
-
-    let versions = await modrinthClient.listProjectVersions(GLOWING_ORES_SLUG, { gameVersions: expanded });
+    const candidates = expandResourcePackGameVersions(gameVersion);
+    let versions = await modrinthClient.listProjectVersions(GLOWING_ORES_SLUG, { gameVersions: candidates });
     if (!versions.length) {
-      versions = await modrinthClient.listProjectVersions(GLOWING_ORES_SLUG, {});
+      versions = (await modrinthClient.listProjectVersions(GLOWING_ORES_SLUG, {}))
+        .filter((v) => versionListsGame(v.game_versions, gameVersion));
     }
 
     const picked = pickGlowingOresVersion(versions, { gameVersion, wantBorder: !!useContinuity });
