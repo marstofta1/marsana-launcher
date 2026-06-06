@@ -8,17 +8,18 @@ const PROTECTED_JAR_PREFIXES = Object.freeze(['marsana-client', 'cloth-config'])
 /** Dedupe aileleri — sodium-extra, sodium-\d ile karistirilmaz. */
 const MOD_DEDUPE_FAMILIES = Object.freeze([
   { id: 'fabric-api', test: (name) => /^fabric-api/i.test(name) },
-  { id: 'iris', test: (name) => /^iris-\d/i.test(name) },
-  { id: 'sodium', test: (name) => /^sodium-\d/i.test(name) },
+  { id: 'iris', test: (name) => /^iris-fabric-/i.test(name) },
+  { id: 'sodium', test: (name) => /^sodium-fabric-/i.test(name) },
   { id: 'oculus', test: (name) => /^oculus-/i.test(name) },
   { id: 'rubidium', test: (name) => /^rubidium-/i.test(name) },
   { id: 'embeddium', test: (name) => /^embeddium-/i.test(name) },
   { id: 'continuity', test: (name) => /^continuity-/i.test(name) },
+  { id: 'cullleaves', test: (name) => /^cullleaves-/i.test(name) },
 ]);
 
 const SHADER_CORE_WITHOUT_MC26 = Object.freeze([
-  /^iris-\d/i,
-  /^sodium-\d/i,
+  /^iris-fabric-/i,
+  /^sodium-fabric-/i,
   /^oculus-/i,
   /^rubidium-/i,
   /^embeddium-/i,
@@ -48,21 +49,75 @@ function isActiveJarEntry(entry) {
   );
 }
 
-/** Dosya adindan 26.x disi (1.21/1.20/mc1.20 vb.) mod jar'i mi? */
+/** Jar adindaki Minecraft surum etiketi (+1.21.10, +mc1.21.9 vb.) */
+function parseJarMinecraftVersionTag(filename) {
+  const lower = jarBaseName(filename);
+  const patterns = [
+    /\+mc(\d+\.\d+(?:\.\d+)?)/i,
+    /\+(\d+\.\d+\.\d+)/,
+    /(?:^|[^0-9])mc(\d+\.\d+(?:\.\d+)?)/i,
+    /_(\d+\.\d+\.\d+)/,
+    /-(\d+\.\d+\.\d+)(?:-|$)/,
+  ];
+  for (const re of patterns) {
+    const m = lower.match(re);
+    if (m && m[1]) return m[1];
+  }
+  return null;
+}
+
+function gameVersionMatchCandidates(gameVersion) {
+  const id = String(gameVersion || '').trim();
+  const candidates = new Set([id]);
+  const patch = id.match(/^(\d+\.\d+)\.(\d+)$/);
+  if (patch) candidates.add(patch[1]);
+  const m26 = id.match(/^26\.(\d+)(?:\.(\d+))?$/);
+  if (m26) {
+    if (m26[2]) candidates.add(`26.${m26[1]}`);
+  }
+  return [...candidates];
+}
+
+function jarVersionMatchesGame(filename, gameVersion) {
+  const tag = parseJarMinecraftVersionTag(filename);
+  if (!tag) return true;
+  const gv = String(gameVersion || '').trim();
+  if (!gv) return true;
+  if (tag === gv) return true;
+  const candidates = gameVersionMatchCandidates(gv);
+  if (candidates.includes(tag)) return true;
+  if (/^26\./.test(gv) && hasMc26Tag(jarBaseName(filename))) return true;
+  if (/^\d+\.\d+\.\d+$/.test(gv) && /^\d+\.\d+\.\d+$/.test(tag)) {
+    const gvBase = gv.match(/^(\d+\.\d+)\./)?.[1];
+    const tagBase = tag.match(/^(\d+\.\d+)\./)?.[1];
+    if (gvBase && tagBase && gvBase === tagBase) return false;
+  }
+  return false;
+}
+
+function isManagedModFamilyJar(filename) {
+  return MOD_DEDUPE_FAMILIES.some((f) => f.test(filename));
+}
+
+/** Dosya adindan hedef MC surumu belli ama secilen surumle uyumsuz mu? */
 function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
-  if (!isMc26GameVersion(gameVersion)) return false;
+  const gv = String(gameVersion || '').trim();
+  if (!gv) return false;
   const lower = jarBaseName(filename);
   if (PROTECTED_JAR_PREFIXES.some((p) => lower.startsWith(p))) return false;
-  if (hasMc26Tag(lower)) return false;
-  if (/fabric-api.*26\.1/i.test(lower)) return false;
 
-  if (/\+mc1\.|mc1\.(1[0-9]|20|21|22)/i.test(lower)) return true;
-  if (/\+1\.(20|21)\.|_1\.(20|21)\./i.test(lower)) return true;
-  if (/\b1\.21\.|\b1\.20\.|\b1\.19\.|\b1\.18\.|\b1\.17\./i.test(lower)) return true;
+  if (isMc26GameVersion(gv)) {
+    if (hasMc26Tag(lower)) return false;
+    if (/fabric-api.*26\.1/i.test(lower)) return false;
+    if (/\+mc1\.|mc1\.(1[0-9]|20|21|22)/i.test(lower)) return true;
+    if (/\+1\.(20|21)\.|_1\.(20|21)\./i.test(lower)) return true;
+    if (/\b1\.21\.|\b1\.20\.|\b1\.19\.|\b1\.18\.|\b1\.17\./i.test(lower)) return true;
+    if (SHADER_CORE_WITHOUT_MC26.some((re) => re.test(lower))) return true;
+    return false;
+  }
 
-  if (SHADER_CORE_WITHOUT_MC26.some((re) => re.test(lower))) return true;
-
-  return false;
+  if (!isManagedModFamilyJar(filename)) return false;
+  return !jarVersionMatchesGame(filename, gv);
 }
 
 function removeIfExists(filePath) {
@@ -73,62 +128,90 @@ function removeIfExists(filePath) {
   }
 }
 
-function mc26JarScore(name) {
+function jarCompatibilityScore(name, gameVersion) {
   const lower = String(name).toLowerCase();
   if (/26\.1|mc26/i.test(lower)) return 1000;
+  const tag = parseJarMinecraftVersionTag(name);
+  const gv = String(gameVersion || '').trim();
+  if (tag && gv && tag === gv) return 900;
+  if (tag && gameVersionMatchCandidates(gv).includes(tag)) return 700;
+  if (tag && gv && tag.startsWith(`${gv.split('.').slice(0, 2).join('.')}.`)) return 200;
   return 0;
 }
 
-function dedupeModFamily(modsDir, family) {
+function dedupeModFamily(modsDir, family, gameVersion) {
   const entries = fs.readdirSync(modsDir).filter(
     (f) => family.test(f) && (f.endsWith('.jar') || f.endsWith('.jar.disabled') || f.includes('.marsana-stashed-'))
   );
   if (entries.length <= 1) return null;
 
-  const sorted = entries.slice().sort((a, b) => mc26JarScore(b) - mc26JarScore(a));
+  const sorted = entries.slice().sort(
+    (a, b) => jarCompatibilityScore(b, gameVersion) - jarCompatibilityScore(a, gameVersion)
+  );
   const keep = sorted[0];
-  if (mc26JarScore(keep) === 0) {
-    for (const entry of entries) {
-      if (!isJarFilenameIncompatibleWithGame(entry, '26.1.2')) continue;
-      removeIfExists(path.join(modsDir, entry));
-    }
-    return null;
-  }
-
   for (const entry of entries) {
     if (entry === keep) continue;
-    removeIfExists(path.join(modsDir, entry));
+    if (isJarFilenameIncompatibleWithGame(entry, gameVersion)) {
+      removeIfExists(path.join(modsDir, entry));
+      continue;
+    }
+    if (jarCompatibilityScore(entry, gameVersion) < jarCompatibilityScore(keep, gameVersion)) {
+      removeIfExists(path.join(modsDir, entry));
+    }
   }
   return keep;
 }
 
-function dedupeFabricApiJars(modsDir) {
+function dedupeFabricApiJars(modsDir, gameVersion) {
   if (!fs.existsSync(modsDir)) return null;
   const family = MOD_DEDUPE_FAMILIES.find((f) => f.id === 'fabric-api');
-  return dedupeModFamily(modsDir, family);
+  return dedupeModFamily(modsDir, family, gameVersion);
 }
 
-function dedupeShaderStackMods(modsDir) {
+function dedupeShaderStackMods(modsDir, gameVersion) {
   if (!fs.existsSync(modsDir)) return;
   for (const family of MOD_DEDUPE_FAMILIES) {
     if (family.id === 'fabric-api') continue;
-    dedupeModFamily(modsDir, family);
+    dedupeModFamily(modsDir, family, gameVersion);
   }
 }
 
-function coreSodiumJarPresent(modsDir) {
+function familyJarPresent(modsDir, familyTest, gameVersion) {
   if (!fs.existsSync(modsDir)) return false;
-  return fs.readdirSync(modsDir).some((f) => /^sodium-\d/i.test(f) && isActiveJarEntry(f));
+  return fs.readdirSync(modsDir).some(
+    (f) => familyTest(f) && isActiveJarEntry(f) && jarVersionMatchesGame(f, gameVersion)
+  );
 }
 
-function coreIrisJarPresent(modsDir) {
-  if (!fs.existsSync(modsDir)) return false;
-  return fs.readdirSync(modsDir).some((f) => /^iris-\d/i.test(f) && isActiveJarEntry(f));
+function coreSodiumJarPresent(modsDir, gameVersion) {
+  return familyJarPresent(modsDir, (f) => /^sodium-fabric-/i.test(f), gameVersion);
 }
 
-/** 26.x'te yanlis MC surumlu jar'lari ve fazla kopyalari temizle. */
+function coreIrisJarPresent(modsDir, gameVersion) {
+  return familyJarPresent(modsDir, (f) => /^iris-fabric-/i.test(f), gameVersion);
+}
+
+function continuityJarPresent(modsDir, gameVersion) {
+  return familyJarPresent(modsDir, (f) => /^continuity-/i.test(f), gameVersion);
+}
+
+function removeModFamilyJars(modsDir, familyTest) {
+  if (!fs.existsSync(modsDir)) return 0;
+  let removed = 0;
+  for (const entry of fs.readdirSync(modsDir)) {
+    if (!familyTest(entry)) continue;
+    if (!entry.endsWith('.jar') && !entry.endsWith('.jar.disabled') && !entry.includes('.marsana-stashed-')) {
+      continue;
+    }
+    removeIfExists(path.join(modsDir, entry));
+    removed += 1;
+  }
+  return removed;
+}
+
+/** Yanlis MC surumlu yonetilen mod jar'larini ve fazla kopyalari temizle. */
 function purgeIncompatibleModJars(modsDir, gameVersion) {
-  if (!isMc26GameVersion(gameVersion) || !fs.existsSync(modsDir)) {
+  if (!fs.existsSync(modsDir)) {
     return { removed: 0, fabricApiKept: null };
   }
 
@@ -143,17 +226,22 @@ function purgeIncompatibleModJars(modsDir, gameVersion) {
     removed += 1;
   }
 
-  dedupeShaderStackMods(modsDir);
-  const fabricApiKept = dedupeFabricApiJars(modsDir);
+  dedupeShaderStackMods(modsDir, gameVersion);
+  const fabricApiKept = dedupeFabricApiJars(modsDir, gameVersion);
   return { removed, fabricApiKept };
 }
 
 module.exports = {
   isMc26GameVersion,
   isJarFilenameIncompatibleWithGame,
+  jarVersionMatchesGame,
+  parseJarMinecraftVersionTag,
   purgeIncompatibleModJars,
   dedupeFabricApiJars,
   dedupeShaderStackMods,
+  removeModFamilyJars,
   coreSodiumJarPresent,
   coreIrisJarPresent,
+  continuityJarPresent,
+  isManagedModFamilyJar,
 };

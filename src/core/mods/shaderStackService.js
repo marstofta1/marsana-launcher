@@ -14,7 +14,7 @@ const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../share
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 37;
+const SHADER_BUNDLE_VERSION = 39;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -667,6 +667,31 @@ function clothConfigJarPresent(modsDir) {
   return hudDepsService.clothConfigJarPresent(modsDir);
 }
 
+function bundleListsIncompatibleManagedJars(jars, gameVersion) {
+  if (!Array.isArray(jars)) return false;
+  return jars.some(
+    (name) =>
+      modCompatibilityService.isManagedModFamilyJar(name) &&
+      modCompatibilityService.isJarFilenameIncompatibleWithGame(name, gameVersion)
+  );
+}
+
+function refreshManagedJarEntries(jars, modsDir, gameVersion) {
+  let out = Array.isArray(jars) ? jars.filter(
+    (name) =>
+      !modCompatibilityService.isManagedModFamilyJar(name) ||
+      modCompatibilityService.jarVersionMatchesGame(name, gameVersion)
+  ) : [];
+  if (!fs.existsSync(modsDir)) return out;
+  for (const entry of fs.readdirSync(modsDir)) {
+    if (!entry.endsWith('.jar') || entry.endsWith('.jar.disabled')) continue;
+    if (!modCompatibilityService.isManagedModFamilyJar(entry)) continue;
+    if (!modCompatibilityService.jarVersionMatchesGame(entry, gameVersion)) continue;
+    if (!out.includes(entry)) out.push(entry);
+  }
+  return out;
+}
+
 function clientHudDependenciesOk(modsDir, modPresets) {
   if (!modPresets) return true;
   return hudDepsService.fabricHudRuntimeDepsOk(modsDir, {
@@ -810,29 +835,35 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   }
 
   async function ensureShaderCoreMods({ modsDir, gameVersion, presets, status, jars }) {
+    modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     let out = Array.isArray(jars) ? jars.slice() : [];
-    if (!presets.shaderFps || presets.optifine) return out;
-
     const need = [];
-    if (!modCompatibilityService.coreSodiumJarPresent(modsDir)) need.push('sodium');
-    if (!modCompatibilityService.coreIrisJarPresent(modsDir)) need.push('iris');
+
+    if (presets.shaderFps && !presets.optifine) {
+      if (!modCompatibilityService.coreSodiumJarPresent(modsDir, gameVersion)) need.push('sodium');
+      if (!modCompatibilityService.coreIrisJarPresent(modsDir, gameVersion)) need.push('iris');
+    }
+    if (continuityResourcePacksNeeded(presets)) {
+      if (!modCompatibilityService.continuityJarPresent(modsDir, gameVersion)) need.push('continuity');
+    }
+
     if (need.length) {
-      status(`Shader cekirdegi eksik (${need.join(', ')}), indiriliyor...`);
+      status(`Mod cekirdegi guncelleniyor (${need.join(', ')})...`);
       const coreJars = await downloadModsFromSlugs({ modsDir, gameVersion, slugs: need });
       out = [...new Set([...out, ...coreJars])];
     }
 
     const hasFabricApi = fs.existsSync(modsDir) &&
-      fs.readdirSync(modsDir).some((f) => /^fabric-api/i.test(f) && f.endsWith('.jar'));
-    if (!hasFabricApi) {
+      fs.readdirSync(modsDir).some(
+        (f) => /^fabric-api/i.test(f) && f.endsWith('.jar') && modCompatibilityService.jarVersionMatchesGame(f, gameVersion)
+      );
+    if ((presets.shaderFps || presets.embossedBlocks || presets.glowingOres) && !hasFabricApi) {
       status('Fabric API eksik, indiriliyor...');
       const apiJars = await downloadModsFromSlugs({ modsDir, gameVersion, slugs: ['fabric-api'] });
       out = [...new Set([...out, ...apiJars])];
     }
 
-    if (modCompatibilityService.isMc26GameVersion(gameVersion)) {
-      modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
-    }
+    modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     return out;
   }
 
@@ -856,10 +887,13 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       (modPresets.marsanaClientMenu && !marsanaClientModService.marsanaClientJarPresent(modsDir)) ||
       (modPresets.shaderFps &&
         !modPresets.optifine &&
-        !modCompatibilityService.coreSodiumJarPresent(modsDir)) ||
+        !modCompatibilityService.coreSodiumJarPresent(modsDir, gameVersion)) ||
       (modPresets.shaderFps &&
         !modPresets.optifine &&
-        !modCompatibilityService.coreIrisJarPresent(modsDir)) ||
+        !modCompatibilityService.coreIrisJarPresent(modsDir, gameVersion)) ||
+      (continuityResourcePacksNeeded(modPresets) &&
+        !modCompatibilityService.continuityJarPresent(modsDir, gameVersion)) ||
+      bundleListsIncompatibleManagedJars(existing.jars, gameVersion) ||
       (!modPresets.clientHudPack &&
         !modPresets.marsanaClientMenu &&
         modIsolationService.activeClientPackJarsPresent(modsDir)) ||
@@ -1712,6 +1746,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         status,
         jars: cacheJars,
       });
+      cacheJars = refreshManagedJarEntries(cacheJars, modsDir, gameVersion);
       if (
         presets.clientHudPack ||
         hudDepsService.fabricHudRuntimeDepsNeeded(modsDir, { clientHudPack: !!presets.clientHudPack })
@@ -1795,9 +1830,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     ) {
       jars = await ensureHudRuntimeDepsAsync({ modsDir, gameVersion, status, jars, presets });
     }
-    if (modCompatibilityService.isMc26GameVersion(gameVersion)) {
-      modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
-    }
+    modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     jars = await ensureShaderCoreMods({ modsDir, gameVersion, presets, status, jars });
     if (optifineMeta && Array.isArray(optifineMeta.jarNames)) {
       const seen = new Set(jars);
@@ -1817,6 +1850,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           jars.push(name);
         }
       }
+    }
+    if (optifineMeta || presets.optifine) {
+      status('OptiFine paketi sonrasi mod surumleri esitleniyor...');
+      modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
+      jars = await ensureShaderCoreMods({ modsDir, gameVersion, presets, status, jars });
+      jars = refreshManagedJarEntries(jars, modsDir, gameVersion);
     }
 
     if (presets.marsanaClientMenu && repoRoot) {

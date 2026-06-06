@@ -7,6 +7,13 @@ function launchFailureHint(logLines) {
   if (/duplicate ASM classes/i.test(text)) {
     return 'Fabric sınıf yolu çakışması (çift ASM). Launcher güncellenince profil otomatik düzelir — tekrar Oyna.';
   }
+  if (/Mixin apply for mod continuity failed|continuity\.mixins\.json/i.test(text)) {
+    return 'Continuity sürümü Minecraft ile uyumsuz — launcher eski jar\'ı kaldırıp doğru sürümü indirecek.';
+  }
+  if (/MixinTransformerError|Mixin apply for mod/i.test(text)) {
+    const mod = text.match(/Mixin apply for mod (\S+)/);
+    if (mod) return `Mod mixin hatası (${mod[1]}) — sürüm uyumsuzluğu olabilir.`;
+  }
   if (/Incompatible mods found/i.test(text)) {
     return 'Mod uyumsuzluğu — eksik bağımlılık veya sürüm çakışması. Logdaki mod adlarına bakın.';
   }
