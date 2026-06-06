@@ -14,7 +14,7 @@ const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../share
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 39;
+const SHADER_BUNDLE_VERSION = 40;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -486,6 +486,21 @@ function modrinthSlugsForPresets(p, gameVersion) {
 // getiriyor. Kullanıcı "kabartma" preset'ini de seçtiyse bu modları etkinleştir.
 const OPTIFINE_EMBOSSED_MOD_PREFIXES = Object.freeze(['continuity']);
 
+/** OptiFine mrpack eski surumle getirir; Modrinth'ten yeniden cekilir. */
+const OPTIFINE_RECONCILE_SLUGS = Object.freeze([
+  'krypton',
+  'lithium',
+  'ferritecore',
+  'immediatelyfast',
+]);
+
+const OPTIFINE_RECONCILE_JAR_TESTS = Object.freeze({
+  krypton: /^krypton-/i,
+  lithium: /^lithium-fabric-/i,
+  ferritecore: /^ferritecore-/i,
+  immediatelyfast: /^immediatelyfast/i,
+});
+
 function enableOptifineEmbossedMods(modsDir) {
   if (!fs.existsSync(modsDir)) return [];
   const enabled = [];
@@ -867,6 +882,35 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return out;
   }
 
+  async function ensureOptifineReconciledMods({ modsDir, gameVersion, status, jars }) {
+    if (!fs.existsSync(modsDir)) return Array.isArray(jars) ? jars.slice() : [];
+    let out = Array.isArray(jars) ? jars.slice() : [];
+    const slugsToRefresh = [];
+
+    for (const slug of OPTIFINE_RECONCILE_SLUGS) {
+      const test = OPTIFINE_RECONCILE_JAR_TESTS[slug];
+      if (!test) continue;
+      const hasFamilyJar = fs.readdirSync(modsDir).some(
+        (f) => test.test(f) && (f.endsWith('.jar') || f.endsWith('.jar.disabled'))
+      );
+      if (!hasFamilyJar) continue;
+      modCompatibilityService.removeModFamilyJars(modsDir, test);
+      slugsToRefresh.push(slug);
+      out = out.filter((name) => !test.test(String(name)));
+    }
+
+    if (!slugsToRefresh.length) return out;
+
+    status(`OptiFine paketi modlari guncelleniyor (${slugsToRefresh.join(', ')})...`);
+    const fresh = await downloadModsFromSlugs({
+      modsDir,
+      gameVersion,
+      slugs: slugsToRefresh,
+    });
+    modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
+    return [...new Set([...out, ...fresh])];
+  }
+
   function cachedReady({ versionDir, modsDir, shaderpacksDir, resourcepacksDir, gameVersion, versionJsonPath, readyPath, modPresets, shaderSlug }) {
     const existing = readBundle(modsDir);
     const expectedPack = modPresets.shaderFps && !modPresets.optifine ? shaderPackLocalName(shaderSlug) : null;
@@ -893,6 +937,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         !modCompatibilityService.coreIrisJarPresent(modsDir, gameVersion)) ||
       (continuityResourcePacksNeeded(modPresets) &&
         !modCompatibilityService.continuityJarPresent(modsDir, gameVersion)) ||
+      (modPresets.optifine && !modCompatibilityService.kryptonJarPresent(modsDir, gameVersion)) ||
       bundleListsIncompatibleManagedJars(existing.jars, gameVersion) ||
       (!modPresets.clientHudPack &&
         !modPresets.marsanaClientMenu &&
@@ -1855,6 +1900,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       status('OptiFine paketi sonrasi mod surumleri esitleniyor...');
       modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
       jars = await ensureShaderCoreMods({ modsDir, gameVersion, presets, status, jars });
+      jars = await ensureOptifineReconciledMods({ modsDir, gameVersion, status, jars });
       jars = refreshManagedJarEntries(jars, modsDir, gameVersion);
     }
 

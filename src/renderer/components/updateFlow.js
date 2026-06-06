@@ -5,7 +5,7 @@ export function wireUpdateFlow({ button, overlay, updates, i18n }) {
   const bar = overlay.querySelector('[data-role="bar"]');
   const dismiss = overlay.querySelector('[data-role="dismiss"]');
 
-  function setButtonMode({ available, version }) {
+  function setButtonMode({ available, version, currentVersion }) {
     if (available) {
       button.textContent = i18n.t('update.labelUpdate');
       button.title = version
@@ -14,8 +14,10 @@ export function wireUpdateFlow({ button, overlay, updates, i18n }) {
       button.classList.add('has-update');
       return;
     }
-    button.textContent = i18n.t('update.labelRestart');
-    button.title = i18n.t('update.restartLauncher');
+    button.textContent = i18n.t('update.labelCheck');
+    button.title = currentVersion
+      ? i18n.t('update.upToDate', { version: currentVersion })
+      : i18n.t('update.checkForUpdates');
     button.classList.remove('has-update');
   }
 
@@ -23,7 +25,11 @@ export function wireUpdateFlow({ button, overlay, updates, i18n }) {
     try {
       const res = await updates.check();
       if (res && res.ok) {
-        setButtonMode({ available: !!res.available, version: res.version });
+        setButtonMode({
+          available: !!res.available,
+          version: res.version,
+          currentVersion: res.currentVersion,
+        });
         return;
       }
     } catch {
@@ -40,6 +46,16 @@ export function wireUpdateFlow({ button, overlay, updates, i18n }) {
       overlay.classList.add('is-error');
       titleEl.textContent = i18n.t('update.titleError');
       messageEl.textContent = message || i18n.t('update.unknownError');
+      barWrap.style.display = 'none';
+      dismiss.classList.remove('hidden');
+      overlay.setAttribute('aria-busy', 'false');
+      return;
+    }
+
+    if (phase === 'uptodate') {
+      overlay.classList.remove('is-error');
+      titleEl.textContent = i18n.t('update.titleUpToDate');
+      messageEl.textContent = message || i18n.t('update.alreadyLatest');
       barWrap.style.display = 'none';
       dismiss.classList.remove('hidden');
       overlay.setAttribute('aria-busy', 'false');
@@ -92,6 +108,14 @@ export function wireUpdateFlow({ button, overlay, updates, i18n }) {
       if (!res || !res.ok) {
         applyPhase({ phase: 'error', message: (res && res.message) || i18n.t('update.failed') });
         offPhase();
+        button.disabled = false;
+        return;
+      }
+      if (res.upToDate) {
+        applyPhase({ phase: 'uptodate', message: res.message || i18n.t('update.alreadyLatest') });
+        offPhase();
+        button.disabled = false;
+        refreshUpdateButtonLabel();
         return;
       }
       if (res.willRelaunch || res.willInstall) {

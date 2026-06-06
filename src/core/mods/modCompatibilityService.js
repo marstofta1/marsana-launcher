@@ -15,6 +15,16 @@ const MOD_DEDUPE_FAMILIES = Object.freeze([
   { id: 'embeddium', test: (name) => /^embeddium-/i.test(name) },
   { id: 'continuity', test: (name) => /^continuity-/i.test(name) },
   { id: 'cullleaves', test: (name) => /^cullleaves-/i.test(name) },
+  { id: 'krypton', test: (name) => /^krypton-/i.test(name) },
+  { id: 'lithium', test: (name) => /^lithium-fabric-/i.test(name) },
+  { id: 'ferritecore', test: (name) => /^ferritecore-/i.test(name) },
+  { id: 'immediatelyfast', test: (name) => /^immediatelyfast/i.test(name) },
+]);
+
+/** OptiFine paketinin eski surumle getirdigi, MC etiketi olmayan jar'lar. */
+const KNOWN_STALE_MOD_JARS = Object.freeze([
+  { test: /^krypton-0\.2\.9$/i, minGame: '1.21.10' },
+  { test: /^continuity-3\.0\.1-beta\.1\+1\.21\.6$/i, minGame: '1.21.10' },
 ]);
 
 const SHADER_CORE_WITHOUT_MC26 = Object.freeze([
@@ -78,6 +88,32 @@ function gameVersionMatchCandidates(gameVersion) {
   return [...candidates];
 }
 
+function parseModSemverFromJar(filename) {
+  const base = jarBaseName(filename);
+  const m = base.match(/(?:^|[+-])(\d+\.\d+\.\d+)/);
+  return m ? m[1] : null;
+}
+
+function compareSemver(a, b) {
+  const pa = String(a || '').split('.').map(Number);
+  const pb = String(b || '').split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i += 1) {
+    const da = pa[i] || 0;
+    const db = pb[i] || 0;
+    if (da !== db) return da - db;
+  }
+  return 0;
+}
+
+function isKnownStaleModJar(filename, gameVersion) {
+  const gv = String(gameVersion || '').trim();
+  if (!gv) return false;
+  const base = jarBaseName(filename);
+  return KNOWN_STALE_MOD_JARS.some(
+    (entry) => entry.test.test(base) && compareSemver(gv, entry.minGame) >= 0
+  );
+}
+
 function jarVersionMatchesGame(filename, gameVersion) {
   const tag = parseJarMinecraftVersionTag(filename);
   if (!tag) return true;
@@ -116,6 +152,7 @@ function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
     return false;
   }
 
+  if (isKnownStaleModJar(filename, gv)) return true;
   if (!isManagedModFamilyJar(filename)) return false;
   return !jarVersionMatchesGame(filename, gv);
 }
@@ -136,6 +173,11 @@ function jarCompatibilityScore(name, gameVersion) {
   if (tag && gv && tag === gv) return 900;
   if (tag && gameVersionMatchCandidates(gv).includes(tag)) return 700;
   if (tag && gv && tag.startsWith(`${gv.split('.').slice(0, 2).join('.')}.`)) return 200;
+  const semver = parseModSemverFromJar(name);
+  if (semver) {
+    const parts = semver.split('.').map(Number);
+    return 50 + (parts[0] || 0) * 1_000_000 + (parts[1] || 0) * 1_000 + (parts[2] || 0);
+  }
   return 0;
 }
 
@@ -195,6 +237,15 @@ function continuityJarPresent(modsDir, gameVersion) {
   return familyJarPresent(modsDir, (f) => /^continuity-/i.test(f), gameVersion);
 }
 
+function kryptonJarPresent(modsDir, gameVersion) {
+  if (!fs.existsSync(modsDir)) return false;
+  return fs.readdirSync(modsDir).some((f) => {
+    if (!/^krypton-/i.test(f) || !isActiveJarEntry(f)) return false;
+    if (isKnownStaleModJar(f, gameVersion)) return false;
+    return true;
+  });
+}
+
 function removeModFamilyJars(modsDir, familyTest) {
   if (!fs.existsSync(modsDir)) return 0;
   let removed = 0;
@@ -233,9 +284,11 @@ function purgeIncompatibleModJars(modsDir, gameVersion) {
 
 module.exports = {
   isMc26GameVersion,
+  isKnownStaleModJar,
   isJarFilenameIncompatibleWithGame,
   jarVersionMatchesGame,
   parseJarMinecraftVersionTag,
+  parseModSemverFromJar,
   purgeIncompatibleModJars,
   dedupeFabricApiJars,
   dedupeShaderStackMods,
@@ -243,5 +296,6 @@ module.exports = {
   coreSodiumJarPresent,
   coreIrisJarPresent,
   continuityJarPresent,
+  kryptonJarPresent,
   isManagedModFamilyJar,
 };

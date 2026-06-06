@@ -10,6 +10,9 @@ function launchFailureHint(logLines) {
   if (/Mixin apply for mod continuity failed|continuity\.mixins\.json/i.test(text)) {
     return 'Continuity sürümü Minecraft ile uyumsuz — launcher eski jar\'ı kaldırıp doğru sürümü indirecek.';
   }
+  if (/Mixin apply for mod krypton failed|EntityTrackerEntryMixin from mod krypton/i.test(text)) {
+    return 'Krypton sürümü eski (OptiFine paketi) — launcher krypton-0.2.9\'u kaldırıp güncel sürümü indirecek.';
+  }
   if (/MixinTransformerError|Mixin apply for mod/i.test(text)) {
     const mod = text.match(/Mixin apply for mod (\S+)/);
     if (mod) return `Mod mixin hatası (${mod[1]}) — sürüm uyumsuzluğu olabilir.`;

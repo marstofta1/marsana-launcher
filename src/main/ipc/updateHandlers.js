@@ -78,11 +78,17 @@ function registerUpdateHandlers({ ipcMain, getWindow }) {
         !!remoteVersion &&
         isRemoteVersionNewer(remoteVersion, app.getVersion());
       const version = available ? remoteVersion : undefined;
-      return { ok: true, available, version };
+      return {
+        ok: true,
+        available,
+        version,
+        currentVersion: app.getVersion(),
+        remoteVersion: remoteVersion || undefined,
+      };
     } catch (err) {
       const raw = err && err.message ? err.message : String(err);
       const message = /404|not found|latest\.yml/i.test(raw) ? MANUAL_UPDATE_HINT : raw;
-      return { ok: false, available: false, message };
+      return { ok: false, available: false, message, currentVersion: app.getVersion() };
     }
   }
 
@@ -114,13 +120,23 @@ function registerUpdateHandlers({ ipcMain, getWindow }) {
 
       const hasUpdate = probe.available === true;
       if (!hasUpdate) {
-        emit({ phase: 'relaunching', message: 'Yeni sürüm yok. Launcher yeniden başlatılıyor…', percent: null });
-        await sleep(450);
-        setImmediate(() => {
-          app.relaunch();
-          app.exit(0);
+        const current = probe.currentVersion || app.getVersion();
+        const remote = probe.remoteVersion;
+        const detail = remote && remote !== current
+          ? `Sunucu: v${remote}, kurulu: v${current}`
+          : `Kurulu sürüm: v${current}`;
+        emit({
+          phase: 'uptodate',
+          message: `Zaten en güncel sürümdesiniz. ${detail}`,
+          percent: null,
         });
-        return { ok: true, willRelaunch: true };
+        return {
+          ok: true,
+          upToDate: true,
+          currentVersion: current,
+          remoteVersion: remote,
+          message: `Zaten en güncel sürümdesiniz. ${detail}`,
+        };
       }
 
       const ver = probe.version || '';
