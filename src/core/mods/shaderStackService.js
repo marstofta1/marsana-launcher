@@ -894,7 +894,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         (f) => test.test(f) && (f.endsWith('.jar') || f.endsWith('.jar.disabled'))
       );
       if (!hasFamilyJar) continue;
-      modCompatibilityService.removeModFamilyJars(modsDir, test);
+      modCompatibilityService.removeModFamilyJars(modsDir, (f) => test.test(f));
       slugsToRefresh.push(slug);
       out = out.filter((name) => !test.test(String(name)));
     }
