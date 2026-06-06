@@ -8,7 +8,7 @@ const {
   AUTH_METHODS,
 } = require('../../shared/authMethods.cjs');
 
-function toAccount(xboxManager, mcToken, loginMethod) {
+function toAccount(xboxManager, mcToken) {
   const expiresIn = mcToken.expires_in ? mcToken.expires_in * 1000 : 24 * 60 * 60 * 1000;
   return {
     name: mcToken.profile.name,
@@ -17,7 +17,8 @@ function toAccount(xboxManager, mcToken, loginMethod) {
     refreshToken: xboxManager.msToken.refresh_token,
     expiresAt: Date.now() + expiresIn,
     xuid: mcToken.profile.xuid || null,
-    loginMethod: loginMethod || AUTH_METHODS.MICROSOFT,
+    // Java Edition oturumu her zaman Microsoft OAuth ile acilir (Xbox/PS dugmeleri yalnizca yonlendirme).
+    loginMethod: AUTH_METHODS.MICROSOFT,
   };
 }
 
@@ -59,7 +60,7 @@ function createMicrosoftAuthProvider() {
         resizable: true,
       });
       const mcToken = await xboxManager.getMinecraft();
-      return toAccount(xboxManager, mcToken, loginMethod);
+      return toAccount(xboxManager, mcToken);
     } catch (err) {
       console.error('[auth] Giriş başarısız:', loginMethod, err);
       throw new LauncherError(Codes.AUTH_FAILED, explainMsmcError(err, option), err);

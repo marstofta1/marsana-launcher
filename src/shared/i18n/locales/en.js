@@ -83,8 +83,8 @@ export default {
     loginFailed: 'Sign-in failed: {error}',
     viaLabel: '{method}',
     openingMicrosoft: 'Opening Microsoft sign-in window...',
-    openingXbox: 'Opening Xbox sign-in window...',
-    openingPlaystation: 'Opening Microsoft sign-in for PlayStation...',
+    openingXbox: 'Opening Microsoft sign-in (Xbox account)...',
+    openingPlaystation: 'Opening Microsoft sign-in (PlayStation account)...',
     psHelpHint: 'If you play Minecraft on PlayStation, you must link your PSN account to Microsoft at microsoft.com.',
   },
   profile: {

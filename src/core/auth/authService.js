@@ -11,7 +11,7 @@ function toPublicView(account) {
     uuid: account.uuid,
     xuid: account.xuid || null,
     expiresAt: account.expiresAt,
-    loginMethod: account.loginMethod || 'microsoft',
+    loginMethod: 'microsoft',
   };
 }
 
@@ -34,7 +34,7 @@ function createAuthService({ store, authProvider, logger }) {
     if (refreshed) {
       const merged = {
         ...refreshed,
-        loginMethod: cached.loginMethod || refreshed.loginMethod || 'microsoft',
+        loginMethod: 'microsoft',
       };
       store.save(merged);
       return toPublicView(merged);

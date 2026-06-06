@@ -83,8 +83,8 @@ export default {
     loginFailed: 'Giriş başarısız: {error}',
     viaLabel: '{method}',
     openingMicrosoft: 'Microsoft giriş penceresi açılıyor...',
-    openingXbox: 'Xbox giriş penceresi açılıyor...',
-    openingPlaystation: 'PlayStation için Microsoft giriş penceresi açılıyor...',
+    openingXbox: 'Microsoft giriş penceresi açılıyor (Xbox hesabın)...',
+    openingPlaystation: 'Microsoft giriş penceresi açılıyor (PlayStation hesabın)...',
     psHelpHint: 'PlayStation\'da Minecraft oynadıysan PSN hesabını microsoft.com adresinde Microsoft hesabına bağlamış olmalısın.',
   },
   profile: {
