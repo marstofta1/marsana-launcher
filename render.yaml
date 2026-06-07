@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: marsana-analytics
+    runtime: node
+    rootDir: analytics-server
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: free
+    envVars:
+      - key: MARSANALIZ_GATE_PASSWORD
+        value: marsana-admin
+      - key: MARSANA_ANALYTICS_ADMIN_TOKEN
+        value: marsana-admin

@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const { createAnalyticsStore } = require('./store');
 
@@ -82,7 +83,9 @@ function createAnalyticsApp(options = {}) {
     res.json(store.getStats());
   });
 
-  app.use('/', express.static(dashboardDir));
+  if (fs.existsSync(dashboardDir)) {
+    app.use('/', express.static(dashboardDir));
+  }
 
   return { app, store, adminToken, gatePassword, dataDir, port: options.port || PORT };
 }
@@ -117,7 +120,10 @@ function startAnalyticsServer(options = {}) {
 }
 
 if (require.main === module) {
-  startAnalyticsServer();
+  startAnalyticsServer().catch((err) => {
+    console.error('[marsana-analytics] Baslatilamadi:', err);
+    process.exit(1);
+  });
 }
 
 module.exports = { createAnalyticsApp, startAnalyticsServer, ADMIN_TOKEN, GATE_PASSWORD, PORT, DATA_DIR };
