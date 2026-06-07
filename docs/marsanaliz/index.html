@@ -48,8 +48,9 @@
       <p>Surum: <strong id="download-version">-</strong></p>
       <p class="muted">Dosya: <code id="download-filename">-</code></p>
       <a id="download-link" class="btn primary" href="#" download>MarsAnaliz indir (Windows)</a>
-      <p class="hint">Kurulumdan sonra uygulamayi acin; ayni admin sifresi ile panele girin. Launcher
-        <code>analytics-config.json</code> dosyasindaki endpoint bu bilgisayardaki sunucuya veya merkezi API'nize isaret etmelidir.</p>
+      <p class="hint">Kurulumdan sonra uygulamayi acin; ayni admin sifresi ile panele girin.
+        <strong>Onemli:</strong> Launcher istatistikleri icin merkezi analiz sunucusu gerekir (Render vb.).
+        <code>docs/analytics-public.json</code> dosyasina sunucu URL'sini yazin; launcherlar otomatik ceker.</p>
     </section>
 
     <section id="guncellemeler" class="card">
@@ -57,8 +58,18 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v1.0.3 — Hizli acilis</span>
+            <span class="release-version">v1.0.4 — Merkezi API</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul>
+            <li>Merkezi analiz sunucusu ayarlari — tum launcher verisi tek noktada.</li>
+            <li>Simdilik cevrimici kullanici sayisi panelde.</li>
+            <li>Yerel localhost uyarisi ve LAN adresi ipucu.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v1.0.3 — Hizli acilis</span>
           </div>
           <ul>
             <li>Acilis ekrani (splash) — uygulama hemen gorunur, sunucu arka planda hazirlanir.</li>

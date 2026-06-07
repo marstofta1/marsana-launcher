@@ -29,7 +29,9 @@ function bootstrap() {
 
   app.whenReady().then(() => {
     mainWindow = createMainWindow();
-    container.analyticsService.start();
+    container.analyticsService.start().catch((err) => {
+      container.logger.warn('Analytics baslatilamadi', { err: err.message });
+    });
     mainWindow.on('closed', () => {
       mainWindow = null;
     });

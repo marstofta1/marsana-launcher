@@ -3,13 +3,22 @@
 const fs = require('fs');
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
+const os = require('os');
 
 const { startAnalyticsServer } = require('./analyticsServer');
 const { registerUpdateHandlers } = require('./updateHandlers');
+const {
+  resolveApiBase,
+  isLocalEndpoint,
+  saveSettings,
+  loadSettings,
+  DEFAULT_REMOTE_CONFIG_URL,
+} = require('./apiConfig');
 
 const PORT = Number(process.env.MARSANA_ANALYTICS_PORT || 3847);
 let mainWindow = null;
 let serverCtx = null;
+let resolvedApiBase = 'http://127.0.0.1:3847/api/v1';
 
 function bootLog(message) {
   try {
@@ -42,6 +51,16 @@ function resolveWindowIcon() {
   return undefined;
 }
 
+function getLanIp() {
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name] || []) {
+      if (net.family === 'IPv4' && !net.internal) return net.address;
+    }
+  }
+  return null;
+}
+
 function revealWindow(win) {
   if (!win || win.isDestroyed()) return;
   if (win.isMinimized()) win.restore();
@@ -70,10 +89,6 @@ function createMainWindow() {
   });
 
   win.webContents.on('did-finish-load', () => revealWindow(win));
-  win.webContents.on('did-fail-load', (_event, code, description) => {
-    bootLog(`did-fail-load ${code} ${description}`);
-  });
-
   win.on('closed', () => {
     mainWindow = null;
   });
@@ -84,33 +99,58 @@ async function bootstrap() {
   const t0 = Date.now();
   bootLog('bootstrap start');
 
-  const dataDir = path.join(app.getPath('userData'), 'analytics-data');
-  const dashboardDir = app.isPackaged
-    ? resolveResource('analytics-dashboard')
-    : path.join(__dirname, '..', '..', '..', 'analytics');
+  resolvedApiBase = await resolveApiBase();
+  bootLog(`api base ${resolvedApiBase}`);
 
-  process.env.MARSANA_ANALYTICS_DATA_DIR = dataDir;
   registerUpdateHandlers({ ipcMain, getWindow });
+  ipcMain.handle('marsanaliz:get-api-base', () => resolvedApiBase);
+  ipcMain.handle('marsanaliz:get-setup-info', () => {
+    const lan = getLanIp();
+    return {
+      apiBase: resolvedApiBase,
+      isLocal: isLocalEndpoint(resolvedApiBase),
+      localFallback: `http://127.0.0.1:${PORT}/api/v1`,
+      lanEndpoint: lan ? `http://${lan}:${PORT}/api/v1` : null,
+      configUrl: loadSettings().configUrl || DEFAULT_REMOTE_CONFIG_URL,
+    };
+  });
+  ipcMain.handle('marsanaliz:save-settings', (_event, patch) => {
+    saveSettings(patch || {});
+    return loadSettings();
+  });
+  ipcMain.handle('marsanaliz:reload-config', async () => {
+    resolvedApiBase = await resolveApiBase();
+    bootLog(`api base reloaded ${resolvedApiBase}`);
+    return { apiBase: resolvedApiBase, isLocal: isLocalEndpoint(resolvedApiBase) };
+  });
 
   mainWindow = createMainWindow();
   await mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'splash.html'));
   revealWindow(mainWindow);
-  bootLog(`splash shown +${Date.now() - t0}ms`);
 
-  serverCtx = await startAnalyticsServer({
-    port: PORT,
-    dataDir,
-    dashboardDir,
-  });
-  bootLog(`server ready +${Date.now() - t0}ms ${serverCtx.apiBase}`);
+  if (isLocalEndpoint(resolvedApiBase)) {
+    const dataDir = path.join(app.getPath('userData'), 'analytics-data');
+    const dashboardDir = app.isPackaged
+      ? resolveResource('analytics-dashboard')
+      : path.join(__dirname, '..', '..', '..', 'analytics');
+    process.env.MARSANA_ANALYTICS_DATA_DIR = dataDir;
+    serverCtx = await startAnalyticsServer({ port: PORT, dataDir, dashboardDir });
+    resolvedApiBase = `${serverCtx.url}/api/v1`;
+    bootLog(`local server +${Date.now() - t0}ms ${resolvedApiBase}`);
+  } else {
+    bootLog(`remote mode +${Date.now() - t0}ms`);
+  }
 
   if (mainWindow && !mainWindow.isDestroyed()) {
     await mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'), {
-      query: { apiBase: serverCtx.apiBase },
+      query: {
+        apiBase: resolvedApiBase,
+        remote: isLocalEndpoint(resolvedApiBase) ? '0' : '1',
+      },
     });
   }
   revealWindow(mainWindow);
-  bootLog(`main ui loaded +${Date.now() - t0}ms`);
+  bootLog(`main ui +${Date.now() - t0}ms`);
 }
 
 function showStartupError(err) {
@@ -118,7 +158,7 @@ function showStartupError(err) {
   bootLog(`bootstrap error: ${message}`);
   dialog.showErrorBox(
     'MarsAnaliz baslatilamadi',
-    `${message}\n\nPort ${PORT} baska bir program tarafindan kullaniliyor olabilir. Gorev Yoneticisi'nden eski MarsAnaliz islemlerini kapatip tekrar deneyin.`
+    `${message}\n\nPort ${PORT} baska bir program tarafindan kullaniliyor olabilir.`
   );
 }
 

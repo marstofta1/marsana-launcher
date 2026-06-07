@@ -1,8 +1,8 @@
-version: 1.0.3
+version: 1.0.4
 files:
-  - url: MarsAnaliz-1.0.3-win-x64.exe
-    sha512: IMYI8KpD8nmWI1TY+HeebrH0JlEZ6NZbRGfwI2U5DN1N2gGZ0MVj+j0hugUb6sSxxdPslJwCXMUEsApsD20xJg==
-    size: 82613143
-path: MarsAnaliz-1.0.3-win-x64.exe
-sha512: IMYI8KpD8nmWI1TY+HeebrH0JlEZ6NZbRGfwI2U5DN1N2gGZ0MVj+j0hugUb6sSxxdPslJwCXMUEsApsD20xJg==
-releaseDate: '2026-06-07T17:50:45.916Z'
+  - url: MarsAnaliz-1.0.4-win-x64.exe
+    sha512: S6ihVY1obPEXCucp7dDY9enyfOnKy3S9kP0NdWEbBxDGwXMI/op4tuOPDh1tphA2mY7shM2RKtOYlzswCVQaag==
+    size: 82615316
+path: MarsAnaliz-1.0.4-win-x64.exe
+sha512: S6ihVY1obPEXCucp7dDY9enyfOnKy3S9kP0NdWEbBxDGwXMI/op4tuOPDh1tphA2mY7shM2RKtOYlzswCVQaag==
+releaseDate: '2026-06-07T18:16:15.833Z'

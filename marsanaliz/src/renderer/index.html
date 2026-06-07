@@ -26,6 +26,27 @@
     </div>
   </div>
 
+  <div id="setup-banner" class="setup-banner hidden" role="status">
+    <strong>Merkezi API yapilandirilmadi.</strong>
+    Launcher kullanicilari veri gonderemez. Asagidaki Ayarlar bolumunden merkezi sunucu adresini girin
+    veya <code>docs/analytics-public.json</code> dosyasini GitHub'a yukleyin.
+  </div>
+
+  <section id="settings-section" class="panel">
+    <h2>Merkezi API ayarlari</h2>
+    <p class="muted">Tum launcherlar bu adrese veri gonderir. MarsAnaliz de istatistikleri buradan okur.</p>
+    <label class="field">
+      API adresi (eventEndpoint)
+      <input id="settings-api-base" type="url" placeholder="https://marsana-analytics.onrender.com/api/v1" />
+    </label>
+    <div class="toolbar">
+      <button id="settings-save-btn" type="button">Kaydet ve yenile</button>
+      <button id="settings-clear-btn" type="button" class="ghost">Varsayilana don</button>
+    </div>
+    <p id="settings-status" class="muted"></p>
+    <p id="lan-hint" class="hint hidden"></p>
+  </section>
+
   <section id="login-section" class="panel login-panel">
     <h2>Admin girisi</h2>
     <p>MarsAnaliz yalnizca admin sifresi ile acilir (sitedeki indirme sifresi ile ayni).</p>

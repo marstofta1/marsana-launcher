@@ -90,6 +90,7 @@ async function fetchStats(session) {
 
 function renderSummary(summary) {
   const cards = [
+    ['Simdilik cevrimici', summary.activeNow ?? 0],
     ['Toplam kurulum', summary.totalInstalls],
     ['Son 7 gun aktif', summary.activeLast7Days],
     ['Indirme tiklamasi', summary.totalDownloadClicks],
@@ -293,3 +294,42 @@ if (existing?.token) {
 }
 
 window.setTimeout(() => refreshUpdateButton(), 2500);
+
+async function initSetupPanel() {
+  const banner = document.getElementById('setup-banner');
+  const apiInput = document.getElementById('settings-api-base');
+  const statusEl = document.getElementById('settings-status');
+  const lanHint = document.getElementById('lan-hint');
+  const saveBtn = document.getElementById('settings-save-btn');
+  const clearBtn = document.getElementById('settings-clear-btn');
+
+  if (!window.marsanaliz?.getSetupInfo) return;
+
+  const info = await window.marsanaliz.getSetupInfo();
+  apiInput.value = info.isLocal && info.apiBase.includes('127.0.0.1') ? '' : info.apiBase;
+  statusEl.textContent = `Aktif API: ${info.apiBase}`;
+
+  if (!info.apiBase || info.apiBase.includes('127.0.0.1')) {
+    banner.classList.remove('hidden');
+    if (info.lanEndpoint) {
+      lanHint.textContent = `Yalnizca bu bilgisayardaki launcher icin yerel sunucu: ${info.localFallback}. Ayni ag (LAN) icin: ${info.lanEndpoint}`;
+      lanHint.classList.remove('hidden');
+    }
+  }
+
+  saveBtn.addEventListener('click', async () => {
+    const value = apiInput.value.trim().replace(/\/$/, '');
+    await window.marsanaliz.saveSettings({ apiBase: value || null });
+    const reloaded = await window.marsanaliz.reloadConfig();
+    statusEl.textContent = `Kaydedildi. Aktif API: ${reloaded.apiBase} — Uygulamayi yeniden baslatin.`;
+    banner.classList.toggle('hidden', !reloaded.isLocal || !reloaded.apiBase.includes('127.0.0.1'));
+  });
+
+  clearBtn.addEventListener('click', async () => {
+    await window.marsanaliz.saveSettings({ apiBase: null });
+    apiInput.value = '';
+    statusEl.textContent = 'Varsayilan yapilandirma kullanilacak. Uygulamayi yeniden baslatin.';
+  });
+}
+
+initSetupPanel();

@@ -45,6 +45,30 @@ body {
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.35);
 }
 
+.setup-banner {
+  margin: 16px 28px 0;
+  padding: 14px 16px;
+  border: 1px solid #6d4c00;
+  background: rgba(255, 193, 7, 0.12);
+  border-radius: 8px;
+  color: #ffd95a;
+  font-size: 14px;
+}
+
+.setup-banner code {
+  color: #ffe082;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.hint code {
+  color: #b8c5d6;
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);

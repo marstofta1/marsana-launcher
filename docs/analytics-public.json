@@ -1,4 +1,6 @@
 {
-  "enabled": true,
-  "downloadEndpoint": "http://127.0.0.1:3847/api/v1/download"
+  "enabled": false,
+  "eventEndpoint": "",
+  "downloadEndpoint": "",
+  "note": "Merkezi analiz sunucusu URL'si. Ornek: https://marsana-analytics.onrender.com/api/v1 — MarsAnaliz Ayarlar'dan da yapilandirilabilir. Bos birakilirsa launcherlar veri gondermez (localhost calismaz)."
 }

@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: marsana-analytics
+    runtime: node
+    rootDir: analytics-server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MARSANA_ANALYTICS_PORT
+        value: 10000
+      - key: MARSANA_ANALYTICS_ADMIN_TOKEN
+        generateValue: true
+      - key: MARSANALIZ_GATE_PASSWORD
+        sync: false

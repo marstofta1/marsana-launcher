@@ -4,7 +4,7 @@ const express = require('express');
 const path = require('path');
 const { createAnalyticsStore } = require('./store');
 
-const PORT = Number(process.env.MARSANA_ANALYTICS_PORT || 3847);
+const PORT = Number(process.env.PORT || process.env.MARSANA_ANALYTICS_PORT || 3847);
 const DEFAULT_SECRET = process.env.MARSANA_ANALYTICS_ADMIN_TOKEN
   || process.env.MARSANALIZ_GATE_PASSWORD
   || 'marsana-admin';
@@ -87,6 +87,8 @@ function createAnalyticsApp(options = {}) {
   return { app, store, adminToken, gatePassword, dataDir, port: options.port || PORT };
 }
 
+const HOST = process.env.MARSANA_ANALYTICS_HOST || '0.0.0.0';
+
 function startAnalyticsServer(options = {}) {
   const basePort = Number(options.port || PORT);
   const maxAttempts = Number(options.portRetryCount || 10);
@@ -94,10 +96,11 @@ function startAnalyticsServer(options = {}) {
   function tryListen(port, attempt) {
     const ctx = createAnalyticsApp({ ...options, port });
     return new Promise((resolve, reject) => {
-      const server = ctx.app.listen(port, '127.0.0.1', () => {
-        console.log(`Marsana Analytics: http://127.0.0.1:${port}`);
+      const server = ctx.app.listen(port, HOST, () => {
+        const localUrl = `http://127.0.0.1:${port}`;
+        console.log(`Marsana Analytics: ${localUrl} (dinleniyor: ${HOST}:${port})`);
         console.log(`Veri klasoru: ${ctx.dataDir}`);
-        resolve({ ...ctx, server, url: `http://127.0.0.1:${port}`, port });
+        resolve({ ...ctx, server, url: localUrl, port, host: HOST });
       });
       server.on('error', (err) => {
         server.close();

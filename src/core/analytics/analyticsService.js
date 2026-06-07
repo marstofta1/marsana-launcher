@@ -6,23 +6,54 @@ const path = require('path');
 const { app } = require('electron');
 
 const HEARTBEAT_MS = 3 * 60 * 1000;
+const DEFAULT_REMOTE_CONFIG_URL =
+  'https://marstofta1.github.io/marsana-launcher/analytics-public.json';
 
-function readEndpoint() {
-  if (process.env.MARSANA_ANALYTICS_URL) {
-    return String(process.env.MARSANA_ANALYTICS_URL).replace(/\/$/, '');
-  }
+function readBundledConfig() {
   try {
     const configPath = app.isPackaged
       ? path.join(process.resourcesPath, 'analytics-config.json')
       : path.join(__dirname, '..', '..', '..', 'analytics-config.json');
     if (fs.existsSync(configPath)) {
-      const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      if (cfg.enabled === false) return '';
-      if (cfg.endpoint) return String(cfg.endpoint).replace(/\/$/, '');
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
     }
   } catch {
     /* ignore */
   }
+  return null;
+}
+
+async function fetchRemotePublicConfig() {
+  const configUrl = process.env.MARSANA_ANALYTICS_CONFIG_URL || DEFAULT_REMOTE_CONFIG_URL;
+  try {
+    const res = await fetch(configUrl, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const pub = await res.json();
+    if (!pub || pub.enabled === false) return null;
+    const endpoint = pub.eventEndpoint || pub.endpoint;
+    if (!endpoint) return null;
+    return String(endpoint).replace(/\/$/, '');
+  } catch {
+    return null;
+  }
+}
+
+async function resolveEndpoint() {
+  if (process.env.MARSANA_ANALYTICS_URL) {
+    return String(process.env.MARSANA_ANALYTICS_URL).replace(/\/$/, '');
+  }
+
+  const remote = await fetchRemotePublicConfig();
+  if (remote) return remote;
+
+  const cfg = readBundledConfig();
+  if (cfg && cfg.enabled !== false && cfg.endpoint) {
+    return String(cfg.endpoint).replace(/\/$/, '');
+  }
+
   return '';
 }
 
@@ -95,12 +126,13 @@ function createAnalyticsService({ userDataDir, getAccount, getLauncherVersion, l
     }
   }
 
-  function start() {
-    endpoint = readEndpoint();
+  async function start() {
+    endpoint = await resolveEndpoint();
     if (!endpoint) {
-      if (logger) logger.info('Analytics kapali (endpoint yapilandirilmadi)');
+      if (logger) logger.info('Analytics kapali (merkezi endpoint yapilandirilmadi)');
       return;
     }
+    if (logger) logger.info('Analytics endpoint', { endpoint });
     loadInstallId();
     sessionStartedAt = Date.now();
     send('first_open');
@@ -138,7 +170,8 @@ function createAnalyticsService({ userDataDir, getAccount, getLauncherVersion, l
     trackGameClose,
     trackLogin,
     isEnabled: () => Boolean(endpoint),
+    getEndpoint: () => endpoint,
   };
 }
 
-module.exports = { createAnalyticsService };
+module.exports = { createAnalyticsService, resolveEndpoint, DEFAULT_REMOTE_CONFIG_URL };

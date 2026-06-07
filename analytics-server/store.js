@@ -141,6 +141,8 @@ function createAnalyticsStore({ dataDir }) {
     const weekAgo = now - 7 * day;
 
     const activeWeek = installs.filter((i) => i.lastSeen >= weekAgo).length;
+    const onlineWindowMs = 15 * 60 * 1000;
+    const activeNow = installs.filter((i) => i.lastSeen >= now - onlineWindowMs).length;
     const totalActiveSeconds = installs.reduce((s, i) => s + (i.totalActiveSeconds || 0), 0);
     const totalPlaySeconds = installs.reduce((s, i) => s + (i.totalPlaySeconds || 0), 0);
     const totalLaunches = installs.reduce((s, i) => s + (i.launchCount || 0), 0);
@@ -172,6 +174,7 @@ function createAnalyticsStore({ dataDir }) {
     return {
       summary: {
         totalInstalls: installs.length,
+        activeNow,
         activeLast7Days: activeWeek,
         totalDownloadClicks: data.downloads.length,
         totalActiveSeconds,

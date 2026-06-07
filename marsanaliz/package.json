@@ -1,6 +1,6 @@
 {
   "name": "marsanaliz",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Marsana Launcher analiz ve yonetim uygulamasi",
   "private": true,
   "main": "src/main/index.js",
@@ -22,6 +22,10 @@
         "filter": [
           "**/*"
         ]
+      },
+      {
+        "from": "../docs/analytics-public.json",
+        "to": "analytics-public.json"
       }
     ],
     "directories": {

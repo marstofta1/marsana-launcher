@@ -7,6 +7,13 @@ contextBridge.exposeInMainWorld('marsanaliz', {
     const params = new URLSearchParams(window.location.search);
     return params.get('apiBase') || 'http://127.0.0.1:3847/api/v1';
   },
+  isRemoteMode: () => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('remote') === '1';
+  },
+  getSetupInfo: () => ipcRenderer.invoke('marsanaliz:get-setup-info'),
+  saveSettings: (patch) => ipcRenderer.invoke('marsanaliz:save-settings', patch),
+  reloadConfig: () => ipcRenderer.invoke('marsanaliz:reload-config'),
   updates: {
     check: () => ipcRenderer.invoke('marsanaliz:update-check'),
     run: () => ipcRenderer.invoke('marsanaliz:update-run'),
