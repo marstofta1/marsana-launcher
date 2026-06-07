@@ -1,12 +1,12 @@
 {
   "name": "marsanaliz",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Marsana Launcher analiz ve yonetim uygulamasi",
   "private": true,
   "main": "src/main/index.js",
   "scripts": {
-    "start": "electron .",
-    "pack:win": "electron-builder --win && node ../scripts/prepare-marsanaliz-downloads.js"
+    "start": "node ../scripts/sync-marsanaliz-server.js && electron .",
+    "pack:win": "node ../scripts/sync-marsanaliz-server.js && electron-builder --win && node ../scripts/prepare-marsanaliz-downloads.js"
   },
   "build": {
     "appId": "com.marsana.analiz",
@@ -21,15 +21,6 @@
         "to": "analytics-dashboard",
         "filter": [
           "**/*"
-        ]
-      },
-      {
-        "from": "../analytics-server",
-        "to": "analytics-server",
-        "filter": [
-          "**/*",
-          "!data/**",
-          "!node_modules/**"
         ]
       }
     ],

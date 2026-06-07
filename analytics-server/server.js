@@ -88,15 +88,29 @@ function createAnalyticsApp(options = {}) {
 }
 
 function startAnalyticsServer(options = {}) {
-  const ctx = createAnalyticsApp(options);
-  const port = ctx.port;
-  return new Promise((resolve) => {
-    const server = ctx.app.listen(port, () => {
-      console.log(`Marsana Analytics: http://127.0.0.1:${port}`);
-      console.log(`Veri klasoru: ${ctx.dataDir}`);
-      resolve({ ...ctx, server, url: `http://127.0.0.1:${port}` });
+  const basePort = Number(options.port || PORT);
+  const maxAttempts = Number(options.portRetryCount || 10);
+
+  function tryListen(port, attempt) {
+    const ctx = createAnalyticsApp({ ...options, port });
+    return new Promise((resolve, reject) => {
+      const server = ctx.app.listen(port, '127.0.0.1', () => {
+        console.log(`Marsana Analytics: http://127.0.0.1:${port}`);
+        console.log(`Veri klasoru: ${ctx.dataDir}`);
+        resolve({ ...ctx, server, url: `http://127.0.0.1:${port}`, port });
+      });
+      server.on('error', (err) => {
+        server.close();
+        if (err.code === 'EADDRINUSE' && attempt < maxAttempts) {
+          tryListen(port + 1, attempt + 1).then(resolve).catch(reject);
+          return;
+        }
+        reject(err);
+      });
     });
-  });
+  }
+
+  return tryListen(basePort, 0);
 }
 
 if (require.main === module) {

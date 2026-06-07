@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 
 const { startAnalyticsServer } = require('./analyticsServer');
@@ -18,32 +18,16 @@ function resolveResource(...parts) {
   if (app.isPackaged) {
     return path.join(process.resourcesPath, ...parts);
   }
-  return path.join(__dirname, '..', '..', ...parts);
+  return path.join(__dirname, '..', '..', '..', ...parts);
 }
 
-async function bootstrap() {
-  const dataDir = path.join(app.getPath('userData'), 'analytics-data');
-  const dashboardDir = resolveResource('analytics-dashboard');
-  const serverDir = resolveResource('analytics-server');
-
-  process.env.MARSANA_ANALYTICS_DATA_DIR = dataDir;
-
-  serverCtx = await startAnalyticsServer({
-    port: PORT,
-    dataDir,
-    dashboardDir: app.isPackaged ? dashboardDir : path.join(__dirname, '..', '..', 'analytics'),
-    serverModulePath: app.isPackaged
-      ? path.join(serverDir, 'server.js')
-      : path.join(__dirname, '..', '..', 'analytics-server', 'server.js'),
-  });
-
-  registerUpdateHandlers({ ipcMain, getWindow });
-
-  mainWindow = new BrowserWindow({
+function createMainWindow() {
+  const win = new BrowserWindow({
     width: 1120,
     height: 780,
     minWidth: 900,
     minHeight: 600,
+    show: false,
     title: 'MarsAnaliz',
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload', 'index.js'),
@@ -52,14 +36,50 @@ async function bootstrap() {
     },
   });
 
-  mainWindow.setMenuBarVisibility(false);
-  mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'), {
-    query: { apiBase: serverCtx.apiBase },
+  win.setMenuBarVisibility(false);
+  win.once('ready-to-show', () => {
+    if (!win.isDestroyed()) win.show();
   });
-
-  mainWindow.on('closed', () => {
+  win.on('closed', () => {
     mainWindow = null;
   });
+  return win;
+}
+
+async function bootstrap() {
+  mainWindow = createMainWindow();
+  mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'), {
+    query: { apiBase: `http://127.0.0.1:${PORT}/api/v1`, boot: '1' },
+  });
+
+  const dataDir = path.join(app.getPath('userData'), 'analytics-data');
+  const dashboardDir = app.isPackaged
+    ? resolveResource('analytics-dashboard')
+    : path.join(__dirname, '..', '..', '..', 'analytics');
+
+  process.env.MARSANA_ANALYTICS_DATA_DIR = dataDir;
+
+  serverCtx = await startAnalyticsServer({
+    port: PORT,
+    dataDir,
+    dashboardDir,
+  });
+
+  registerUpdateHandlers({ ipcMain, getWindow });
+
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'), {
+      query: { apiBase: serverCtx.apiBase },
+    });
+  }
+}
+
+function showStartupError(err) {
+  const message = err?.message || String(err);
+  dialog.showErrorBox(
+    'MarsAnaliz baslatilamadi',
+    `${message}\n\nPort ${PORT} baska bir program tarafindan kullaniliyor olabilir. Gorev Yoneticisi'nden eski MarsAnaliz islemini kapatip tekrar deneyin.`
+  );
 }
 
 const gotLock = app.requestSingleInstanceLock();
@@ -69,11 +89,18 @@ if (!gotLock) {
   app.on('second-instance', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
       mainWindow.focus();
     }
   });
 
-  app.whenReady().then(bootstrap);
+  app.whenReady().then(() => {
+    bootstrap().catch((err) => {
+      console.error('[MarsAnaliz] bootstrap failed:', err);
+      showStartupError(err);
+      app.quit();
+    });
+  });
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
