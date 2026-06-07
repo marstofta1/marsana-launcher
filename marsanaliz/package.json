@@ -1,6 +1,6 @@
 {
   "name": "marsanaliz",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Marsana Launcher analiz ve yonetim uygulamasi",
   "private": true,
   "main": "src/main/index.js",

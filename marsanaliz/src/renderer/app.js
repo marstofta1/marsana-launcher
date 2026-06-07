@@ -292,4 +292,4 @@ if (existing?.token) {
   enterDashboard(existing);
 }
 
-refreshUpdateButton();
+window.setTimeout(() => refreshUpdateButton(), 2500);

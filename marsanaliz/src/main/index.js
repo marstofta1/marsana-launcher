@@ -81,6 +81,7 @@ function createMainWindow() {
 }
 
 async function bootstrap() {
+  const t0 = Date.now();
   bootLog('bootstrap start');
 
   const dataDir = path.join(app.getPath('userData'), 'analytics-data');
@@ -89,22 +90,27 @@ async function bootstrap() {
     : path.join(__dirname, '..', '..', '..', 'analytics');
 
   process.env.MARSANA_ANALYTICS_DATA_DIR = dataDir;
+  registerUpdateHandlers({ ipcMain, getWindow });
+
+  mainWindow = createMainWindow();
+  await mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'splash.html'));
+  revealWindow(mainWindow);
+  bootLog(`splash shown +${Date.now() - t0}ms`);
 
   serverCtx = await startAnalyticsServer({
     port: PORT,
     dataDir,
     dashboardDir,
   });
-  bootLog(`server ready ${serverCtx.apiBase}`);
+  bootLog(`server ready +${Date.now() - t0}ms ${serverCtx.apiBase}`);
 
-  registerUpdateHandlers({ ipcMain, getWindow });
-
-  mainWindow = createMainWindow();
-  await mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'), {
-    query: { apiBase: serverCtx.apiBase },
-  });
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    await mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'), {
+      query: { apiBase: serverCtx.apiBase },
+    });
+  }
   revealWindow(mainWindow);
-  bootLog('window loaded');
+  bootLog(`main ui loaded +${Date.now() - t0}ms`);
 }
 
 function showStartupError(err) {

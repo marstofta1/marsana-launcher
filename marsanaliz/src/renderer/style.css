@@ -223,3 +223,41 @@ th, td {
 #update-dismiss { margin-top: 8px; }
 
 .hidden { display: none !important; }
+
+.splash-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.splash {
+  text-align: center;
+  padding: 32px;
+}
+
+.splash h1 {
+  margin: 20px 0 8px;
+  font-size: 1.75rem;
+  color: var(--accent);
+}
+
+.splash p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.splash-spinner {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: splash-spin 0.85s linear infinite;
+}
+
+@keyframes splash-spin {
+  to { transform: rotate(360deg); }
+}
