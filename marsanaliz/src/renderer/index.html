@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MarsAnaliz</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>MarsAnaliz</h1>
+      <p class="subtitle">Launcher indirme ve kullanim istatistikleri</p>
+    </div>
+    <div class="topbar-actions">
+      <button id="update-btn" type="button" class="btn-update">Guncellemeleri kontrol et</button>
+    </div>
+  </header>
+
+  <div id="update-overlay" class="update-overlay hidden" aria-hidden="true">
+    <div class="update-card">
+      <h2 id="update-title">Guncelleme</h2>
+      <p id="update-message"></p>
+      <div id="update-progress-wrap" class="progress-wrap hidden"><div id="update-progress"></div></div>
+      <button id="update-dismiss" type="button" class="ghost">Tamam</button>
+    </div>
+  </div>
+
+  <section id="login-section" class="panel login-panel">
+    <h2>Admin girisi</h2>
+    <p>MarsAnaliz yalnizca admin sifresi ile acilir (sitedeki indirme sifresi ile ayni).</p>
+    <label class="field">
+      Admin sifresi
+      <input id="admin-password" type="password" placeholder="Admin sifresi" autocomplete="current-password" />
+    </label>
+    <button id="login-btn" type="button">Panele gir</button>
+    <p id="login-error" class="error" hidden></p>
+  </section>
+
+  <main id="dashboard" hidden>
+    <div class="toolbar">
+      <button id="refresh-btn" type="button">Yenile</button>
+      <button id="logout-btn" type="button" class="ghost">Cikis</button>
+      <span id="last-updated" class="muted"></span>
+    </div>
+
+    <section class="stats-grid" id="summary-cards"></section>
+
+    <section class="panel">
+      <h2>Indirme tiklamalari (platform)</h2>
+      <div id="download-chart" class="bar-list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Kullanicilar / kurulumlar</h2>
+      <p class="muted">Microsoft ile giris yapanlar isimle, digerleri Anonim gorunur.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Oyuncu</th>
+              <th>Platform</th>
+              <th>Surum</th>
+              <th>Launcher kullanimi</th>
+              <th>Oyun suresi</th>
+              <th>Baslatma</th>
+              <th>Son gorulme</th>
+            </tr>
+          </thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel two-col">
+      <div>
+        <h2>Son olaylar</h2>
+        <ul id="recent-events" class="event-list"></ul>
+      </div>
+      <div>
+        <h2>Son indirmeler</h2>
+        <ul id="recent-downloads" class="event-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

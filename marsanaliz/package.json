@@ -1,0 +1,58 @@
+{
+  "name": "marsanaliz",
+  "version": "1.0.0",
+  "description": "Marsana Launcher analiz ve yonetim uygulamasi",
+  "private": true,
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "pack:win": "electron-builder --win && node ../scripts/prepare-marsanaliz-downloads.js"
+  },
+  "build": {
+    "appId": "com.marsana.analiz",
+    "productName": "MarsAnaliz",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../analytics",
+        "to": "analytics-dashboard",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../analytics-server",
+        "to": "analytics-server",
+        "filter": [
+          "**/*",
+          "!data/**",
+          "!node_modules/**"
+        ]
+      }
+    ],
+    "directories": {
+      "buildResources": "../build"
+    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://marstofta1.github.io/marsana-launcher/marsanaliz/downloads/"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}

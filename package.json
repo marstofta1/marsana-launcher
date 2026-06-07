@@ -19,6 +19,7 @@
     "prepare:ios-downloads": "node scripts/prepare-ios-downloads.js",
     "prepare:downloads": "node scripts/prepare-windows-downloads.js && node scripts/prepare-macos-downloads.js && node scripts/prepare-linux-downloads.js && node scripts/prepare-android-downloads.js && node scripts/prepare-ios-downloads.js",
     "analytics:start": "npm --prefix analytics-server start",
+    "pack:marsanaliz": "npm install --prefix marsanaliz && npm run pack:win --prefix marsanaliz",
     "version:resolve": "node scripts/resolve-release-version.js",
     "mobile:sync": "node scripts/sync-mobile-www.js",
     "build:client-mod": "cd marsana-client-mod && gradlew.bat build copyToBundled"

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="MarsAnaliz — Marsana Launcher indirme ve kullanim istatistikleri (admin)." />
+  <title>MarsAnaliz — Admin indirme</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html">
+      <img src="../assets/logo.png" width="36" height="36" alt="" aria-hidden="true" />
+      <span>Marsana Launcher</span>
+    </a>
+    <nav>
+      <a href="../index.html">Ana site</a>
+      <a href="../index.html#guncellemeler">Launcher guncellemeleri</a>
+      <a href="#guncellemeler">MarsAnaliz guncellemeleri</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>MarsAnaliz</h1>
+      <p>
+        Launcher kac kisi indirdi, ne kadar kullanildi — tum istatistikler bu masaustu uygulamada.
+        <strong>Yalnizca admin sifresi</strong> ile indirilebilir.
+      </p>
+    </section>
+
+    <section id="gate-panel" class="card gate-card">
+      <h2>Admin girisi</h2>
+      <p class="muted">Indirmeyi baslatmak icin admin sifrenizi girin.</p>
+      <form id="gate-form">
+        <label class="field">
+          Admin sifresi
+          <input id="gate-password" type="password" autocomplete="current-password" required />
+        </label>
+        <button type="submit">Dogrula ve devam et</button>
+      </form>
+      <p id="gate-error" class="error" hidden></p>
+    </section>
+
+    <section id="download-panel" class="card" hidden>
+      <h2>Indir</h2>
+      <p>Surum: <strong id="download-version">-</strong></p>
+      <p class="muted">Dosya: <code id="download-filename">-</code></p>
+      <a id="download-link" class="btn primary" href="#" download>MarsAnaliz indir (Windows)</a>
+      <p class="hint">Kurulumdan sonra uygulamayi acin; ayni admin sifresi ile panele girin. Launcher
+        <code>analytics-config.json</code> dosyasindaki endpoint bu bilgisayardaki sunucuya veya merkezi API'nize isaret etmelidir.</p>
+    </section>
+
+    <section id="guncellemeler" class="card">
+      <h2>MarsAnaliz guncellemeleri</h2>
+      <ol class="changelog">
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v1.0.0 — Ilk surum</span>
+            <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul>
+            <li>Launcher indirme tiklamalari ve kurulum/kullanim istatistikleri paneli.</li>
+            <li>Admin sifre korumali site indirmesi ve uygulama ici giris.</li>
+            <li>Otomatik guncelleme (GitHub Pages feed).</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <script src="gate.js"></script>
+</body>
+</html>

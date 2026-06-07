@@ -1,0 +1,134 @@
+:root {
+  --bg: #0a0e12;
+  --card: #121820;
+  --border: #243040;
+  --text: #e8eef4;
+  --muted: #8b9aab;
+  --accent: #4caf50;
+  --error: #ff6b6b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Segoe UI, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+}
+
+a { color: var(--accent); }
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.site-header nav {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.site-header nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.site-header nav a:hover { color: var(--accent); }
+
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+}
+
+.hero h1 {
+  margin: 0 0 8px;
+  color: var(--accent);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.field {
+  display: block;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.field input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0d1218;
+  color: var(--text);
+}
+
+button, .btn {
+  display: inline-block;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #0a0e12;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.muted { color: var(--muted); font-size: 14px; }
+.error { color: var(--error); font-size: 14px; }
+.hint { font-size: 13px; color: var(--muted); margin-top: 16px; }
+
+.changelog {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.release { margin-bottom: 20px; }
+
+.release-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.release-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(76, 175, 80, 0.2);
+  color: var(--accent);
+}
+
+.changelog ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+}

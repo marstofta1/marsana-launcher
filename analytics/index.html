@@ -15,14 +15,14 @@
 
   <section id="login-section" class="panel login-panel">
     <h2>Giris</h2>
-    <p>Admin token ile giris yapin (<code>MARSANA_ANALYTICS_ADMIN_TOKEN</code>).</p>
+    <p>Admin sifresi ile giris yapin (varsayilan: <code>marsana-admin</code>, ortam degiskeni: <code>MARSANA_ANALYTICS_ADMIN_TOKEN</code>).</p>
     <label class="field">
       API adresi
       <input id="api-base" type="url" placeholder="http://127.0.0.1:3847/api/v1" />
     </label>
     <label class="field">
-      Admin token
-      <input id="admin-token" type="password" placeholder="Token" autocomplete="current-password" />
+      Admin sifresi
+      <input id="admin-token" type="password" placeholder="Admin sifresi" autocomplete="current-password" />
     </label>
     <button id="login-btn" type="button">Panele gir</button>
     <p id="login-error" class="error" hidden></p>
