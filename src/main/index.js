@@ -1,5 +1,10 @@
 'use strict';
 
+const dns = require('dns');
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 

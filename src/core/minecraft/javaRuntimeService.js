@@ -6,11 +6,13 @@ const { execFile } = require('child_process');
 const { promisify } = require('util');
 
 const { LauncherError, Codes } = require('../infra/errors');
+const { fetchFirstJson } = require('./versionService');
 
 const execFileAsync = promisify(execFile);
 
-const MOJANG_JAVA_INDEX =
-  'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json';
+const MOJANG_JAVA_INDEX_URLS = [
+  'https://piston-meta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json',
+];
 
 const DOWNLOAD_CONCURRENCY = 8;
 
@@ -113,7 +115,7 @@ function createJavaRuntimeService({ httpClient, paths, logger }) {
   async function loadIndex() {
     const now = Date.now();
     if (indexCache && now - indexCacheAt < INDEX_TTL_MS) return indexCache;
-    indexCache = await httpClient.fetchJson(MOJANG_JAVA_INDEX);
+    indexCache = await fetchFirstJson(httpClient, MOJANG_JAVA_INDEX_URLS, 'Mojang Java listesi');
     indexCacheAt = now;
     return indexCache;
   }
