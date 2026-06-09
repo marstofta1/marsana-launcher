@@ -44,6 +44,15 @@ const SHADER_CORE_WITHOUT_MC26 = Object.freeze([
   /^continuity-/i,
 ]);
 
+/** 26.x ile uyumsuz klasik-surum modlari (dosya adinda MC etiketi olmasa bile). */
+const MC26_CLASSIC_ONLY_MOD_PREFIXES = Object.freeze([
+  /^viafabricplus/i,
+  /^via-fabric-plus/i,
+]);
+
+/** Sodium 0.8+ (mc26) en az bu SSPB surumunu ister; eski jar cakismasi olusturur. */
+const MC26_MIN_SSPB_VERSION = '6.0.0';
+
 function isMc26GameVersion(gameVersion) {
   return /^26\./.test(String(gameVersion || '').trim());
 }
@@ -143,6 +152,14 @@ function isManagedModFamilyJar(filename) {
   return MOD_DEDUPE_FAMILIES.some((f) => f.test(filename));
 }
 
+function isMc26StaleSspbJar(filename) {
+  const lower = jarBaseName(filename);
+  if (!/^sodium-shadowy-path-blocks/i.test(lower)) return false;
+  const semver = parseModSemverFromJar(filename);
+  if (!semver) return true;
+  return compareSemver(semver, MC26_MIN_SSPB_VERSION) < 0;
+}
+
 function isWrongMc26ClientOrCloth(lower, gv) {
   if (isMc26GameVersion(gv)) {
     if (/^marsana-client/i.test(lower) || /^cloth-config/i.test(lower)) {
@@ -166,6 +183,8 @@ function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
   if (isMc26GameVersion(gv)) {
     if (hasMc26Tag(lower)) return false;
     if (/fabric-api.*26\.1/i.test(lower)) return false;
+    if (MC26_CLASSIC_ONLY_MOD_PREFIXES.some((re) => re.test(lower))) return true;
+    if (isMc26StaleSspbJar(filename)) return true;
     if (/\+mc1\.|mc1\.(1[0-9]|20|21|22)/i.test(lower)) return true;
     if (/\+1\.(20|21)\.|_1\.(20|21)\./i.test(lower)) return true;
     if (/\b1\.21\.|\b1\.20\.|\b1\.19\.|\b1\.18\.|\b1\.17\./i.test(lower)) return true;
