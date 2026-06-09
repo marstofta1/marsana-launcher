@@ -14,7 +14,7 @@ const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../share
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 40;
+const SHADER_BUNDLE_VERSION = 41;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -432,9 +432,19 @@ function normalizePresets(p) {
   };
 }
 
+const STRICT_PATCH_MOD_SLUGS = new Set([
+  ...CLIENT_HUD_REQUIRED_SLUGS,
+  'sodium-extra',
+  'iris',
+  'sodium',
+]);
+
 const OPTIONAL_LOADER_MOD_SLUGS = new Set([POLYTONE_SLUG, ...CLIENT_HUD_MOD_SLUGS]);
 
-function polytoneSupportedForGameVersion(gameVersion) {
+function usesStrictModrinthPatch(gameVersion) {
+  const id = String(gameVersion || '').trim();
+  return /^\d+\.\d+\.\d+$/.test(id) && !/^26\./.test(id);
+}
   // Polytone Modrinth'te en fazla 1.21.11'e kadar; 26.x için native jar yok.
   return !/^26\./.test(String(gameVersion || '').trim());
 }
@@ -1110,7 +1120,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         version = pickNewestModrinthVersion(versions, {
           gameVersion,
           gameVersionCandidates: candidates,
-          strictPatch: false,
+          strictPatch: usesStrictModrinthPatch(gameVersion) || STRICT_PATCH_MOD_SLUGS.has(slug),
         });
         if (!version) {
           if (OPTIONAL_LOADER_MOD_SLUGS.has(slug)) continue;

@@ -27,8 +27,7 @@ function bundledJarPath(repoRoot, gameVersion) {
   if (!line) return null;
   const exact = path.join(bundledModsRoot(repoRoot), `marsana-client-${line}.jar`);
   if (fs.existsSync(exact)) return exact;
-  const fallback = path.join(bundledModsRoot(repoRoot), 'marsana-client-26.1.jar');
-  return fs.existsSync(fallback) ? fallback : null;
+  return null;
 }
 
 /** Gömülü jar CPS/HUD sınıflarını içeriyor mu (eski build uyarısı). */

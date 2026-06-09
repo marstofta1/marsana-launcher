@@ -3,7 +3,15 @@
 const fs = require('fs');
 const path = require('path');
 
-const PROTECTED_JAR_PREFIXES = Object.freeze(['marsana-client', 'cloth-config']);
+const PROTECTED_JAR_PREFIXES = Object.freeze([]);
+
+/** 1.21.x patch surumlerinde MC etiketi olmadan veya yanlis etiketle kurulmamali. */
+const REQUIRES_EXACT_MC_TAG_ON_CLASSIC_PATCH = Object.freeze([
+  /^modmenu/i,
+  /^cloth-config/i,
+  /^sodiumextrainformation/i,
+  /^sodium-extra-information/i,
+]);
 
 /** Dedupe aileleri — sodium-extra, sodium-\d ile karistirilmaz. */
 const MOD_DEDUPE_FAMILIES = Object.freeze([
@@ -135,12 +143,25 @@ function isManagedModFamilyJar(filename) {
   return MOD_DEDUPE_FAMILIES.some((f) => f.test(filename));
 }
 
+function isWrongMc26ClientOrCloth(lower, gv) {
+  if (isMc26GameVersion(gv)) {
+    if (/^marsana-client/i.test(lower) || /^cloth-config/i.test(lower)) {
+      return !hasMc26Tag(lower) && !/26\.1/i.test(lower);
+    }
+    return false;
+  }
+  if (/^marsana-client/i.test(lower) && (hasMc26Tag(lower) || /26\.1/i.test(lower))) return true;
+  if (/^cloth-config/i.test(lower) && (hasMc26Tag(lower) || /26\.1/i.test(lower))) return true;
+  return false;
+}
+
 /** Dosya adindan hedef MC surumu belli ama secilen surumle uyumsuz mu? */
 function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
   const gv = String(gameVersion || '').trim();
   if (!gv) return false;
   const lower = jarBaseName(filename);
-  if (PROTECTED_JAR_PREFIXES.some((p) => lower.startsWith(p))) return false;
+
+  if (isWrongMc26ClientOrCloth(lower, gv)) return true;
 
   if (isMc26GameVersion(gv)) {
     if (hasMc26Tag(lower)) return false;
@@ -153,6 +174,16 @@ function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
   }
 
   if (isKnownStaleModJar(filename, gv)) return true;
+
+  const tag = parseJarMinecraftVersionTag(filename);
+  if (/^\d+\.\d+\.\d+$/.test(gv) && !/^26\./.test(gv)) {
+    if (REQUIRES_EXACT_MC_TAG_ON_CLASSIC_PATCH.some((re) => re.test(lower))) {
+      if (!tag || tag !== gv) return true;
+    } else if (tag && compareSemver(tag, gv) > 0) {
+      return true;
+    }
+  }
+
   if (!isManagedModFamilyJar(filename)) return false;
   return !jarVersionMatchesGame(filename, gv);
 }
