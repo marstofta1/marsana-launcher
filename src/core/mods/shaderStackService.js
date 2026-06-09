@@ -445,6 +445,8 @@ function usesStrictModrinthPatch(gameVersion) {
   const id = String(gameVersion || '').trim();
   return /^\d+\.\d+\.\d+$/.test(id) && !/^26\./.test(id);
 }
+
+function polytoneSupportedForGameVersion(gameVersion) {
   // Polytone Modrinth'te en fazla 1.21.11'e kadar; 26.x için native jar yok.
   return !/^26\./.test(String(gameVersion || '').trim());
 }
