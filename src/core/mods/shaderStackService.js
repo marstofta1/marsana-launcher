@@ -14,7 +14,7 @@ const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../share
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 41;
+const SHADER_BUNDLE_VERSION = 42;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -504,6 +504,11 @@ const OPTIFINE_RECONCILE_SLUGS = Object.freeze([
   'lithium',
   'ferritecore',
   'immediatelyfast',
+  'dark-loading-screen',
+  'modmenu',
+  'dynamic-fps',
+  'fabric-language-kotlin',
+  'forgeconfigapiport',
 ]);
 
 const OPTIFINE_RECONCILE_JAR_TESTS = Object.freeze({
@@ -511,6 +516,11 @@ const OPTIFINE_RECONCILE_JAR_TESTS = Object.freeze({
   lithium: /^lithium-fabric-/i,
   ferritecore: /^ferritecore-/i,
   immediatelyfast: /^immediatelyfast/i,
+  'dark-loading-screen': /^dark-loading-screen/i,
+  modmenu: /^modmenu-/i,
+  'dynamic-fps': /^dynamic[-_]?fps/i,
+  'fabric-language-kotlin': /^fabric-language-kotlin/i,
+  forgeconfigapiport: /^forgeconfigapiport/i,
 });
 
 function enableOptifineEmbossedMods(modsDir) {
@@ -914,13 +924,33 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (!slugsToRefresh.length) return out;
 
     status(`OptiFine paketi modlari guncelleniyor (${slugsToRefresh.join(', ')})...`);
-    const fresh = await downloadModsFromSlugs({
-      modsDir,
-      gameVersion,
-      slugs: slugsToRefresh,
-    });
+    const fresh = [];
+    for (const slug of slugsToRefresh) {
+      try {
+        const jars = await downloadModsFromSlugs({
+          modsDir,
+          gameVersion,
+          slugs: [slug],
+        });
+        fresh.push(...jars);
+      } catch {
+        /* OptiFine paketindeki yardimci mod bu surumde yoksa atla — kirli jar zaten silindi */
+      }
+    }
     modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     return [...new Set([...out, ...fresh])];
+  }
+
+  async function finalizeOptifineModState({ modsDir, gameVersion, status, jars, presets }) {
+    if (!presets || !presets.optifine) return Array.isArray(jars) ? jars.slice() : [];
+    modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
+    let out = await ensureOptifineReconciledMods({
+      modsDir,
+      gameVersion,
+      status,
+      jars,
+    });
+    return refreshManagedJarEntries(out, modsDir, gameVersion);
   }
 
   function cachedReady({ versionDir, modsDir, shaderpacksDir, resourcepacksDir, gameVersion, versionJsonPath, readyPath, modPresets, shaderSlug }) {
@@ -1819,6 +1849,19 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       if (bundle && cacheJars) {
         writeBundle(modsDir, { ...bundle, jars: cacheJars, updatedAt: Date.now() });
       }
+      if (presets.optifine) {
+        cacheJars = await finalizeOptifineModState({
+          modsDir,
+          gameVersion,
+          status,
+          jars: cacheJars,
+          presets,
+        });
+        bundle = readBundle(modsDir);
+        if (bundle && cacheJars) {
+          writeBundle(modsDir, { ...bundle, jars: cacheJars, updatedAt: Date.now() });
+        }
+      }
       if (presets.marsanaClientMenu && repoRoot) {
         const menuJar = marsanaClientModService.installBundledMod({
           repoRoot,
@@ -1910,10 +1953,14 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
     if (optifineMeta || presets.optifine) {
       status('OptiFine paketi sonrasi mod surumleri esitleniyor...');
-      modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
       jars = await ensureShaderCoreMods({ modsDir, gameVersion, presets, status, jars });
-      jars = await ensureOptifineReconciledMods({ modsDir, gameVersion, status, jars });
-      jars = refreshManagedJarEntries(jars, modsDir, gameVersion);
+      jars = await finalizeOptifineModState({
+        modsDir,
+        gameVersion,
+        status,
+        jars,
+        presets,
+      });
     }
 
     if (presets.marsanaClientMenu && repoRoot) {

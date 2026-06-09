@@ -148,6 +148,12 @@ function jarVersionMatchesGame(filename, gameVersion) {
   return false;
 }
 
+function isPlatformIncompatibleModJar(filename) {
+  const lower = jarBaseName(filename);
+  if (/^macos[-_]?input[-_]?fixes/i.test(lower) && process.platform !== 'darwin') return true;
+  return false;
+}
+
 function isManagedModFamilyJar(filename) {
   return MOD_DEDUPE_FAMILIES.some((f) => f.test(filename));
 }
@@ -179,6 +185,7 @@ function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
   const lower = jarBaseName(filename);
 
   if (isWrongMc26ClientOrCloth(lower, gv)) return true;
+  if (isPlatformIncompatibleModJar(filename)) return true;
 
   if (isMc26GameVersion(gv)) {
     if (hasMc26Tag(lower)) return false;
