@@ -66,7 +66,35 @@ function jarBaseName(filename) {
 }
 
 function hasMc26Tag(lower) {
-  return /mc26\.|\+mc26|mc26\.1|\b26\.1|\+26\.|_26\.|-26\./i.test(lower);
+  return /mc26\.|\+mc26|mc26\.1|\+26\.1(?:\b|\+|$|-|_)|\+26\.|_26\.|-26\.|\b26\.1(?:\b|\+|$|-|_)/i.test(lower);
+}
+
+/** OptiFine / yeni MC paketinden kalan, dosya adinda MC etiketi olmayan modlar. */
+const RECENT_ONLY_MOD_FAMILIES = Object.freeze([
+  { test: /^bactromod/i, minGame: '1.21.10' },
+  { test: /^serverpingerfixer/i, minGame: '1.20.5' },
+  { test: /^scalablelux/i, minGame: '1.21.2' },
+  { test: /^rrls-/i, minGame: '1.20.1' },
+  { test: /^mod-loading-screen/i, minGame: '1.20.1' },
+  { test: /^entity[-_]?model[-_]?features/i, minGame: '1.20.1' },
+  { test: /^entity[-_]?texture[-_]?features/i, minGame: '1.20.1' },
+  { test: /^languagereload/i, minGame: '1.20.1' },
+  { test: /^forgeconfigapiport/i, minGame: '1.20.1' },
+  { test: /^fzzy[-_]?config/i, minGame: '1.20.1' },
+  { test: /^libjf/i, minGame: '1.20.1' },
+  { test: /^c2me-/i, minGame: '1.20.1' },
+]);
+
+function isClassicOneDotGameVersion(gameVersion) {
+  return /^1\.\d+(\.\d+)?$/.test(String(gameVersion || '').trim());
+}
+
+function isRecentOnlyModForClassicGame(lower, gameVersion) {
+  const gv = String(gameVersion || '').trim();
+  if (!isClassicOneDotGameVersion(gv)) return false;
+  return RECENT_ONLY_MOD_FAMILIES.some(
+    (entry) => entry.test.test(lower) && compareSemver(gv, entry.minGame) < 0
+  );
 }
 
 function isActiveJarEntry(entry) {
@@ -203,6 +231,14 @@ function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
   if (isKnownStaleModJar(filename, gv)) return true;
 
   const tag = parseJarMinecraftVersionTag(filename);
+
+  if (isClassicOneDotGameVersion(gv)) {
+    if (hasMc26Tag(lower)) return true;
+    if (tag && /^26\./.test(tag)) return true;
+    if (tag && /^\d+\.\d+\.\d+$/.test(gv) && compareSemver(tag, gv) > 0) return true;
+    if (isRecentOnlyModForClassicGame(lower, gv)) return true;
+  }
+
   if (/^\d+\.\d+\.\d+$/.test(gv) && !/^26\./.test(gv)) {
     if (REQUIRES_EXACT_MC_TAG_ON_CLASSIC_PATCH.some((re) => re.test(lower))) {
       if (!tag || tag !== gv) return true;
@@ -318,13 +354,40 @@ function removeModFamilyJars(modsDir, familyTest) {
   return removed;
 }
 
+const BUNDLE_FILE = '.marsana-mod-bundle.json';
+
+function purgeForeignGameVersionBundle(modsDir, gameVersion) {
+  const bundlePath = path.join(modsDir, BUNDLE_FILE);
+  if (!fs.existsSync(bundlePath)) return 0;
+  let bundle;
+  try {
+    bundle = JSON.parse(fs.readFileSync(bundlePath, 'utf8'));
+  } catch {
+    return 0;
+  }
+  if (!bundle.gameVersion || bundle.gameVersion === gameVersion) return 0;
+
+  let removed = 0;
+  for (const jar of bundle.jars || []) {
+    const target = path.join(modsDir, jar);
+    if (fs.existsSync(target)) {
+      removeIfExists(target);
+      removed += 1;
+    }
+  }
+  removeIfExists(bundlePath);
+  removeIfExists(path.join(modsDir, '.marsana-shader-ready.json'));
+  return removed;
+}
+
 /** Yanlis MC surumlu yonetilen mod jar'larini ve fazla kopyalari temizle. */
 function purgeIncompatibleModJars(modsDir, gameVersion) {
   if (!fs.existsSync(modsDir)) {
     return { removed: 0, fabricApiKept: null };
   }
 
-  let removed = 0;
+  const gv = String(gameVersion || '').trim();
+  let removed = purgeForeignGameVersionBundle(modsDir, gv);
   for (const entry of fs.readdirSync(modsDir)) {
     const isJar = entry.endsWith('.jar') || entry.endsWith('.jar.disabled');
     const isStash = entry.includes('.marsana-stashed-');
