@@ -14,7 +14,7 @@ const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../share
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 42;
+const SHADER_BUNDLE_VERSION = 43;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -504,7 +504,6 @@ const OPTIFINE_RECONCILE_SLUGS = Object.freeze([
   'lithium',
   'ferritecore',
   'immediatelyfast',
-  'dark-loading-screen',
   'modmenu',
   'dynamic-fps',
   'fabric-language-kotlin',
@@ -516,12 +515,35 @@ const OPTIFINE_RECONCILE_JAR_TESTS = Object.freeze({
   lithium: /^lithium-fabric-/i,
   ferritecore: /^ferritecore-/i,
   immediatelyfast: /^immediatelyfast/i,
-  'dark-loading-screen': /^dark-loading-screen/i,
   modmenu: /^modmenu-/i,
   'dynamic-fps': /^dynamic[-_]?fps/i,
   'fabric-language-kotlin': /^fabric-language-kotlin/i,
   forgeconfigapiport: /^forgeconfigapiport/i,
 });
+
+/** OptiFine paketinde rrls vb. ile cakisan modlar — kaldirilir, yeniden indirilmez. */
+const OPTIFINE_STRIP_JAR_TESTS = Object.freeze([
+  /^dark-loading-screen/i,
+  /^macos[-_]?input/i,
+]);
+
+function stripOptifineConflictingJars(modsDir, jars) {
+  if (!fs.existsSync(modsDir)) {
+    return Array.isArray(jars)
+      ? jars.filter((name) => !OPTIFINE_STRIP_JAR_TESTS.some((re) => re.test(String(name).toLowerCase())))
+      : [];
+  }
+  let out = Array.isArray(jars)
+    ? jars.filter((name) => !OPTIFINE_STRIP_JAR_TESTS.some((re) => re.test(String(name).toLowerCase())))
+    : [];
+  for (const entry of fs.readdirSync(modsDir)) {
+    if (!entry.endsWith('.jar') && !entry.endsWith('.jar.disabled')) continue;
+    if (!OPTIFINE_STRIP_JAR_TESTS.some((re) => re.test(entry.toLowerCase()))) continue;
+    removeIfExists(path.join(modsDir, entry));
+    out = out.filter((name) => name !== entry);
+  }
+  return out;
+}
 
 function enableOptifineEmbossedMods(modsDir) {
   if (!fs.existsSync(modsDir)) return [];
@@ -943,13 +965,16 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   async function finalizeOptifineModState({ modsDir, gameVersion, status, jars, presets }) {
     if (!presets || !presets.optifine) return Array.isArray(jars) ? jars.slice() : [];
+    let out = stripOptifineConflictingJars(modsDir, jars);
     modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
-    let out = await ensureOptifineReconciledMods({
+    out = await ensureOptifineReconciledMods({
       modsDir,
       gameVersion,
       status,
-      jars,
+      jars: out,
     });
+    out = stripOptifineConflictingJars(modsDir, out);
+    modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     return refreshManagedJarEntries(out, modsDir, gameVersion);
   }
 

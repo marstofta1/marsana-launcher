@@ -150,7 +150,8 @@ function jarVersionMatchesGame(filename, gameVersion) {
 
 function isPlatformIncompatibleModJar(filename) {
   const lower = jarBaseName(filename);
-  if (/^macos[-_]?input[-_]?fixes/i.test(lower) && process.platform !== 'darwin') return true;
+  if (process.platform === 'darwin') return false;
+  if (/macos/i.test(lower) && /input/i.test(lower)) return true;
   return false;
 }
 
