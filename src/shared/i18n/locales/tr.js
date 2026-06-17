@@ -146,6 +146,8 @@ export default {
     shaderPackHint: 'Shader + FPS açıkken seçilen paket otomatik indirilir ve oyunda etkinleştirilir.',
     optifine: 'OptiFine (Fabric — Modrinth OptiFine for Fabric paketi)',
     optifineHint: 'Zoom, animasyonlar ve video ayarları; tam mod paketi olarak indirilir. Shader + FPS ile aynı anda seçilemez.',
+    optifineHint26: '26.1: Modrinth performans paketi (Sodium/Iris). Resmi OptiFine.jar henüz yok; zoom için Zoomify otomatik eklenir.',
+    optifineHint26_2: '26.2: Resmi OptiFine henüz yayınlanmadı. Performans paketi + Zoomify kurulur. Shader için Shader + FPS kullanın.',
     embossed: 'Kabartmalı / bağlı bloklar (Continuity + Sodium)',
     embossedHint: 'Cam ve benzeri bloklarda bağlı doku (CTM). 1.18+ klasik sürümlerde önerilir; OptiFine paketi açıkken ek modlar isteğe bağlı eklenir.',
     voiceChat: 'Voice Chat (Simple Voice Chat)',

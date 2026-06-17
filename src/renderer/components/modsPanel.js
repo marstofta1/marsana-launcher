@@ -10,6 +10,7 @@ import {
   roundTreesSupported,
   crops3dSupported,
   forgeOptifineLikelySupported,
+  fabricOptifinePackSupported,
 } from '../../shared/versionCompatibility.js';
 
 const LOADER_OPTIONS = [
@@ -298,7 +299,7 @@ export function createModsPanel({ root, store, i18n }) {
     const isSnapshot = state.selectedVersionType === 'snapshot' ||
       state.selectedVersionType === 'old_beta' ||
       state.selectedVersionType === 'old_alpha';
-    const opOk = !isSnapshot && optifineSupported(v);
+    const opOk = !isSnapshot && optifineSupported(v) && fabricOptifinePackSupported(v);
     const shOk = !isSnapshot && shaderFpsSupported(v);
     const emOk = !isSnapshot && embossedBlocksSupported(v);
     const vcOk = !isSnapshot && voiceChatSupported(v);
@@ -377,6 +378,16 @@ export function createModsPanel({ root, store, i18n }) {
     crops3dCb.disabled = !c3Ok;
 
     optifineCb.title = opOk ? '' : modT('tooltips.optifineVersion');
+    const hintOptifine = root.querySelector('[data-role="hint-optifine"]');
+    if (hintOptifine) {
+      if (opOk && /^26\.2/.test(String(v || ''))) {
+        hintOptifine.textContent = modT('optifineHint26_2');
+      } else if (opOk && /^26\./.test(String(v || ''))) {
+        hintOptifine.textContent = modT('optifineHint26');
+      } else {
+        hintOptifine.textContent = t('mods.optifineHint');
+      }
+    }
     embossedCb.title = emOk ? '' : modT('tooltips.embossedVersion');
     voiceChatCb.title = vcOk ? '' : modT('tooltips.voiceChatVersion');
     fullbrightUbCb.title = fbOk ? '' : modT('tooltips.fullbrightUnsupported');
@@ -695,8 +706,6 @@ export function createModsPanel({ root, store, i18n }) {
     if (shaderPackLabel) shaderPackLabel.textContent = t('mods.shaderPack');
     const optifineSpan = root.querySelector('[data-role="row-optifine"] label span');
     if (optifineSpan) optifineSpan.textContent = t('mods.optifine');
-    const hintOptifine = root.querySelector('[data-role="hint-optifine"]');
-    if (hintOptifine) hintOptifine.textContent = t('mods.optifineHint');
     const hintEmbossed = root.querySelector('[data-role="hint-embossed"]');
     if (hintEmbossed) hintEmbossed.textContent = t('mods.embossedHint');
     const voiceSpan = root.querySelector('[data-role="row-voiceChat"] label span');

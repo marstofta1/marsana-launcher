@@ -14,7 +14,7 @@ const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../share
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 44;
+const SHADER_BUNDLE_VERSION = 45;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -970,6 +970,22 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return [...new Set([...out, ...fresh])];
   }
 
+  async function ensureOptifineZoomify({ modsDir, gameVersion, status, jars }) {
+    if (!/^26\./.test(String(gameVersion || '').trim())) return Array.isArray(jars) ? jars.slice() : [];
+    let out = Array.isArray(jars) ? jars.slice() : [];
+    const hasZoomify = fs.existsSync(modsDir) &&
+      fs.readdirSync(modsDir).some((f) => /^zoomify/i.test(f) && f.endsWith('.jar'));
+    if (hasZoomify) return out;
+    status('Zoom (C) için Zoomify kuruluyor — resmi OptiFine 26.x henüz yok.');
+    try {
+      const fresh = await downloadModsFromSlugs({ modsDir, gameVersion, slugs: ['zoomify'] });
+      out = [...new Set([...out, ...fresh])];
+    } catch {
+      /* optional */
+    }
+    return out;
+  }
+
   async function finalizeOptifineModState({ modsDir, gameVersion, status, jars, presets }) {
     if (!presets || !presets.optifine) return Array.isArray(jars) ? jars.slice() : [];
     let out = stripOptifineConflictingJars(modsDir, jars);
@@ -981,6 +997,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       jars: out,
     });
     out = stripOptifineConflictingJars(modsDir, out);
+    out = await ensureOptifineZoomify({ modsDir, gameVersion, status, jars: out });
     modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     return refreshManagedJarEntries(out, modsDir, gameVersion);
   }
@@ -1011,7 +1028,6 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         !modCompatibilityService.coreIrisJarPresent(modsDir, gameVersion)) ||
       (continuityResourcePacksNeeded(modPresets) &&
         !modCompatibilityService.continuityJarPresent(modsDir, gameVersion)) ||
-      (modPresets.optifine && !modCompatibilityService.kryptonJarPresent(modsDir, gameVersion)) ||
       bundleListsIncompatibleManagedJars(existing.jars, gameVersion) ||
       (!modPresets.clientHudPack &&
         !modPresets.marsanaClientMenu &&
@@ -2096,8 +2112,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
     if (presets.optifine) {
       const packLabel = optifineMeta && optifineMeta.packName ? optifineMeta.packName : 'OptiFine for Fabric';
+      const mc26Note = /^26\./.test(String(gameVersion))
+        ? ' Resmi OptiFine.jar 26.x\'te henüz yok; zoom için Zoomify (C) eklendi.'
+        : '';
       status(
-        `${packLabel} kuruldu. Video ayarları ve shader seçenekleri paket içindeki modlarla gelir; ` +
+        `${packLabel} kuruldu.${mc26Note} Video ayarları ve shader seçenekleri paket içindeki modlarla gelir; ` +
           'Shader + FPS seçeneğiyle birlikte kullanmayın.'
       );
     } else if (presets.shaderFps && presets.embossedBlocks) {

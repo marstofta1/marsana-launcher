@@ -60,6 +60,21 @@ export function optifineSupported(versionId) {
   return shaderFpsSupported(versionId);
 }
 
+/** Modrinth "OptiFine for Fabric" mrpack — 26.1 ve 26.2 dahil. */
+export function fabricOptifinePackSupported(versionId) {
+  const v = String(versionId || '').trim();
+  if (!v || v === 'Yükleniyor...') return true;
+  if (!/^26\./.test(v)) return true;
+  const m = v.match(/^26\.(\d+)/);
+  if (!m) return false;
+  return parseInt(m[1], 10) <= 2;
+}
+
+/** Resmi optifine.net jar yalnızca klasik 1.x (en fazla 1.21.9). */
+export function officialOptifineJarSupported(versionId) {
+  return forgeOptifineLikelySupported(versionId);
+}
+
 // OptiFine'ın resmi olarak desteklediği en yeni Minecraft sürümü 1.21.9.
 // Klasik 1.x.y şeması dışı (örn. 26.1.2) sürümlerde OptiFine henüz yok.
 export function forgeOptifineLikelySupported(versionId) {
@@ -177,6 +192,7 @@ export function isVersionAllowedForSelection({
   if (loaderVal === 'forge-optifine' && !forgeOptifineLikelySupported(id)) return false;
 
   if (modOptifine && !optifineSupported(id)) return false;
+  if (modOptifine && !fabricOptifinePackSupported(id)) return false;
   if (modShaderFps && !shaderFpsSupported(id)) return false;
   if (modVoiceChat && !voiceChatSupported(id)) return false;
   if (modFullbrightUb && !fullbrightUbSupported(id)) return false;
