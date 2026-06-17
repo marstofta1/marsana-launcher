@@ -123,6 +123,22 @@ function isActiveJarEntry(entry) {
   );
 }
 
+/** Mod semver (16.0.1, 20.0.149) ile MC surumunu ayir. */
+function isPlausibleMcVersionTag(tag) {
+  const t = String(tag || '').trim();
+  if (!t) return false;
+  if (/^26\.\d+(?:\.\d+)?$/.test(t)) return true;
+  const m = t.match(/^1\.(\d+)(?:\.(\d+))?$/);
+  if (!m) return false;
+  const minor = parseInt(m[1], 10);
+  return minor >= 6 && minor <= 30;
+}
+
+function classicMcMinorBase(version) {
+  const m = String(version || '').match(/^(1\.\d+)\./);
+  return m ? m[1] : null;
+}
+
 /** Jar adindaki Minecraft surum etiketi (+1.21.10, +mc1.21.9 vb.) */
 function parseJarMinecraftVersionTag(filename) {
   const lower = jarBaseName(filename);
@@ -135,7 +151,7 @@ function parseJarMinecraftVersionTag(filename) {
   ];
   for (const re of patterns) {
     const m = lower.match(re);
-    if (m && m[1]) return m[1];
+    if (m && m[1] && isPlausibleMcVersionTag(m[1])) return m[1];
   }
   return null;
 }
@@ -277,10 +293,15 @@ function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
 
   if (/^\d+\.\d+\.\d+$/.test(gv) && !/^26\./.test(gv)) {
     if (REQUIRES_EXACT_MC_TAG_ON_CLASSIC_PATCH.some((re) => re.test(lower))) {
-      if (!tag || tag !== gv) return true;
-    } else if (tag && compareSemver(tag, gv) > 0) {
+      if (!tag) return false;
+      if (tag === gv) return false;
+      const gvBase = classicMcMinorBase(gv);
+      const tagBase = classicMcMinorBase(tag);
+      // Modrinth bazen 1.21.10 icin yalnizca +1.21.9 etiketli jar listeler (modmenu, cloth-config).
+      if (gvBase && tagBase && gvBase === tagBase && compareSemver(tag, gv) <= 0) return false;
       return true;
     }
+    if (tag && compareSemver(tag, gv) > 0) return true;
   }
 
   if (!isManagedModFamilyJar(filename)) return false;
