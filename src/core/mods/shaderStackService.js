@@ -14,7 +14,7 @@ const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../share
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 43;
+const SHADER_BUNDLE_VERSION = 44;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
@@ -78,9 +78,16 @@ function versionMatchesGamePatch(version, gameVersion) {
   const gvs = version && version.game_versions;
   if (!Array.isArray(gvs) || !gvs.includes(gameVersion)) return false;
   if (!/^\d+\.\d+\.\d+$/.test(String(gameVersion))) return true;
-  // 26.x: Iris/Sodium gibi modlar mc26.1.1 jar ile 26.1.2'yi Modrinth'te listeler.
-  // game_versions hedef patch'i içeriyorsa kabul et (1.21.x fallback aday listesinde değil).
-  if (/^26\./.test(String(gameVersion))) return true;
+  if (/^26\./.test(String(gameVersion))) {
+    if (!versionListsAnyGame(version, modrinthLoaderModGameVersionCandidates(gameVersion))) {
+      return false;
+    }
+    const tagged = extractMcVersionFromModMeta(version);
+    if (tagged && /^26\./.test(tagged)) {
+      return modCompatibilityService.mc26VersionsCompatible(tagged, gameVersion);
+    }
+    return true;
+  }
   const tagged = extractMcVersionFromModMeta(version);
   if (!tagged) return true;
   return tagged === gameVersion;

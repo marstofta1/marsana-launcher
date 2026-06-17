@@ -66,7 +66,26 @@ function jarBaseName(filename) {
 }
 
 function hasMc26Tag(lower) {
-  return /mc26\.|\+mc26|mc26\.1|\+26\.1(?:\b|\+|$|-|_)|\+26\.|_26\.|-26\.|\b26\.1(?:\b|\+|$|-|_)/i.test(lower);
+  return /(?:^|[^0-9])26\.\d+(?:\.\d+)?(?:\b|[+._-]|$)/i.test(lower) || /\+mc26\./i.test(lower);
+}
+
+function mc26MinorOf(version) {
+  const m = String(version || '').match(/^26\.(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function mc26VersionsCompatible(tag, gameVersion) {
+  const gv = String(gameVersion || '').trim();
+  const tv = String(tag || '').trim();
+  if (!/^26\./.test(gv) || !/^26\./.test(tv)) return false;
+  const gvMinor = mc26MinorOf(gv);
+  const tvMinor = mc26MinorOf(tv);
+  if (gvMinor == null || tvMinor == null || gvMinor !== tvMinor) return false;
+  const gvPatch = gv.match(/^26\.\d+\.(\d+)$/)?.[1];
+  const tvPatch = tv.match(/^26\.\d+\.(\d+)$/)?.[1];
+  if (!gvPatch) return true;
+  if (!tvPatch) return true;
+  return compareSemver(tv, gv) <= 0;
 }
 
 /** OptiFine / yeni MC paketinden kalan, dosya adinda MC etiketi olmayan modlar. */
@@ -167,7 +186,9 @@ function jarVersionMatchesGame(filename, gameVersion) {
   if (tag === gv) return true;
   const candidates = gameVersionMatchCandidates(gv);
   if (candidates.includes(tag)) return true;
-  if (/^26\./.test(gv) && hasMc26Tag(jarBaseName(filename))) return true;
+  if (/^26\./.test(gv) && /^26\./.test(tag)) {
+    return mc26VersionsCompatible(tag, gv);
+  }
   if (/^\d+\.\d+\.\d+$/.test(gv) && /^\d+\.\d+\.\d+$/.test(tag)) {
     const gvBase = gv.match(/^(\d+\.\d+)\./)?.[1];
     const tagBase = tag.match(/^(\d+\.\d+)\./)?.[1];
@@ -195,15 +216,24 @@ function isMc26StaleSspbJar(filename) {
   return compareSemver(semver, MC26_MIN_SSPB_VERSION) < 0;
 }
 
-function isWrongMc26ClientOrCloth(lower, gv) {
+function isWrongMc26ClientOrCloth(filename, gv) {
+  const lower = jarBaseName(filename);
+  const isClientOrCloth = /^marsana-client/i.test(lower) || /^cloth-config/i.test(lower);
+  if (!isClientOrCloth) return false;
+
   if (isMc26GameVersion(gv)) {
-    if (/^marsana-client/i.test(lower) || /^cloth-config/i.test(lower)) {
-      return !hasMc26Tag(lower) && !/26\.1/i.test(lower);
+    const tag = parseJarMinecraftVersionTag(filename);
+    if (tag && /^26\./.test(tag)) {
+      return !mc26VersionsCompatible(tag, gv);
     }
-    return false;
+    const minor = mc26MinorOf(gv);
+    if (minor != null && new RegExp(`(?:^|[^0-9])26\\.${minor}(?:\\.|\\b|[+_-])`).test(lower)) {
+      return false;
+    }
+    return true;
   }
-  if (/^marsana-client/i.test(lower) && (hasMc26Tag(lower) || /26\.1/i.test(lower))) return true;
-  if (/^cloth-config/i.test(lower) && (hasMc26Tag(lower) || /26\.1/i.test(lower))) return true;
+
+  if (hasMc26Tag(lower) || /26\.\d/i.test(lower)) return true;
   return false;
 }
 
@@ -213,12 +243,18 @@ function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
   if (!gv) return false;
   const lower = jarBaseName(filename);
 
-  if (isWrongMc26ClientOrCloth(lower, gv)) return true;
+  if (isWrongMc26ClientOrCloth(filename, gv)) return true;
   if (isPlatformIncompatibleModJar(filename)) return true;
 
   if (isMc26GameVersion(gv)) {
-    if (hasMc26Tag(lower)) return false;
-    if (/fabric-api.*26\.1/i.test(lower)) return false;
+    const tag = parseJarMinecraftVersionTag(filename);
+    if (tag) {
+      if (/^26\./.test(tag)) return !mc26VersionsCompatible(tag, gv);
+      return true;
+    }
+    if (/fabric-api.*26\./i.test(lower) && new RegExp(`26\\.${mc26MinorOf(gv)}`).test(lower)) {
+      return false;
+    }
     if (MC26_CLASSIC_ONLY_MOD_PREFIXES.some((re) => re.test(lower))) return true;
     if (isMc26StaleSspbJar(filename)) return true;
     if (/\+mc1\.|mc1\.(1[0-9]|20|21|22)/i.test(lower)) return true;
@@ -261,10 +297,14 @@ function removeIfExists(filePath) {
 
 function jarCompatibilityScore(name, gameVersion) {
   const lower = String(name).toLowerCase();
-  if (/26\.1|mc26/i.test(lower)) return 1000;
-  const tag = parseJarMinecraftVersionTag(name);
   const gv = String(gameVersion || '').trim();
-  if (tag && gv && tag === gv) return 900;
+  const tag = parseJarMinecraftVersionTag(name);
+  if (tag && gv && tag === gv) return 1000;
+  if (tag && gv && /^26\./.test(gv) && mc26VersionsCompatible(tag, gv)) return 950;
+  if (/^26\./.test(gv)) {
+    const minor = mc26MinorOf(gv);
+    if (minor != null && new RegExp(`26\\.${minor}`).test(lower)) return 900;
+  }
   if (tag && gameVersionMatchCandidates(gv).includes(tag)) return 700;
   if (tag && gv && tag.startsWith(`${gv.split('.').slice(0, 2).join('.')}.`)) return 200;
   const semver = parseModSemverFromJar(name);
@@ -405,6 +445,7 @@ function purgeIncompatibleModJars(modsDir, gameVersion) {
 
 module.exports = {
   isMc26GameVersion,
+  mc26VersionsCompatible,
   isKnownStaleModJar,
   isJarFilenameIncompatibleWithGame,
   jarVersionMatchesGame,

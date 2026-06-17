@@ -131,7 +131,7 @@ function removeIfExists(filePath) {
 function installBundledClothConfig({ repoRoot, modsDir, gameVersion, onNotice }) {
   reenableClothConfigJar(modsDir);
   if (clothConfigJarPresent(modsDir)) return null;
-  if (!/^26\./.test(String(gameVersion || '').trim())) return null;
+  if (!/^26\.1(?:\.|$)/.test(String(gameVersion || '').trim())) return null;
 
   const src = path.join(bundledDepsRoot(repoRoot), CLOTH_CONFIG_BUNDLED);
   if (!fs.existsSync(src)) {
