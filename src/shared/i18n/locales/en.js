@@ -132,6 +132,7 @@ export default {
   },
   status: {
     fetchingVersionList: 'Fetching version list…',
+    refreshingVersionList: 'Refreshing version list…',
     versionListFailed: 'Could not fetch version list: {error}',
   },
   launchOptions: {

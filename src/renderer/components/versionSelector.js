@@ -5,6 +5,7 @@ import {
   ORNITHE_SUGGESTED_VERSION,
   isOrnitheVersionBlocked,
 } from '../../shared/versionCompatibility.js';
+import { BUNDLED_VERSION_MANIFEST } from '../generated/versionManifest.js';
 
 export function createVersionSelector({ root, store, versionsApi, i18n }) {
   let manifest = null;
@@ -89,29 +90,45 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     ]);
   }
 
-  async function loadManifest({ force = false } = {}) {
+  async function refreshManifestFromNetwork({ force = false } = {}) {
     if (loading) return;
-    loading = true;
-    clearVersionLoadError();
-    setVersionSelectPlaceholder(i18n.t('version.loading'));
-    store.setState({ statusText: i18n.t('status.fetchingVersionList') });
+    if (!manifest) loading = true;
+    if (force) clearVersionLoadError();
+    const statusKey = force ? 'status.fetchingVersionList' : 'status.refreshingVersionList';
+    store.setState({ statusText: i18n.t(statusKey) });
     try {
-      manifest = await withListTimeout(versionsApi.list(force ? { force: true } : {}));
+      const fresh = await withListTimeout(versionsApi.list(force ? { force: true } : {}));
+      manifest = fresh;
       lastFilterKey = filterKey(store.getState());
       if (needsLoaderFilter()) ensureLoaderSupported(currentLoader());
       renderOptions();
       store.setState({ statusText: i18n.t('common.ready') });
     } catch (err) {
-      manifest = null;
-      const message = i18n.t('status.versionListFailed', { error: err.message || String(err) });
-      showVersionLoadError(message);
-      store.setState({ statusText: message });
+      if (!manifest) {
+        const message = i18n.t('status.versionListFailed', { error: err.message || String(err) });
+        showVersionLoadError(message);
+        store.setState({ statusText: message });
+      } else {
+        store.setState({ statusText: i18n.t('common.ready') });
+      }
     } finally {
       loading = false;
     }
   }
 
+  function applyBundledManifest() {
+    manifest = BUNDLED_VERSION_MANIFEST;
+    lastFilterKey = filterKey(store.getState());
+    renderOptions();
+  }
+
   applyStaticI18n();
+
+  try {
+    applyBundledManifest();
+  } catch (err) {
+    console.error('Gomulu surum listesi yuklenemedi', err);
+  }
 
   function typeOf(versionId) {
     if (!manifest) return 'release';
@@ -241,7 +258,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     if (!manifest) {
       if (loadError) showVersionLoadError(loadError);
       else if (loading) setVersionSelectPlaceholder(i18n.t('version.loading'));
-      else void loadManifest();
+      else void refreshManifestFromNetwork();
       return;
     }
     clearVersionLoadError();
@@ -329,12 +346,23 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
   typeSelect.addEventListener('change', renderOptions);
   versionSelect.addEventListener('change', publishSelected);
   if (versionRetryBtn) {
-    versionRetryBtn.addEventListener('click', () => loadManifest({ force: true }));
+    versionRetryBtn.addEventListener('click', () => refreshManifestFromNetwork({ force: true }));
   }
 
   function mount() {
-    setVersionSelectPlaceholder(i18n.t('version.loading'));
-    void loadManifest();
+    if (!manifest) {
+      try {
+        applyBundledManifest();
+      } catch (err) {
+        console.error('Gomulu surum listesi yuklenemedi', err);
+        setVersionSelectPlaceholder(i18n.t('version.loadFailedShort'));
+        store.setState({
+          statusText: i18n.t('status.versionListFailed', { error: err.message || String(err) }),
+        });
+      }
+    }
+    store.setState({ statusText: i18n.t('common.ready') });
+    void refreshManifestFromNetwork();
     const unsubs = [
       store.subscribe((state) => {
         updateBedrockUi(state);

@@ -132,6 +132,7 @@ export default {
   },
   status: {
     fetchingVersionList: 'Sürüm listesi alınıyor…',
+    refreshingVersionList: 'Sürüm listesi güncelleniyor…',
     versionListFailed: 'Sürüm listesi alınamadı: {error}',
   },
   launchOptions: {
