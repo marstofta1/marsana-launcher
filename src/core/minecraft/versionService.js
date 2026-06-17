@@ -4,6 +4,7 @@ const { LauncherError, Codes } = require('../infra/errors');
 
 const MANIFEST_URLS = [
   'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json',
+  'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json',
 ];
 const DEFAULT_TTL_MS = 10 * 60 * 1000;
 
@@ -35,9 +36,9 @@ function createVersionService({ httpClient, ttlMs = DEFAULT_TTL_MS } = {}) {
     return fetchFirstJson(httpClient, MANIFEST_URLS, 'Mojang sürüm listesi');
   }
 
-  async function list() {
+  async function list({ force = false } = {}) {
     const now = Date.now();
-    if (cache && now - cachedAt < ttlMs) return cache;
+    if (!force && cache && now - cachedAt < ttlMs) return cache;
 
     const data = await fetchManifest();
     cache = {
@@ -64,7 +65,12 @@ function createVersionService({ httpClient, ttlMs = DEFAULT_TTL_MS } = {}) {
     return httpClient.fetchJson(entry.url);
   }
 
-  return { list, getVersionJson };
+  function invalidateCache() {
+    cache = null;
+    cachedAt = 0;
+  }
+
+  return { list, getVersionJson, invalidateCache };
 }
 
 module.exports = { createVersionService, MANIFEST_URLS, fetchFirstJson };

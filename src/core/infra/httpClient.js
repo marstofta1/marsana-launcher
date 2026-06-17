@@ -18,7 +18,7 @@ function httpModuleForUrl(urlString) {
 }
 
 function createHttpClient({ userAgent = DEFAULT_USER_AGENT } = {}) {
-  function get(url, { headers = {} } = {}, redirects = 0) {
+  function get(url, { headers = {}, timeoutMs = 45000 } = {}, redirects = 0) {
     return new Promise((resolve, reject) => {
       let absoluteUrl;
       try {
@@ -63,6 +63,10 @@ function createHttpClient({ userAgent = DEFAULT_USER_AGENT } = {}) {
           resolve(res);
         }
       );
+      req.setTimeout(timeoutMs, () => {
+        req.destroy();
+        reject(new LauncherError(Codes.NETWORK, `İstek zaman aşımına uğradı: ${absoluteUrl}`));
+      });
       req.on('error', (err) => reject(new LauncherError(Codes.NETWORK, err.message, err)));
     });
   }

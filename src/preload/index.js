@@ -21,7 +21,7 @@ const api = Object.freeze({
     refresh: () => ipcRenderer.invoke(AUTH.REFRESH),
   }),
   versions: Object.freeze({
-    list: () => ipcRenderer.invoke(VERSIONS.LIST),
+    list: (opts) => ipcRenderer.invoke(VERSIONS.LIST, opts),
     legacyFabricSupported: () => ipcRenderer.invoke(VERSIONS.LEGACY_FABRIC_SUPPORTED),
     loaderSupported: (loaderId) => ipcRenderer.invoke(VERSIONS.LOADER_SUPPORTED, loaderId),
   }),

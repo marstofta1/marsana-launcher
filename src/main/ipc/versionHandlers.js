@@ -3,7 +3,7 @@
 const { VERSIONS } = require('../../shared/ipcChannels');
 
 function registerVersionHandlers({ ipcMain, versionService, loaderSupport }) {
-  ipcMain.handle(VERSIONS.LIST, () => versionService.list());
+  ipcMain.handle(VERSIONS.LIST, (_event, opts) => versionService.list(opts || {}));
   ipcMain.handle(VERSIONS.LEGACY_FABRIC_SUPPORTED, async () => {
     try {
       const fn = loaderSupport['legacy-fabric'];

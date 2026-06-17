@@ -105,6 +105,8 @@ export default {
     snapshotOnly: 'Snapshots only',
     all: 'All versions',
     loading: 'Loading…',
+    loadFailedShort: 'Could not load version list',
+    retry: 'Retry',
     bedrockHint: 'Bedrock is updated automatically via Microsoft Store / Xbox; no version selection needed.',
   },
   versionFilters: {

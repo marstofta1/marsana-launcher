@@ -11,6 +11,8 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
   let loaderSupportedCache = {};
   let loaderSupportedFetching = {};
   let lastFilterKey = null;
+  let loadError = null;
+  let loading = false;
 
   root.innerHTML = `
     <label class="field" data-role="version-field">
@@ -21,8 +23,10 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
           <option value="snapshot">Sadece snapshot</option>
           <option value="all">Tüm sürümler</option>
         </select>
-        <select data-role="version"><option>Yükleniyor...</option></select>
+        <select data-role="version"><option value=""></option></select>
+        <button type="button" class="btn ghost" data-role="version-retry" hidden>${i18n.t('version.retry')}</button>
       </div>
+      <p class="hint mods-hint" data-role="version-error" style="display:none;"></p>
     </label>
     <p class="hint mods-hint" data-role="bedrock-version-hint" style="display:none;"></p>
     <p class="hint mods-hint" data-role="filter-hint" style="display:none;"></p>
@@ -30,6 +34,8 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
 
   const typeSelect = root.querySelector('[data-role="type"]');
   const versionSelect = root.querySelector('[data-role="version"]');
+  const versionRetryBtn = root.querySelector('[data-role="version-retry"]');
+  const versionErrorHint = root.querySelector('[data-role="version-error"]');
   const versionField = root.querySelector('[data-role="version-field"]');
   const versionLabel = root.querySelector('[data-role="version-label"]');
   const bedrockVersionHint = root.querySelector('[data-role="bedrock-version-hint"]');
@@ -40,7 +46,60 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     if (typeSelect.options[0]) typeSelect.options[0].textContent = i18n.t('version.releaseOnly');
     if (typeSelect.options[1]) typeSelect.options[1].textContent = i18n.t('version.snapshotOnly');
     if (typeSelect.options[2]) typeSelect.options[2].textContent = i18n.t('version.all');
+    if (versionRetryBtn) versionRetryBtn.textContent = i18n.t('version.retry');
     if (bedrockVersionHint) bedrockVersionHint.textContent = i18n.t('version.bedrockHint');
+  }
+
+  function setVersionSelectPlaceholder(text, { disabled = true } = {}) {
+    versionSelect.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.disabled = disabled;
+    opt.selected = true;
+    opt.textContent = text;
+    versionSelect.appendChild(opt);
+    store.setState({ selectedVersion: null, selectedVersionType: 'release' });
+  }
+
+  function showVersionLoadError(message) {
+    loadError = message;
+    setVersionSelectPlaceholder(i18n.t('version.loadFailedShort'), { disabled: true });
+    if (versionErrorHint) {
+      versionErrorHint.style.display = '';
+      versionErrorHint.textContent = message;
+    }
+    if (versionRetryBtn) versionRetryBtn.hidden = false;
+  }
+
+  function clearVersionLoadError() {
+    loadError = null;
+    if (versionErrorHint) {
+      versionErrorHint.style.display = 'none';
+      versionErrorHint.textContent = '';
+    }
+    if (versionRetryBtn) versionRetryBtn.hidden = true;
+  }
+
+  async function loadManifest({ force = false } = {}) {
+    if (loading) return;
+    loading = true;
+    clearVersionLoadError();
+    setVersionSelectPlaceholder(i18n.t('version.loading'));
+    store.setState({ statusText: i18n.t('status.fetchingVersionList') });
+    try {
+      manifest = await versionsApi.list(force ? { force: true } : {});
+      lastFilterKey = filterKey(store.getState());
+      if (needsLoaderFilter()) ensureLoaderSupported(currentLoader());
+      renderOptions();
+      store.setState({ statusText: i18n.t('common.ready') });
+    } catch (err) {
+      manifest = null;
+      const message = i18n.t('status.versionListFailed', { error: err.message || String(err) });
+      showVersionLoadError(message);
+      store.setState({ statusText: message });
+    } finally {
+      loading = false;
+    }
   }
 
   applyStaticI18n();
@@ -53,6 +112,10 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
 
   function publishSelected() {
     const id = versionSelect.value;
+    if (!id) {
+      store.setState({ selectedVersion: null, selectedVersionType: 'release' });
+      return;
+    }
     store.setState({ selectedVersion: id, selectedVersionType: typeOf(id) });
   }
 
@@ -166,7 +229,12 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
   }
 
   function renderOptions() {
-    if (!manifest) return;
+    if (!manifest) {
+      if (loadError) showVersionLoadError(loadError);
+      else if (loading) setVersionSelectPlaceholder(i18n.t('version.loading'));
+      return;
+    }
+    clearVersionLoadError();
     const state = store.getState();
     updateBedrockUi(state);
     if ((state.selectedLoader || '') === 'bedrock') {
@@ -190,7 +258,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     if (filteredLoader) {
       if (!loaderSupportedCache[loader]) {
         const label = loaderFilterLabel(loader);
-        versionSelect.innerHTML = `<option>${i18n.t('versionFilters.fetching', { label })}</option>`;
+        setVersionSelectPlaceholder(i18n.t('versionFilters.fetching', { label }));
         ensureLoaderSupported(loader).then(() => renderOptions());
         return;
       }
@@ -250,21 +318,14 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
 
   typeSelect.addEventListener('change', renderOptions);
   versionSelect.addEventListener('change', publishSelected);
+  if (versionRetryBtn) {
+    versionRetryBtn.addEventListener('click', () => loadManifest({ force: true }));
+  }
+
+  setVersionSelectPlaceholder(i18n.t('version.loading'));
 
   async function mount() {
-    store.setState({ statusText: i18n.t('status.fetchingVersionList') });
-    try {
-      manifest = await versionsApi.list();
-      lastFilterKey = filterKey(store.getState());
-      if (needsLoaderFilter()) ensureLoaderSupported(currentLoader());
-      renderOptions();
-      store.setState({ statusText: i18n.t('common.ready') });
-    } catch (err) {
-      store.setState({
-        statusText: i18n.t('status.versionListFailed', { error: err.message }),
-      });
-    }
-
+    await loadManifest();
     const unsubs = [
       store.subscribe((state) => {
         updateBedrockUi(state);
@@ -284,7 +345,8 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
       }),
       i18n.onChange(() => {
         applyStaticI18n();
-        renderOptions();
+        if (loadError) showVersionLoadError(loadError);
+        else renderOptions();
       }),
     ];
 

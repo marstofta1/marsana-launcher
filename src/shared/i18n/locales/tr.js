@@ -105,6 +105,8 @@ export default {
     snapshotOnly: 'Sadece snapshot',
     all: 'Tüm sürümler',
     loading: 'Yükleniyor…',
+    loadFailedShort: 'Sürüm listesi yüklenemedi',
+    retry: 'Yeniden dene',
     bedrockHint: 'Bedrock sürümü Microsoft Store / Xbox uygulaması üzerinden otomatik güncellenir; sürüm seçimi gerekmez.',
   },
   versionFilters: {
