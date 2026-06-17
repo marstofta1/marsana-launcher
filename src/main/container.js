@@ -49,7 +49,7 @@ function buildContainer({ userDataDir, repoRoot }) {
     logger: logger.child('auth'),
   });
 
-  const versionService = createVersionService({ httpClient });
+  const versionService = createVersionService({ httpClient, cacheDir: userDataDir });
   const javaRuntimeService = createJavaRuntimeService({
     httpClient,
     paths,

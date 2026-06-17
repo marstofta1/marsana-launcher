@@ -80,6 +80,15 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     if (versionRetryBtn) versionRetryBtn.hidden = true;
   }
 
+  function withListTimeout(promise) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Sürüm listesi zaman aşımına uğradı (20 sn).')), 20000);
+      }),
+    ]);
+  }
+
   async function loadManifest({ force = false } = {}) {
     if (loading) return;
     loading = true;
@@ -87,7 +96,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     setVersionSelectPlaceholder(i18n.t('version.loading'));
     store.setState({ statusText: i18n.t('status.fetchingVersionList') });
     try {
-      manifest = await versionsApi.list(force ? { force: true } : {});
+      manifest = await withListTimeout(versionsApi.list(force ? { force: true } : {}));
       lastFilterKey = filterKey(store.getState());
       if (needsLoaderFilter()) ensureLoaderSupported(currentLoader());
       renderOptions();
@@ -232,6 +241,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     if (!manifest) {
       if (loadError) showVersionLoadError(loadError);
       else if (loading) setVersionSelectPlaceholder(i18n.t('version.loading'));
+      else void loadManifest();
       return;
     }
     clearVersionLoadError();
@@ -322,10 +332,9 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     versionRetryBtn.addEventListener('click', () => loadManifest({ force: true }));
   }
 
-  setVersionSelectPlaceholder(i18n.t('version.loading'));
-
-  async function mount() {
-    await loadManifest();
+  function mount() {
+    setVersionSelectPlaceholder(i18n.t('version.loading'));
+    void loadManifest();
     const unsubs = [
       store.subscribe((state) => {
         updateBedrockUi(state);
