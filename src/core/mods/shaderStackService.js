@@ -103,7 +103,7 @@ function modrinthLoaderModGameVersionCandidates(gameVersion) {
     if (m26[2]) candidates.push(`26.${m26[1]}`);
     return [...new Set(candidates)];
   }
-  const baseTwo = id.match(/^(\d+\.\d+)$/);
+  const baseTwo = id.match(/^1\.(\d+)$/);
   if (baseTwo) candidates.push(`${id}.1`);
   const classicPatch = id.match(/^(\d+\.\d+)\.\d+$/);
   if (classicPatch) candidates.push(classicPatch[1]);
@@ -128,8 +128,9 @@ function modrinthGameVersionCandidates(gameVersion) {
   if (m26) {
     if (m26[2]) candidates.push(`26.${m26[1]}`);
     candidates.push(...modrinthClassicFallbacksForGameVersion(id));
+    return [...new Set(candidates)];
   }
-  const baseTwo = id.match(/^(\d+\.\d+)$/);
+  const baseTwo = id.match(/^1\.(\d+)$/);
   if (baseTwo) candidates.push(`${id}.1`);
   const classicPatch = id.match(/^(\d+\.\d+)\.\d+$/);
   if (classicPatch && !m26) candidates.push(classicPatch[1]);
@@ -1228,8 +1229,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   async function downloadShaderPack({ shaderpacksDir, gameVersion, loaders, shaderSlug, onNotice }) {
     const expanded = (function expand(v) {
-      const m = String(v).match(/^(\d+\.\d+)$/);
-      return m ? [v, `${v}.1`] : [v];
+      const s = String(v);
+      if (/^26\./.test(s)) return [s];
+      const m = s.match(/^1\.(\d+)$/);
+      return m ? [s, `${s}.1`] : [s];
     })(gameVersion);
     const loaderFilter = Array.isArray(loaders) && loaders.length ? loaders : ['iris'];
     const slug = resolveShaderSlug(shaderSlug);

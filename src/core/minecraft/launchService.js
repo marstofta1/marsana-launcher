@@ -126,8 +126,11 @@ function createLaunchService({
   // patch sürümüne upgrade et — protokol ve saves uyumlu, kullanıcının dünyası
   // etkilenmez.
   function effectiveModGameVersion(v) {
-    const m = String(v).match(/^(\d+\.\d+)$/);
-    return m ? `${v}.1` : v;
+    const id = String(v || '').trim();
+    // Yalnizca klasik 1.x base surumler (1.20, 1.21) patch'e yukseltilir.
+    // 26.2 gibi tam release surumlerinde 26.2.1 diye bir MC/Fabric surumu yok.
+    const m = id.match(/^1\.(\d+)$/);
+    return m ? `${id}.1` : id;
   }
 
   function syncModResourcePacks({ gameRoot, gameVersion, modPresets }) {

@@ -1,46 +1,46 @@
 {
-  "version": "1.0.14",
+  "version": "1.0.15",
   "note": "Resmi Windows 9 sürümü yayımlanmamıştır; Windows 10 sonrası Windows 11 gelmiştir.",
-  "source": "Marsana Launcher-1.0.14-win-x64.exe",
+  "source": "Marsana Launcher-1.0.15-win-x64.exe",
   "platforms": [
     {
       "id": "win11",
       "title": "Windows 11",
-      "file": "Marsana Launcher-1.0.14-win-x64.exe",
-      "downloadName": "Marsana-Launcher-1.0.14-win11-Setup.exe",
+      "file": "Marsana Launcher-1.0.15-win-x64.exe",
+      "downloadName": "Marsana-Launcher-1.0.15-win11-Setup.exe",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": "64 bit · Tam destek · v1.0.14",
+      "note": "64 bit · Tam destek · v1.0.15",
       "minOs": "Windows 11"
     },
     {
       "id": "win10",
       "title": "Windows 10",
-      "file": "Marsana Launcher-1.0.14-win-x64.exe",
-      "downloadName": "Marsana-Launcher-1.0.14-win10-Setup.exe",
+      "file": "Marsana Launcher-1.0.15-win-x64.exe",
+      "downloadName": "Marsana-Launcher-1.0.15-win10-Setup.exe",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": "64 bit · Tam destek · v1.0.14",
+      "note": "64 bit · Tam destek · v1.0.15",
       "minOs": "Windows 10"
     },
     {
       "id": "win81",
       "title": "Windows 8 / 8.1",
-      "file": "Marsana Launcher-1.0.14-win-x64.exe",
-      "downloadName": "Marsana-Launcher-1.0.14-win81-Setup.exe",
+      "file": "Marsana Launcher-1.0.15-win-x64.exe",
+      "downloadName": "Marsana-Launcher-1.0.15-win81-Setup.exe",
       "badge": "Uyumluluk",
       "badgeClass": "legacy",
-      "note": "64 bit · Win 10+ önerilir · v1.0.14",
+      "note": "64 bit · Win 10+ önerilir · v1.0.15",
       "minOs": "Windows 8.1"
     },
     {
       "id": "win7",
       "title": "Windows 7",
-      "file": "Marsana Launcher-1.0.14-win-x64.exe",
-      "downloadName": "Marsana-Launcher-1.0.14-win7-Setup.exe",
+      "file": "Marsana Launcher-1.0.15-win-x64.exe",
+      "downloadName": "Marsana-Launcher-1.0.15-win7-Setup.exe",
       "badge": "Sınırlı",
       "badgeClass": "legacy",
-      "note": "64 bit · Win 10+ önerilir · v1.0.14",
+      "note": "64 bit · Win 10+ önerilir · v1.0.15",
       "minOs": "Windows 7 SP1"
     }
   ]
