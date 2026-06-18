@@ -37,6 +37,10 @@ export default {
     client: 'Marsana Client',
   },
   clientFeatures: {
+    schematicFarm: {
+      title: 'Schematic Farm',
+      description: 'F8 — mob, bamboo, iron, and sugar cane farms; block progress tracker.',
+    },
     clientMenu: {
       title: 'Marsana Client Menu',
       description: 'Press H in-game — toggle mods and free cosmetics.',

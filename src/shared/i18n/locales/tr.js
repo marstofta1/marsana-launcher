@@ -37,6 +37,10 @@ export default {
     client: 'Marsana Client',
   },
   clientFeatures: {
+    schematicFarm: {
+      title: 'Sematik Farm Modu',
+      description: 'F8 — mob, bambu, demir ve seker kamisi farmi; blok ilerlemesi.',
+    },
     clientMenu: {
       title: 'Marsana Client Menüsü',
       description: 'Oyunda H tuşu — mod aç/kapa ve ücretsiz kozmetik.',

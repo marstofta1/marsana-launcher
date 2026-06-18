@@ -20,12 +20,17 @@ export const CLIENT_MOD_PRESET = Object.freeze({
   modGlowingOres: false,
   modRoundTrees: false,
   modCrops3d: false,
-  modSchematicFarm: false,
+  modSchematicFarm: true,
   modClientHudPack: true,
 });
 
 /** Client modunda kullanıcıya gösterilen özellik özeti */
 export const CLIENT_FEATURES = Object.freeze([
+  {
+    id: 'schematicFarm',
+    title: 'Sematik Farm Modu',
+    description: 'F8 — mob, bambu, demir ve seker kamisi farmi; blok ilerlemesi.',
+  },
   {
     id: 'clientMenu',
     title: 'Marsana Client Menüsü',

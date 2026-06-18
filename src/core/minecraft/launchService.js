@@ -1045,6 +1045,7 @@ function createLaunchService({
         glowingOres: false,
         roundTrees: false,
         crops3d: false,
+        schematicFarm: playMode === 'client',
         marsanaClientMenu: playMode === 'client',
         clientHudPack: playMode === 'client',
       },

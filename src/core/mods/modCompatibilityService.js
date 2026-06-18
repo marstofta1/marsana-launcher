@@ -74,6 +74,28 @@ function mc26MinorOf(version) {
   return m ? parseInt(m[1], 10) : null;
 }
 
+/** Launcher bundled Marsana mod jar'lari (marsana-client-26.1.jar vb.). */
+function isMarsanaBundledModJar(filename) {
+  return /^marsana-(client|schematic-farm)/i.test(jarBaseName(filename));
+}
+
+function marsanaBundledMc26LineTag(filename) {
+  const m = jarBaseName(filename).match(/marsana-(?:client|schematic-farm)-(\d+\.\d+)/i);
+  return m ? m[1] : null;
+}
+
+/** 26.1 satiri jar 26.2+ oyununda calisir; daha eski oyunda reddedilir. null = bu kural uygulanmaz. */
+function marsanaBundledCompatibleWithGame(filename, gameVersion) {
+  const gv = String(gameVersion || '').trim();
+  if (!isMarsanaBundledModJar(filename) || !/^26\./.test(gv)) return null;
+  const line = marsanaBundledMc26LineTag(filename);
+  if (!line || !/^26\./.test(line)) return true;
+  const gvMinor = mc26MinorOf(gv);
+  const lineMinor = mc26MinorOf(line);
+  if (gvMinor == null || lineMinor == null) return true;
+  return gvMinor >= lineMinor;
+}
+
 function mc26VersionsCompatible(tag, gameVersion) {
   const gv = String(gameVersion || '').trim();
   const tv = String(tag || '').trim();
@@ -237,6 +259,9 @@ function isWrongMc26ClientOrCloth(filename, gv) {
   const isClientOrCloth = /^marsana-client/i.test(lower) || /^marsana-schematic-farm/i.test(lower) || /^cloth-config/i.test(lower);
   if (!isClientOrCloth) return false;
 
+  const marsanaOk = marsanaBundledCompatibleWithGame(filename, gv);
+  if (marsanaOk !== null) return !marsanaOk;
+
   if (isMc26GameVersion(gv)) {
     const tag = parseJarMinecraftVersionTag(filename);
     if (tag && /^26\./.test(tag)) {
@@ -261,6 +286,9 @@ function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
 
   if (isWrongMc26ClientOrCloth(filename, gv)) return true;
   if (isPlatformIncompatibleModJar(filename)) return true;
+
+  const marsanaOk = marsanaBundledCompatibleWithGame(filename, gv);
+  if (marsanaOk !== null) return !marsanaOk;
 
   if (isMc26GameVersion(gv)) {
     const tag = parseJarMinecraftVersionTag(filename);
