@@ -5,6 +5,7 @@ import {
   ORNITHE_SUGGESTED_VERSION,
   isOrnitheVersionBlocked,
 } from '../../shared/versionCompatibility.js';
+import { recommendedShaderForVersion } from '../../shared/shaderVersionPresets.js';
 import { BUNDLED_VERSION_MANIFEST } from '../generated/versionManifest.js';
 
 export function createVersionSelector({ root, store, versionsApi, i18n }) {
@@ -142,7 +143,10 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
       store.setState({ selectedVersion: null, selectedVersionType: 'release' });
       return;
     }
-    store.setState({ selectedVersion: id, selectedVersionType: typeOf(id) });
+    const patch = { selectedVersion: id, selectedVersionType: typeOf(id) };
+    const recommendedShader = recommendedShaderForVersion(id);
+    if (recommendedShader) patch.selectedShader = recommendedShader;
+    store.setState(patch);
   }
 
   function currentLoader() {
