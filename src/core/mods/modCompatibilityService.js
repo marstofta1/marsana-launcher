@@ -234,7 +234,7 @@ function isMc26StaleSspbJar(filename) {
 
 function isWrongMc26ClientOrCloth(filename, gv) {
   const lower = jarBaseName(filename);
-  const isClientOrCloth = /^marsana-client/i.test(lower) || /^cloth-config/i.test(lower);
+  const isClientOrCloth = /^marsana-client/i.test(lower) || /^marsana-schematic-farm/i.test(lower) || /^cloth-config/i.test(lower);
   if (!isClientOrCloth) return false;
 
   if (isMc26GameVersion(gv)) {

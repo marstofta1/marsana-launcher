@@ -46,6 +46,7 @@ export function createPlayButton({ root, store, launchApi, i18n }) {
             glowingOres: !!state.modGlowingOres,
             roundTrees: !!state.modRoundTrees,
             crops3d: !!state.modCrops3d,
+            schematicFarm: !!state.modSchematicFarm,
             clientHudPack: state.playMode === 'client' && !!state.modClientHudPack,
           },
           state.playMode

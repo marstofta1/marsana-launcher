@@ -169,6 +169,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
       modGlowingOres: !!state.modGlowingOres,
       modRoundTrees: !!state.modRoundTrees,
       modCrops3d: !!state.modCrops3d,
+      modSchematicFarm: !!state.modSchematicFarm,
     };
   }
 
@@ -239,6 +240,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     if (snap.modGlowingOres) parts.push(i18n.t('versionFilters.glowingOres'));
     if (snap.modRoundTrees) parts.push(i18n.t('versionFilters.roundTrees'));
     if (snap.modCrops3d) parts.push(i18n.t('versionFilters.crops3d'));
+    if (snap.modSchematicFarm) parts.push(i18n.t('versionFilters.schematicFarm'));
     if (parts.length === 0) {
       filterHint.style.display = 'none';
       filterHint.textContent = '';

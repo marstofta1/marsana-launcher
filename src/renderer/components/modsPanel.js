@@ -9,6 +9,7 @@ import {
   glowingOresSupported,
   roundTreesSupported,
   crops3dSupported,
+  schematicFarmSupported,
   forgeOptifineLikelySupported,
   fabricOptifinePackSupported,
 } from '../../shared/versionCompatibility.js';
@@ -180,6 +181,16 @@ export function createModsPanel({ root, store, i18n }) {
             </p>
           </div>
 
+          <div data-role="row-schematicFarm">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="schematicFarm" />
+              <span data-role="label-schematicFarm">Sematik Farm Modu (Marsana)</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-schematicFarm">
+              F8 — mob, bambu, demir ve şeker kamışı farm şablonları; blok var/gerekli/eksik sayacı. Fabric gerekir.
+            </p>
+          </div>
+
           <div data-role="row-crops3d">
             <label class="field checkbox">
               <input type="checkbox" data-role="crops3d" />
@@ -205,6 +216,7 @@ export function createModsPanel({ root, store, i18n }) {
   const glowingOresCb = root.querySelector('[data-role="glowingOres"]');
   const roundTreesCb = root.querySelector('[data-role="roundTrees"]');
   const crops3dCb = root.querySelector('[data-role="crops3d"]');
+  const schematicFarmCb = root.querySelector('[data-role="schematicFarm"]');
   const optifineRow = root.querySelector('[data-role="row-optifine"]');
   const shaderRow = root.querySelector('[data-role="row-shaderFps"]');
   const embossedRow = root.querySelector('[data-role="row-embossed"]');
@@ -214,6 +226,7 @@ export function createModsPanel({ root, store, i18n }) {
   const glowingOresRow = root.querySelector('[data-role="row-glowingOres"]');
   const roundTreesRow = root.querySelector('[data-role="row-roundTrees"]');
   const crops3dRow = root.querySelector('[data-role="row-crops3d"]');
+  const schematicFarmRow = root.querySelector('[data-role="row-schematicFarm"]');
   const shaderLabel = root.querySelector('[data-role="label-shaderFps"]');
   const embossedLabel = root.querySelector('[data-role="label-embossed"]');
   const shaderPickerBlock = root.querySelector('[data-role="shader-picker-block"]');
@@ -249,6 +262,7 @@ export function createModsPanel({ root, store, i18n }) {
       modGlowingOres: glowingOresCb.checked,
       modRoundTrees: roundTreesCb.checked,
       modCrops3d: crops3dCb.checked,
+      modSchematicFarm: schematicFarmCb.checked,
       selectedShader: shaderPicker.value || DEFAULT_SHADER_SLUG,
     });
   }
@@ -310,6 +324,7 @@ export function createModsPanel({ root, store, i18n }) {
     const goOk = !isSnapshot && glowingOresSupported(v);
     const rtOk = !isSnapshot && roundTreesSupported(v);
     const c3Ok = !isSnapshot && crops3dSupported(v);
+    const sfOk = !isSnapshot && schematicFarmSupported(v);
 
     if (isSnapshot) {
       const reason = modT('tooltips.snapshot');
@@ -349,6 +364,10 @@ export function createModsPanel({ root, store, i18n }) {
         crops3dCb.checked = false;
         store.setState({ modCrops3d: false });
       }
+      if (schematicFarmCb.checked) {
+        schematicFarmCb.checked = false;
+        store.setState({ modSchematicFarm: false });
+      }
       optifineCb.disabled = true;
       shaderCb.disabled = true;
       embossedCb.disabled = true;
@@ -358,6 +377,7 @@ export function createModsPanel({ root, store, i18n }) {
       glowingOresCb.disabled = true;
       roundTreesCb.disabled = true;
       crops3dCb.disabled = true;
+      schematicFarmCb.disabled = true;
       optifineCb.title = reason;
       shaderCb.title = reason;
       embossedCb.title = reason;
@@ -367,6 +387,7 @@ export function createModsPanel({ root, store, i18n }) {
       glowingOresCb.title = reason;
       roundTreesCb.title = reason;
       crops3dCb.title = reason;
+      schematicFarmCb.title = reason;
       return;
     }
 
@@ -378,6 +399,7 @@ export function createModsPanel({ root, store, i18n }) {
     glowingOresCb.disabled = !goOk;
     roundTreesCb.disabled = !rtOk;
     crops3dCb.disabled = !c3Ok;
+    schematicFarmCb.disabled = !sfOk;
 
     optifineCb.title = opOk ? '' : modT('tooltips.optifineVersion');
     const hintOptifine = root.querySelector('[data-role="hint-optifine"]');
@@ -397,6 +419,7 @@ export function createModsPanel({ root, store, i18n }) {
     glowingOresCb.title = goOk ? '' : modT('tooltips.glowingOresVersion');
     roundTreesCb.title = rtOk ? '' : modT('tooltips.roundTreesUnsupported');
     crops3dCb.title = c3Ok ? '' : modT('tooltips.crops3dUnsupported');
+    schematicFarmCb.title = sfOk ? '' : modT('tooltips.schematicFarmVersion');
 
     if (!opOk && optifineCb.checked) {
       optifineCb.checked = false;
@@ -430,6 +453,10 @@ export function createModsPanel({ root, store, i18n }) {
       crops3dCb.checked = false;
       store.setState({ modCrops3d: false });
     }
+    if (!sfOk && schematicFarmCb.checked) {
+      schematicFarmCb.checked = false;
+      store.setState({ modSchematicFarm: false });
+    }
 
     applyMutualExclusion();
     updateShaderPickerVisibility();
@@ -437,13 +464,13 @@ export function createModsPanel({ root, store, i18n }) {
 
   const ROWS_BY_LOADER = {
     fabric: {
-      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'schematicFarm', 'crops3d'],
       titleKey: 'titles.fabric',
       shaderLabelKey: 'shaderLabels.fabric',
       embossedLabelKey: 'embossedLabels.fabric',
     },
     'fabric-beta': {
-      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'schematicFarm', 'crops3d'],
       titleKey: 'titles.fabric-beta',
       shaderLabelKey: 'shaderLabels.fabric-beta',
       embossedLabelKey: 'embossedLabels.fabric-beta',
@@ -544,6 +571,7 @@ export function createModsPanel({ root, store, i18n }) {
       glowingOres: glowingOresRow,
       roundTrees: roundTreesRow,
       crops3d: crops3dRow,
+      schematicFarm: schematicFarmRow,
     };
     for (const key of Object.keys(allRows)) {
       allRows[key].style.display = config.rows.includes(key) ? '' : 'none';
@@ -557,7 +585,8 @@ export function createModsPanel({ root, store, i18n }) {
       config.rows.includes('betterLeaves') ||
       config.rows.includes('glowingOres') ||
       config.rows.includes('roundTrees') ||
-      config.rows.includes('crops3d');
+      config.rows.includes('crops3d') ||
+      config.rows.includes('schematicFarm');
     if (modsOptionsColRight) {
       modsOptionsColRight.style.display = rightColVisible ? '' : 'none';
     }
@@ -601,6 +630,10 @@ export function createModsPanel({ root, store, i18n }) {
     if (!config.rows.includes('crops3d') && crops3dCb.checked) {
       crops3dCb.checked = false;
       store.setState({ modCrops3d: false });
+    }
+    if (!config.rows.includes('schematicFarm') && schematicFarmCb.checked) {
+      schematicFarmCb.checked = false;
+      store.setState({ modSchematicFarm: false });
     }
 
     modsTitle.textContent = modT(config.titleKey);
@@ -675,6 +708,7 @@ export function createModsPanel({ root, store, i18n }) {
   glowingOresCb.addEventListener('change', publish);
   roundTreesCb.addEventListener('change', publish);
   crops3dCb.addEventListener('change', publish);
+  schematicFarmCb.addEventListener('change', publish);
   shaderPicker.addEventListener('change', publish);
 
   function applyPlayModeVisibility(state) {
@@ -734,6 +768,10 @@ export function createModsPanel({ root, store, i18n }) {
     if (cropsSpan) cropsSpan.textContent = t('mods.crops3d');
     const hintCrops = root.querySelector('[data-role="hint-crops3d"]');
     if (hintCrops) hintCrops.textContent = t('mods.crops3dHint');
+    const schematicSpan = root.querySelector('[data-role="row-schematicFarm"] label span');
+    if (schematicSpan) schematicSpan.textContent = t('mods.schematicFarm');
+    const hintSchematic = root.querySelector('[data-role="hint-schematicFarm"]');
+    if (hintSchematic) hintSchematic.textContent = t('mods.schematicFarmHint');
     if (shaderLabel) {
       const loader = currentLoader();
       const config = ROWS_BY_LOADER[loader] || ROWS_BY_LOADER.fabric;
@@ -778,6 +816,7 @@ export function createModsPanel({ root, store, i18n }) {
     if (glowingOresCb.checked !== !!state.modGlowingOres) glowingOresCb.checked = !!state.modGlowingOres;
     if (roundTreesCb.checked !== !!state.modRoundTrees) roundTreesCb.checked = !!state.modRoundTrees;
     if (crops3dCb.checked !== !!state.modCrops3d) crops3dCb.checked = !!state.modCrops3d;
+    if (schematicFarmCb.checked !== !!state.modSchematicFarm) schematicFarmCb.checked = !!state.modSchematicFarm;
     const shader = state.selectedShader || DEFAULT_SHADER_SLUG;
     if (shaderPicker.value !== shader) shaderPicker.value = shader;
     applyLoaderState();

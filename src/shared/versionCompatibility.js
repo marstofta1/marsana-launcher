@@ -127,6 +127,11 @@ export function roundTreesSupported(versionId) {
   return fullbrightUbSupported(versionId);
 }
 
+/** Marsana Sematik Farm — Fabric client modu; 26.x ve 1.16+ desteklenir. */
+export function schematicFarmSupported(versionId) {
+  return voiceChatSupported(versionId);
+}
+
 export function selectionRequiresReleaseVersions({
   loader,
   modOptifine,
@@ -138,9 +143,10 @@ export function selectionRequiresReleaseVersions({
   modGlowingOres,
   modRoundTrees,
   modCrops3d,
+  modSchematicFarm,
 }) {
   if (loader === 'forge-optifine') return true;
-  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat || modFullbrightUb || modBetterLeaves || modGlowingOres || modRoundTrees || modCrops3d);
+  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat || modFullbrightUb || modBetterLeaves || modGlowingOres || modRoundTrees || modCrops3d || modSchematicFarm);
 }
 
 export function isVersionAllowedForSelection({
@@ -156,6 +162,7 @@ export function isVersionAllowedForSelection({
   modGlowingOres,
   modRoundTrees,
   modCrops3d,
+  modSchematicFarm,
   legacyFabricSupportedSet = null,
   loaderSupportedSet = null,
 }) {
@@ -183,6 +190,7 @@ export function isVersionAllowedForSelection({
       modGlowingOres,
       modRoundTrees,
       modCrops3d,
+      modSchematicFarm,
     }) &&
     versionType !== 'release'
   ) {
@@ -200,6 +208,7 @@ export function isVersionAllowedForSelection({
   if (modGlowingOres && !glowingOresSupported(id)) return false;
   if (modRoundTrees && !roundTreesSupported(id)) return false;
   if (modCrops3d && !crops3dSupported(id)) return false;
+  if (modSchematicFarm && !schematicFarmSupported(id)) return false;
 
   if (modEmbossedBlocks) {
     if (loaderVal === 'forge') {
@@ -223,7 +232,7 @@ export function getVersionFilterEmptyMessage(state, { legacyFabric = false, load
     return LOADER_EMPTY_MESSAGES[loaderVal];
   }
 
-  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat, modFullbrightUb, modBetterLeaves, modGlowingOres, modRoundTrees, modCrops3d } = state;
+  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat, modFullbrightUb, modBetterLeaves, modGlowingOres, modRoundTrees, modCrops3d, modSchematicFarm } = state;
   const labels = [];
   if (loader === 'forge-optifine' || modOptifine) labels.push('OptiFine');
   if (modShaderFps) labels.push('Shader + FPS');
@@ -234,6 +243,7 @@ export function getVersionFilterEmptyMessage(state, { legacyFabric = false, load
   if (modGlowingOres) labels.push('Glowing Ores');
   if (modRoundTrees) labels.push('Round Trees');
   if (modCrops3d) labels.push('3D crops Revamped');
+  if (modSchematicFarm) labels.push('Sematik Farm');
 
   if (labels.length > 0) {
     return `${labels.join(' ve ')} ile uyumlu sürüm bulunamadı`;

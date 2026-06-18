@@ -129,6 +129,7 @@ export default {
     glowingOres: 'Glowing Ores uyumlu sürümler (1.17+)',
     roundTrees: 'Round Trees uyumlu sürümler',
     crops3d: '3D crops Revamped uyumlu sürümler',
+    schematicFarm: 'Sematik Farm uyumlu sürümler',
   },
   status: {
     fetchingVersionList: 'Sürüm listesi alınıyor…',
@@ -165,6 +166,8 @@ export default {
     roundTreesHint: 'Ağaç gövdelerini yuvarlak gösterir; Vanilla+ görünüm. Ek mod gerekmez; diğer kaynak paketlerinin üstünde otomatik etkinleştirilir.',
     crops3d: '3D crops Revamped',
     crops3dHint: 'Buğday, patates, havuç ve diğer tarım bloklarını 3D modellere çevirir. Hafif kaynak paketi; Vanilla stiline yakın kalır.',
+    schematicFarm: 'Sematik Farm Modu (Marsana)',
+    schematicFarmHint: 'F8 — mob, bambu, demir ve şeker kamışı farm şablonları; blok var/gerekli/eksik sayacı. Fabric gerekir.',
     titles: {
       fabric: "Fabric Modları",
       'fabric-beta': "Fabric (Beta) Modları",
@@ -230,6 +233,7 @@ export default {
       glowingOresVersion: "Glowing Ores için Minecraft 1.17 veya üstü bir sürüm seçin.",
       roundTreesUnsupported: "Round Trees bu sürüm için desteklenmiyor.",
       crops3dUnsupported: "3D crops Revamped bu sürüm için desteklenmiyor.",
+      schematicFarmVersion: "Sematik Farm için Minecraft 1.16+ veya 26.x Fabric sürümü seçin.",
     },
   },
   loaders: {

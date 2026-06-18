@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "marsana-schematic-farm",
+  "version": "${version}",
+  "name": "Marsana Sematik Farm",
+  "description": "F8 ile mob, bambu, demir ve seker kamisi farm sablonlari; blok ilerlemesini gor.",
+  "authors": ["Marsana"],
+  "contact": {
+    "homepage": "https://marstofta1.github.io/marsana-launcher/"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.marsana.schematicfarm.SchematicFarmMod"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "minecraft": "~26.1.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  },
+  "custom": {
+    "modmenu:api": false
+  }
+}

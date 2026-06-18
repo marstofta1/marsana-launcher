@@ -74,6 +74,7 @@ async function bootstrap() {
     modGlowingOres: CLIENT_MOD_PRESET.modGlowingOres,
     modRoundTrees: CLIENT_MOD_PRESET.modRoundTrees,
     modCrops3d: CLIENT_MOD_PRESET.modCrops3d,
+    modSchematicFarm: CLIENT_MOD_PRESET.modSchematicFarm,
     modClientHudPack: CLIENT_MOD_PRESET.modClientHudPack,
     statusText: '',
     progressPercent: 0,
@@ -123,6 +124,7 @@ async function bootstrap() {
       modGlowingOres: !!state.modGlowingOres,
       modRoundTrees: !!state.modRoundTrees,
       modCrops3d: !!state.modCrops3d,
+      modSchematicFarm: !!state.modSchematicFarm,
       modClientHudPack: !!state.modClientHudPack,
     });
     const ser = JSON.stringify(snap);

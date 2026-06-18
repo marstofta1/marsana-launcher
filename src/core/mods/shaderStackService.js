@@ -7,6 +7,7 @@ const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
 const marsanaClientModService = require('./marsanaClientModService');
+const schematicFarmModService = require('./schematicFarmModService');
 const modIsolationService = require('./modIsolationService');
 const hudDepsService = require('./hudDepsService');
 const modCompatibilityService = require('./modCompatibilityService');
@@ -339,25 +340,28 @@ function customIdFor(gameVersion, presets, shaderSlug, { loaderPrefix = 'marsana
   if (presets.shaderFps && shaderSlug && KNOWN_SHADER_SLUGS.has(shaderSlug)) {
     return `${loaderPrefix}-shader-${gameVersion}-${shaderSlug}`;
   }
-  if (presets.voiceChat && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d) {
+  if (presets.voiceChat && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm) {
     return `${loaderPrefix}-voice-${gameVersion}`;
   }
-  if (presets.fullbrightUb && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d) {
+  if (presets.fullbrightUb && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm) {
     return `${loaderPrefix}-fullbright-${gameVersion}`;
   }
-  if (presets.betterLeaves && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.glowingOres && !presets.roundTrees && !presets.crops3d) {
+  if (presets.betterLeaves && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm) {
     return `${loaderPrefix}-betterleaves-${gameVersion}`;
   }
-  if (presets.glowingOres && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.roundTrees && !presets.crops3d) {
+  if (presets.glowingOres && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm) {
     return `${loaderPrefix}-glowingores-${gameVersion}`;
   }
-  if (presets.roundTrees && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.crops3d) {
+  if (presets.roundTrees && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.crops3d && !presets.schematicFarm) {
     return `${loaderPrefix}-roundtrees-${gameVersion}`;
   }
-  if (presets.crops3d && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees) {
+  if (presets.crops3d && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.schematicFarm) {
     return `${loaderPrefix}-crops3d-${gameVersion}`;
   }
-  if (presets.shaderFps || presets.embossedBlocks || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d) {
+  if (presets.schematicFarm && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d) {
+    return `${loaderPrefix}-schematic-${gameVersion}`;
+  }
+  if (presets.shaderFps || presets.embossedBlocks || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm) {
     return `${loaderPrefix}-shader-${gameVersion}`;
   }
   return `${loaderPrefix}-shader-${gameVersion}`;
@@ -435,6 +439,7 @@ function normalizePresets(p) {
     glowingOres: !!(p && p.glowingOres),
     roundTrees: !!(p && p.roundTrees),
     crops3d: !!(p && p.crops3d),
+    schematicFarm: !!(p && p.schematicFarm),
     marsanaClientMenu: !!(p && p.marsanaClientMenu),
     clientHudPack: !!(p && p.clientHudPack),
   };
@@ -778,6 +783,7 @@ function presetsMatch(saved, wanted) {
     typeof saved.glowingOres !== 'boolean' ||
     typeof saved.roundTrees !== 'boolean' ||
     typeof saved.crops3d !== 'boolean' ||
+    typeof saved.schematicFarm !== 'boolean' ||
     typeof saved.marsanaClientMenu !== 'boolean' ||
     typeof saved.clientHudPack !== 'boolean'
   ) {
@@ -793,6 +799,7 @@ function presetsMatch(saved, wanted) {
     saved.glowingOres === wanted.glowingOres &&
     saved.roundTrees === wanted.roundTrees &&
     saved.crops3d === wanted.crops3d &&
+    saved.schematicFarm === wanted.schematicFarm &&
     saved.marsanaClientMenu === wanted.marsanaClientMenu &&
     saved.clientHudPack === wanted.clientHudPack
   );
@@ -1021,6 +1028,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       (existing.shaderpacks || []).some((name) => /§/.test(String(name))) ||
       !clientHudDependenciesOk(modsDir, modPresets) ||
       (modPresets.marsanaClientMenu && !marsanaClientModService.marsanaClientJarPresent(modsDir)) ||
+      (modPresets.schematicFarm && !schematicFarmModService.schematicFarmJarPresent(modsDir)) ||
       (modPresets.shaderFps &&
         !modPresets.optifine &&
         !modCompatibilityService.coreSodiumJarPresent(modsDir, gameVersion)) ||
@@ -1832,7 +1840,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable', playMode }) {
     const presets = normalizePresets(modPresets);
-    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.clientHudPack) {
+    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm && !presets.clientHudPack) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
     }
 
@@ -1934,6 +1942,21 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         const cfg = marsanaClientModService.readConfig(gameRoot);
         marsanaClientModService.applyModToggleStates(modsDir, cfg);
       }
+      if (presets.schematicFarm && repoRoot) {
+        const schematicJar = schematicFarmModService.installBundledMod({
+          repoRoot,
+          modsDir,
+          gameVersion,
+          onNotice: status,
+        });
+        if (schematicJar) {
+          bundle = readBundle(modsDir);
+          if (bundle) {
+            cacheJars = [...new Set([...(cacheJars || []), schematicJar])];
+            writeBundle(modsDir, { ...bundle, jars: cacheJars, updatedAt: Date.now() });
+          }
+        }
+      }
       status(`Mod profili (önbellek): ${resolvedShaderSlug} shader hazır, başlatılıyor...`);
       await installFabricProfile({
         gameVersion,
@@ -2027,6 +2050,19 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       marsanaClientModService.seedHudFeatureDefaults(gameRoot);
       const cfg = marsanaClientModService.readConfig(gameRoot);
       marsanaClientModService.applyModToggleStates(modsDir, cfg);
+    }
+
+    if (presets.schematicFarm && repoRoot) {
+      status('Sematik Farm modu kuruluyor...');
+      const schematicJar = schematicFarmModService.installBundledMod({
+        repoRoot,
+        modsDir,
+        gameVersion,
+        onNotice: status,
+      });
+      if (schematicJar && !jars.includes(schematicJar)) {
+        jars.push(schematicJar);
+      }
     }
 
     let resourcepacks = [];
@@ -2162,6 +2198,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       status('Round Trees kuruldu. Kaynak paketi listenin en üstüne yerleştirildi.');
     } else if (presets.crops3d) {
       status('3D crops Revamped kuruldu. Tarım blokları 3D görünüme geçti.');
+    } else if (presets.schematicFarm) {
+      status('Sematik Farm modu kuruldu. Oyunda F8 ile farm seçin, Konumu Ayarla ile başlangıç noktasını belirleyin.');
     } else {
       status('Kabartmalı blok / bağlı doku: Continuity + Sodium hazır.');
     }

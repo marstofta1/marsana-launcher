@@ -129,6 +129,7 @@ export default {
     glowingOres: 'Glowing Ores compatible versions (1.17+)',
     roundTrees: 'Round Trees compatible versions',
     crops3d: '3D crops Revamped compatible versions',
+    schematicFarm: 'Schematic Farm compatible versions',
   },
   status: {
     fetchingVersionList: 'Fetching version list…',
@@ -163,6 +164,8 @@ export default {
     roundTreesHint: 'Renders tree trunks round; Vanilla+ look. No extra mod needed; enabled above other resource packs automatically.',
     crops3d: '3D crops Revamped',
     crops3dHint: 'Turns wheat, potatoes, carrots, and other crops into 3D models. Lightweight pack; stays close to Vanilla style.',
+    schematicFarm: 'Schematic Farm (Marsana)',
+    schematicFarmHint: 'F8 — mob, bamboo, iron, and sugar cane farm templates; placed/required/missing block counts. Requires Fabric.',
     titles: {
       fabric: "Fabric Mods",
       'fabric-beta': "Fabric (Beta) Mods",
@@ -228,6 +231,7 @@ export default {
       glowingOresVersion: "Select Minecraft 1.17 or newer for Glowing Ores.",
       roundTreesUnsupported: "Round Trees is not supported on this version.",
       crops3dUnsupported: "3D crops Revamped is not supported on this version.",
+      schematicFarmVersion: "Select Minecraft 1.16+ or 26.x Fabric for Schematic Farm.",
     },
   },
   loaders: {

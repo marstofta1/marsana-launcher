@@ -20,6 +20,7 @@ export const CLIENT_MOD_PRESET = Object.freeze({
   modGlowingOres: false,
   modRoundTrees: false,
   modCrops3d: false,
+  modSchematicFarm: false,
   modClientHudPack: true,
 });
 
@@ -94,6 +95,7 @@ export const LAUNCHER_MODE_RESET = Object.freeze({
   modGlowingOres: false,
   modRoundTrees: false,
   modCrops3d: false,
+  modSchematicFarm: false,
   modClientHudPack: false,
 });
 

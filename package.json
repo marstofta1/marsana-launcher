@@ -1,6 +1,6 @@
 {
   "name": "marsana-launcher",
-  "version": "1.0.16",
+  "version": "1.0.18",
   "description": "Marsana Minecraft Launcher",
   "private": true,
   "main": "src/main/index.js",
@@ -8,7 +8,7 @@
     "start": "node scripts/embed-version-manifest.js && electron .",
     "pack": "electron-builder",
     "pack:mac": "electron-builder --mac && node scripts/prepare-macos-downloads.js",
-    "pack:win": "node scripts/embed-logo.js && node scripts/embed-version-manifest.js && node scripts/ensure-client-mod.js && node scripts/ensure-bundled-deps.js && node scripts/sync-analytics-config.js && electron-builder --win && node scripts/prepare-windows-downloads.js",
+    "pack:win": "node scripts/embed-logo.js && node scripts/embed-version-manifest.js && node scripts/ensure-client-mod.js && node scripts/ensure-schematic-farm-mod.js && node scripts/ensure-bundled-deps.js && node scripts/sync-analytics-config.js && electron-builder --win && node scripts/prepare-windows-downloads.js",
     "pack:linux": "electron-builder --linux && node scripts/prepare-linux-downloads.js",
     "pack:desktop": "electron-builder --mac --win",
     "verify:release": "node scripts/verify-release-docs.js",
@@ -24,7 +24,9 @@
     "pack:marsanaliz": "npm install --prefix marsanaliz && npm run pack:win --prefix marsanaliz",
     "version:resolve": "node scripts/resolve-release-version.js",
     "mobile:sync": "node scripts/sync-mobile-www.js",
-    "build:client-mod": "cd marsana-client-mod && gradlew.bat build copyToBundled"
+    "build:client-mod": "cd marsana-client-mod && gradlew.bat build copyToBundled",
+    "build:schematic-farm-mod": "cd marsana-schematic-farm-mod && gradlew.bat build copyToBundled",
+    "build:marsana-mods": "npm run build:client-mod && npm run build:schematic-farm-mod"
   },
   "build": {
     "appId": "com.marsana.launcher",
