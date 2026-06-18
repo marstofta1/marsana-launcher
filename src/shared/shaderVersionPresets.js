@@ -1,7 +1,7 @@
 /** Minecraft sürümüne göre önerilen Modrinth shader slug'ları (Iris). */
 export const VERSION_SHADER_PRESETS = Object.freeze([
-  // E-LITE: Modrinth'te 26.2 için en güncel iris shader paketi (MakeUp tabanlı, yüksek FPS).
-  { match: /^26\.2/, slug: 'lite-shaders' },
+  // Complementary Reimagined: 26.2'de Iris ile dogrulanmis kararli paket (E-LITE yarim ekran hatasi veriyor).
+  { match: /^26\.2/, slug: 'complementary-reimagined' },
 ]);
 
 export function recommendedShaderForVersion(versionId) {

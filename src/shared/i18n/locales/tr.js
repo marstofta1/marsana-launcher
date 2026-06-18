@@ -146,7 +146,7 @@ export default {
     shaderFps: 'Shader + FPS',
     shaderFpsHint: 'Gerçekçi ışık ve gölgeler; en akıcı oyun için oyunda shader paketinde Performance profilini seçin.',
     shaderPack: 'Shader paketi',
-    shaderPackHint: 'Shader + FPS açıkken seçilen paket otomatik indirilir ve oyunda etkinleştirilir. 26.2 seçildiğinde E-LITE Shaders otomatik seçilir.',
+    shaderPackHint: 'Shader + FPS açıkken seçilen paket otomatik indirilir ve oyunda etkinleştirilir. 26.2 seçildiğinde Complementary Reimagined otomatik seçilir.',
     optifine: 'OptiFine (Fabric — Modrinth OptiFine for Fabric paketi)',
     optifineHint: 'Zoom, animasyonlar ve video ayarları; tam mod paketi olarak indirilir. Shader + FPS ile aynı anda seçilemez.',
     optifineHint26: '26.1: Modrinth performans paketi (Sodium/Iris). Resmi OptiFine.jar henüz yok; zoom için Zoomify otomatik eklenir.',

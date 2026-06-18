@@ -146,7 +146,7 @@ export default {
     shaderFps: 'Shader + FPS',
     shaderFpsHint: 'Realistic lighting and shadows; for smoothest gameplay, choose the Performance profile in the shader pack in-game.',
     shaderPack: 'Shader pack',
-    shaderPackHint: 'When Shader + FPS is on, the selected pack is downloaded and enabled automatically in-game. Minecraft 26.2 auto-selects E-LITE Shaders.',
+    shaderPackHint: 'When Shader + FPS is on, the selected pack is downloaded and enabled automatically in-game. Minecraft 26.2 auto-selects Complementary Reimagined.',
     optifine: 'OptiFine (Fabric — Modrinth OptiFine for Fabric pack)',
     optifineHint: 'Zoom, animations, and video settings; downloaded as a full mod pack. Cannot be combined with Shader + FPS.',
     embossed: 'Embossed / connected blocks (Continuity + Sodium)',

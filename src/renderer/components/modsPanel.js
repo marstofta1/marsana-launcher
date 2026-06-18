@@ -55,7 +55,7 @@ const SHADER_OPTIONS = [
   { slug: 'hysteria-shaders',          label: 'Hysteria Shaders' },
   { slug: 'kappa-shader',              label: 'Kappa Shader' },
   { slug: 'spooklementary',            label: 'Spooklementary' },
-  { slug: 'lite-shaders',              label: 'E-LITE Shaders (26.2 önerilen)' },
+  { slug: 'lite-shaders',              label: 'E-LITE Shaders (deneysel)' },
   { slug: 'clarityshader',             label: 'Clarity' },
 ];
 const DEFAULT_SHADER_SLUG = 'complementary-reimagined';
