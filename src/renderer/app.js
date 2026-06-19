@@ -37,10 +37,32 @@ import {
   clearLastSelection,
 } from './components/settingsModal.js';
 
-function $(id) {
+function $(id, { optional = false } = {}) {
   const el = document.getElementById(id);
-  if (!el) throw new Error(`Slot bulunamadı: #${id}`);
+  if (!el) {
+    if (optional) return null;
+    throw new Error(`Slot bulunamadı: #${id}`);
+  }
   return el;
+}
+
+async function mountAll(entries) {
+  const failures = [];
+  await Promise.all(
+    entries.map(async ({ name, mount }) => {
+      if (!mount) return;
+      try {
+        await mount();
+      } catch (err) {
+        console.error(`[bootstrap] ${name} yüklenemedi`, err);
+        failures.push({ name, err });
+      }
+    })
+  );
+  if (failures.length > 0) {
+    const names = failures.map((f) => f.name).join(', ');
+    console.warn(`[bootstrap] Kısmi yükleme hatası: ${names}`);
+  }
 }
 
 async function bootstrap() {
@@ -139,35 +161,40 @@ async function bootstrap() {
   });
 
   const components = [
-    createAccountCard({ root: $('account-slot'), store, auth: api.auth, openExternal: api.openExternal, i18n }),
-    createVersionSelector({ root: $('version-slot'), store, versionsApi: api.versions, i18n }),
-    createMemorySlider({ root: $('memory-slot'), store, i18n }),
-    createModsPanel({ root: $('mods-slot'), store, i18n }),
-    createLaunchOptions({ root: $('launch-options-slot'), store, i18n }),
-    createPlayButton({ root: $('play-slot'), store, launchApi: api.launch, i18n, robloxApi: api.roblox }),
-    createStatusPanel({ root: $('status-slot'), store, events: api.events }),
-    createPlayerProfileCard({ root: $('profile-slot'), store, i18n }),
-    createCosmeticsPanel({ root: $('cosmetics-slot'), store, i18n }),
-    createPlatformsPanel({
-      root: $('platforms-slot'),
-      openExternal: api.openExternal,
-      i18n,
-      getNativePlatform: () => api.app.getPlatform(),
-    }),
-    createWebsiteLinksPanel({ root: $('website-links-slot'), openExternal: api.openExternal, i18n }),
-    createRecommendedServers({
+    { name: 'account', mount: createAccountCard({ root: $('account-slot'), store, auth: api.auth, openExternal: api.openExternal, i18n }).mount },
+    { name: 'version', mount: createVersionSelector({ root: $('version-slot'), store, versionsApi: api.versions, i18n }).mount },
+    { name: 'memory', mount: createMemorySlider({ root: $('memory-slot'), store, i18n }).mount },
+    { name: 'play', mount: createPlayButton({ root: $('play-slot'), store, launchApi: api.launch, i18n, robloxApi: api.roblox }).mount },
+    { name: 'mods', mount: createModsPanel({ root: $('mods-slot'), store, i18n }).mount },
+    { name: 'launchOptions', mount: createLaunchOptions({ root: $('launch-options-slot'), store, i18n }).mount },
+    { name: 'status', mount: createStatusPanel({ root: $('status-slot'), store, events: api.events }).mount },
+    { name: 'profile', mount: createPlayerProfileCard({ root: $('profile-slot'), store, i18n }).mount },
+    { name: 'cosmetics', mount: createCosmeticsPanel({ root: $('cosmetics-slot'), store, i18n }).mount },
+    ...( $('platforms-slot', { optional: true })
+      ? [{
+          name: 'platforms',
+          mount: createPlatformsPanel({
+            root: $('platforms-slot'),
+            openExternal: api.openExternal,
+            i18n,
+            getNativePlatform: () => api.app.getPlatform(),
+          }).mount,
+        }]
+      : []),
+    { name: 'websites', mount: createWebsiteLinksPanel({ root: $('website-links-slot'), openExternal: api.openExternal, i18n }).mount },
+    { name: 'servers', mount: createRecommendedServers({
       root: $('servers-slot'),
       store,
       serversApi: api.servers,
       openExternal: api.openExternal,
       i18n,
-    }),
-    createFirstRunNotice({ root: $('modal-slot'), i18n }),
-    createBottomLinks({ root: $('bottom-links-slot'), openExternal: api.openExternal, i18n }),
+    }).mount },
+    { name: 'firstRun', mount: createFirstRunNotice({ root: $('modal-slot'), i18n }).mount },
+    { name: 'bottomLinks', mount: createBottomLinks({ root: $('bottom-links-slot'), openExternal: api.openExternal, i18n }).mount },
   ];
 
   setBootSplashStatus('Arayüz hazırlanıyor…');
-  await Promise.all(components.map((c) => c.mount()));
+  await mountAll(components);
 
   createModeSwitcher({
     root: $('mode-switcher-slot'),
@@ -223,4 +250,9 @@ async function bootstrap() {
 bootstrap().catch((err) => {
   console.error('Bootstrap error', err);
   dismissBootSplash();
+  const banner = document.createElement('div');
+  banner.className = 'bootstrap-error-banner';
+  banner.setAttribute('role', 'alert');
+  banner.innerHTML = `<strong>Arayüz yüklenemedi.</strong> ${err?.message || String(err)}`;
+  document.body.prepend(banner);
 });

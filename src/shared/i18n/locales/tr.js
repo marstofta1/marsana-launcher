@@ -109,11 +109,13 @@ export default {
     offlineName: 'Çevrimdışı görünen isim (boş bırakılırsa hesap ismi)',
     offlineNamePlaceholder: 'Steve',
     bedrockTitle: 'Minecraft for Windows (Store) uygulamasını açar. Oyuna kendi Microsoft/Xbox hesabınızla giriş yaparsınız.',
+    bedrockButton: 'BEDROCK AÇ',
     loginRequired: 'Oynamak için önce Microsoft hesabıyla giriş yapın.',
     selectVersion: 'Lütfen bir Minecraft sürümü seçin.',
     bedrockOnlyBlocked: 'Bu hesapta Java Edition yok. Mod yükleyici olarak Bedrock seçin.',
     bedrockOnlyTitle: 'Yalnızca Bedrock — Java lisansı yok.',
     robloxTitle: 'Roblox Player başlatılır. Hesap yoksa Ayarlar → Roblox bölümünden kayıt ol.',
+    robloxButton: 'ROBLOX AÇ',
   },
   version: {
     label: 'Sürüm',

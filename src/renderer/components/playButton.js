@@ -18,8 +18,24 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
 
   let isLaunching = false;
 
-  function applyLabels() {
-    btn.textContent = i18n.t('play.button');
+  function applyLabels(state = store.getState()) {
+    const loader = state.selectedLoader || 'fabric';
+    if (loader === 'bedrock') {
+      btn.textContent = i18n.t('play.bedrockButton');
+    } else if (loader === 'roblox') {
+      btn.textContent = i18n.t('play.robloxButton');
+    } else {
+      btn.textContent = i18n.t('play.button');
+    }
+  }
+
+  function syncUi(state) {
+    root.hidden = false;
+    root.style.display = '';
+    btn.hidden = false;
+    btn.style.display = '';
+    applyLabels(state);
+    updateDisabled(state);
   }
 
   function isExternalLoader(loader) {
@@ -148,11 +164,10 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
   btn.addEventListener('click', handleClick);
 
   function mount() {
-    applyLabels();
-    updateDisabled(store.getState());
+    syncUi(store.getState());
     const unsubs = [
-      store.subscribe(updateDisabled),
-      i18n.onChange(applyLabels),
+      store.subscribe(syncUi),
+      i18n.onChange(() => syncUi(store.getState())),
     ];
     return () => unsubs.forEach((u) => u());
   }

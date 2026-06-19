@@ -380,23 +380,34 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     }
     store.setState({ statusText: i18n.t('common.ready') });
     void refreshManifestFromNetwork();
+    let lastSelectedLoader = store.getState().selectedLoader || '';
     const unsubs = [
       store.subscribe((state) => {
+        const loader = state.selectedLoader || '';
+        const extLoader = loader === 'bedrock' || loader === 'roblox';
+        const wasExtLoader = lastSelectedLoader === 'bedrock' || lastSelectedLoader === 'roblox';
+
         updateExternalLoaderUi(state);
         const nextKey = filterKey(state);
-        const extLoader = (state.selectedLoader || '') === 'bedrock' || (state.selectedLoader || '') === 'roblox';
+
         if (extLoader) {
           if (state.selectedVersion !== null) {
             store.setState({ selectedVersion: null, selectedVersionType: 'release' });
           }
+          lastSelectedLoader = loader;
           return;
         }
-        if (nextKey === lastFilterKey) return;
-        lastFilterKey = nextKey;
-        if (needsLoaderFilter(state.selectedLoader)) {
-          ensureLoaderSupported(state.selectedLoader || 'legacy-fabric');
+
+        const leftExternalLoader = wasExtLoader && !extLoader;
+        if (leftExternalLoader || nextKey !== lastFilterKey) {
+          lastFilterKey = nextKey;
+          if (needsLoaderFilter(state.selectedLoader)) {
+            ensureLoaderSupported(state.selectedLoader || 'legacy-fabric');
+          }
+          renderOptions();
         }
-        renderOptions();
+
+        lastSelectedLoader = loader;
       }),
       i18n.onChange(() => {
         applyStaticI18n();

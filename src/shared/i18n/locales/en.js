@@ -109,11 +109,13 @@ export default {
     offlineName: 'Offline display name (uses account name if left blank)',
     offlineNamePlaceholder: 'Steve',
     bedrockTitle: 'Opens Minecraft for Windows (Store). Sign in with your own Microsoft/Xbox account in-game.',
+    bedrockButton: 'OPEN BEDROCK',
     loginRequired: 'Sign in with a Microsoft account before playing.',
     selectVersion: 'Please select a Minecraft version.',
     bedrockOnlyBlocked: 'This account has no Java Edition. Select Bedrock as the mod loader.',
     bedrockOnlyTitle: 'Bedrock only — no Java license.',
     robloxTitle: 'Launches Roblox Player. If you have no account, sign up under Settings → Roblox.',
+    robloxButton: 'OPEN ROBLOX',
   },
   version: {
     label: 'Version',
