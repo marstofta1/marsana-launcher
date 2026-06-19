@@ -22,6 +22,7 @@ public class SchematicFarmScreen extends Screen {
     private ScanResult lastScan = new ScanResult(0, 0, List.of(), false);
     private final List<Button> dynamicButtons = new ArrayList<>();
     private int progressScroll;
+    private Button hologramToggleBtn;
 
     public SchematicFarmScreen() {
         super(Component.literal("Marsana Sematik Farm"));
@@ -39,6 +40,10 @@ public class SchematicFarmScreen extends Screen {
 
         addRenderableWidget(Button.builder(Component.literal("Yenile"), b -> refreshScan())
             .bounds(centerX + 5, this.height - 28, 100, 20).build());
+
+        hologramToggleBtn = Button.builder(Component.literal(hologramToggleText()), b -> toggleHolograms())
+            .bounds(centerX - 160, 36, 155, 20).build();
+        addRenderableWidget(hologramToggleBtn);
 
         rebuildContent();
         refreshScan();
@@ -73,6 +78,19 @@ public class SchematicFarmScreen extends Screen {
         progressScroll = 0;
         rebuildContent();
         refreshScan();
+    }
+
+    private String hologramToggleText() {
+        return SchematicConfigManager.isHologramsEnabled()
+            ? "Hologram: Acik"
+            : "Hologram: Kapali";
+    }
+
+    private void toggleHolograms() {
+        SchematicConfigManager.setHologramsEnabled(!SchematicConfigManager.isHologramsEnabled());
+        if (hologramToggleBtn != null) {
+            hologramToggleBtn.setMessage(Component.literal(hologramToggleText()));
+        }
     }
 
     private void setAnchorHere() {
@@ -114,7 +132,7 @@ public class SchematicFarmScreen extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         graphics.centeredText(this.font, this.title, this.width / 2, 12, 0x55FF88);
-        graphics.centeredText(this.font, "F8 — farm sec, blok ilerlemesini gor", this.width / 2, 24, 0xAAAAAA);
+        graphics.centeredText(this.font, "F8 — farm sec, hologram ve ilerlemeyi gor", this.width / 2, 24, 0xAAAAAA);
 
         FarmTemplate template = FarmTemplateRegistry.get(selectedFarm);
         int rightX = this.width / 2 + 10;
@@ -129,7 +147,7 @@ public class SchematicFarmScreen extends Screen {
             : null;
 
         if (anchor == null) {
-            graphics.text(this.font, "Baslangic noktasi yok — Konumu Ayarla", rightX, y + 4, 0xFFAA00);
+            graphics.text(this.font, "Baslangic noktasi yok — Konumu Ayarla (hologram icin)", rightX, y + 4, 0xFFAA00);
         } else if (anchorDim != null && currentDim != null && !anchorDim.equals(currentDim)) {
             graphics.text(this.font, "Baslangic noktasi baska boyutta — yeniden ayarlayin", rightX, y + 4, 0xFF5555);
         } else {

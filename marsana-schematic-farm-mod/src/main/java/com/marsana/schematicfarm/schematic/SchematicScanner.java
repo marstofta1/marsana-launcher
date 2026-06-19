@@ -61,6 +61,18 @@ public final class SchematicScanner {
         return block != null ? block : Blocks.AIR;
     }
 
+    public static boolean matchesExpected(BlockState expected, BlockState actual) {
+        if (expected == null) {
+            return actual.isAir();
+        }
+        Block expectedBlock = expected.getBlock();
+        return matches(expectedBlock, actual);
+    }
+
+    public static BlockState expectedState(String blockId) {
+        return resolveBlock(blockId).defaultBlockState();
+    }
+
     private static boolean matches(Block expected, BlockState actual) {
         if (expected == Blocks.AIR) {
             return actual.isAir();

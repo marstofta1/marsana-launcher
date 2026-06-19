@@ -92,6 +92,15 @@ public final class SchematicConfigManager {
         save();
     }
 
+    public static boolean isHologramsEnabled() {
+        return config.showHolograms;
+    }
+
+    public static void setHologramsEnabled(boolean enabled) {
+        config.showHolograms = enabled;
+        save();
+    }
+
     public static final class SchematicConfig {
         @SerializedName("version")
         public int version = SCHEMA_VERSION;
@@ -110,6 +119,9 @@ public final class SchematicConfigManager {
 
         @SerializedName("schematicAnchorZ")
         public Integer schematicAnchorZ;
+
+        @SerializedName("showHolograms")
+        public boolean showHolograms = true;
 
         public static SchematicConfig defaults() {
             return new SchematicConfig();
