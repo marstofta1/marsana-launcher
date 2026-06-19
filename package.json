@@ -1,6 +1,6 @@
 {
   "name": "marsana-launcher",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "Marsana Minecraft Launcher",
   "private": true,
   "main": "src/main/index.js",
@@ -69,6 +69,7 @@
     },
     "win": {
       "target": "nsis",
+      "signAndEditExecutable": false,
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "linux": {

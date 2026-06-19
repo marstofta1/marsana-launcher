@@ -411,7 +411,7 @@ export function createModsPanel({ root, store, i18n }) {
       } else if (opOk && /^26\./.test(String(v || ''))) {
         hintOptifine.textContent = modT('optifineHint26');
       } else {
-        hintOptifine.textContent = t('mods.optifineHint');
+        hintOptifine.textContent = modT('optifineHint');
       }
     }
     embossedCb.title = emOk ? '' : modT('tooltips.embossedVersion');
