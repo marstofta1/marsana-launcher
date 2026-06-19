@@ -11,7 +11,8 @@ function toPublicView(account) {
     uuid: account.uuid,
     xuid: account.xuid || null,
     expiresAt: account.expiresAt,
-    loginMethod: 'microsoft',
+    loginMethod: account.loginMethod || 'microsoft',
+    bedrockOnly: !!account.bedrockOnly,
   };
 }
 
@@ -30,6 +31,7 @@ function createAuthService({ store, authProvider, logger }) {
   async function refreshIfPossible() {
     const cached = store.load();
     if (!cached) return null;
+    if (cached.bedrockOnly) return toPublicView(cached);
     const refreshed = await authProvider.refresh(cached.refreshToken);
     if (refreshed) {
       const merged = {
@@ -56,6 +58,12 @@ function createAuthService({ store, authProvider, logger }) {
     const account = store.load();
     if (!account) {
       throw new LauncherError(Codes.AUTH_REQUIRED, 'Önce Microsoft hesabıyla giriş yapmalısın.');
+    }
+    if (account.bedrockOnly) {
+      throw new LauncherError(
+        Codes.BEDROCK_ONLY_ACCOUNT,
+        'Bu hesapta Minecraft Java Edition lisansı yok. Yükleyici olarak Bedrock seçip Oyna\'ya bas.'
+      );
     }
 
     if (allowOffline) {

@@ -11,7 +11,7 @@ const version = pkg.version;
 const downloadsDir = path.join(root, 'docs', 'downloads');
 
 /** GitHub'daki son Linux paketi (yerel AppImage yoksa kullanılır). */
-const LINUX_RELEASE = process.env.MARSANA_LINUX_RELEASE || '0.1.27';
+const LINUX_RELEASE = process.env.MARSANA_LINUX_RELEASE || version;
 const GITHUB_REPO = 'marstofta1/marsana-launcher';
 
 const PLATFORMS = [

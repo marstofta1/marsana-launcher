@@ -21,6 +21,7 @@ export default {
   launch: {
     title: 'Launch Game',
     status: 'Status',
+    started: 'Minecraft {version} is launching — downloads may still be in progress.',
   },
   memory: {
     label: 'RAM (MB)',
@@ -79,12 +80,18 @@ export default {
     rememberSelectionHint: 'Loader, shader pack, and mod options persist on next launch. When off, Fabric + Shader + FPS is selected every time.',
     language: 'Language',
     languageHint: 'Launcher interface language. Changes apply immediately.',
+    robloxUsername: 'Roblox username',
+    robloxUsernamePlaceholder: 'ExampleUser',
+    robloxUsernameHint: 'No account? Click sign up, then save your username here after creating it. Region: United States (en-US).',
+    robloxSignup: 'Create Roblox account',
   },
   auth: {
     loginIntro: 'Sign in with your account for Java Edition:',
     howToLink: 'How to link?',
     loginSuccess: 'Signed in: {name}',
     loginFailed: 'Sign-in failed: {error}',
+    bedrockOnlyLoginSuccess: 'Bedrock account linked: {name} — Bedrock only (no Java).',
+    bedrockOnlyReady: 'Bedrock account ready: {name}. No Java license — use the Bedrock loader.',
     viaLabel: '{method}',
     openingMicrosoft: 'Opening Microsoft sign-in window...',
     openingXbox: 'Opening Microsoft sign-in (Xbox account)...',
@@ -102,6 +109,11 @@ export default {
     offlineName: 'Offline display name (uses account name if left blank)',
     offlineNamePlaceholder: 'Steve',
     bedrockTitle: 'Opens Minecraft for Windows (Store). Sign in with your own Microsoft/Xbox account in-game.',
+    loginRequired: 'Sign in with a Microsoft account before playing.',
+    selectVersion: 'Please select a Minecraft version.',
+    bedrockOnlyBlocked: 'This account has no Java Edition. Select Bedrock as the mod loader.',
+    bedrockOnlyTitle: 'Bedrock only — no Java license.',
+    robloxTitle: 'Launches Roblox Player. If you have no account, sign up under Settings → Roblox.',
   },
   version: {
     label: 'Version',
@@ -112,6 +124,7 @@ export default {
     loadFailedShort: 'Could not load version list',
     retry: 'Retry',
     bedrockHint: 'Bedrock is updated automatically via Microsoft Store / Xbox; no version selection needed.',
+    robloxHint: 'Roblox does not need a version. Save your Roblox username in Settings.',
   },
   versionFilters: {
     legacyFabric: 'Legacy Fabric supported versions',
@@ -184,6 +197,7 @@ export default {
       rift: "Rift",
       vanilla: "Vanilla Mods",
       bedrock: "Minecraft Bedrock",
+      roblox: "Roblox",
     },
     shaderLabels: {
       fabric: "Shader + FPS (Sodium + Iris + selected shader pack)",
@@ -222,6 +236,7 @@ export default {
       rift: "Rift will install automatically. Saves and settings live under profiles/rift-<version>/. Only 1.13 and 1.13.2 are supported.",
       vanilla: "Vanilla selected — starts with the official Minecraft profile. Resource-pack mods (Fullbright, Better Leaves, Glowing Ores, Round Trees, 3D crops) download automatically when selected; Fabric+Continuity or OptiFine is needed for connected textures.",
       bedrock: "Bedrock (Minecraft for Windows) launches as the Microsoft Store app. No version selection; updates come via Store/Xbox. Windows only.",
+      roblox: "Launches Roblox Player (Windows). If you have no account, a sign-up page opens; save your username under Settings → Roblox. Default region: United States (en-US).",
       forgeOptifineOk: "Forge + classic OptiFine.jar will download automatically. OptiFine includes its own shader and CTM system; cannot be combined with Shader + FPS.",
       forgeOptifineUnsupported: "⚠ OptiFine does not support \"{version}\". OptiFine was last released for 1.21.9 — pick an older version or use \"Forge\" (without OptiFine).",
     },
@@ -235,7 +250,7 @@ export default {
       glowingOresVersion: "Select Minecraft 1.17 or newer for Glowing Ores.",
       roundTreesUnsupported: "Round Trees is not supported on this version.",
       crops3dUnsupported: "3D crops Revamped is not supported on this version.",
-      schematicFarmVersion: "Select Minecraft 1.16+ or 26.x Fabric for Schematic Farm.",
+      schematicFarmVersion: 'Select Minecraft 1.20 – 26.2 Fabric for Schematic Farm.',
     },
   },
   loaders: {
@@ -246,6 +261,10 @@ export default {
     bedrock: {
       label: 'Bedrock (Windows)',
       hint: 'Minecraft for Windows (Microsoft Store). No Marsana account needed; sign in with Microsoft/Xbox after the game opens. Java mods do not apply.',
+    },
+    roblox: {
+      label: 'Roblox (Windows)',
+      hint: 'Launches Roblox Player. On first use, account creation opens in the browser; save your username in Settings.',
     },
     fabric: {
       label: 'Fabric',
@@ -312,6 +331,24 @@ export default {
     modrinthDesc: 'Download mods and shaders',
     forge: 'Forge',
     forgeDesc: 'Forge mod loader',
+  },
+  platforms: {
+    title: 'Other platforms',
+    intro: 'You are on {current}. Download Marsana Launcher for other devices too.',
+    current: 'this platform',
+    allDownloads: 'View all downloads',
+    windows: 'Windows',
+    windowsDesc: 'Windows 10/11 · .exe installer',
+    macos: 'macOS',
+    macosDesc: 'Intel & Apple Silicon · .dmg',
+    linux: 'Linux',
+    linuxDesc: 'x86_64 · .AppImage',
+    android: 'Android',
+    androidDesc: 'Bedrock launcher · .apk',
+    ios: 'iOS',
+    iosDesc: 'Sideloadly/AltStore · .ipa',
+    mobileWeb: 'Mobile web',
+    mobileWebDesc: 'Quick access from your browser',
   },
   servers: {
     title: 'Recommended Servers',
@@ -406,5 +443,6 @@ export default {
     microsoft: 'Microsoft',
     xbox: 'Xbox',
     playstation: 'PlayStation',
+    bedrockOnly: 'Bedrock (no Java)',
   },
 };

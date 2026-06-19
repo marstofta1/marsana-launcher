@@ -12,6 +12,7 @@ export const openExternal = api.openExternal;
 export const applyModIsolation = api.applyModIsolation;
 export const app = api.app;
 export const updates = api.updates;
+export const roblox = api.roblox;
 
 export const events = {
   onProgress: (handler) => api.on(api.channels.PROGRESS, handler),

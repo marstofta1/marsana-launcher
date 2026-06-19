@@ -11,6 +11,7 @@ const {
 } = require('../../shared/ornitheCompatibility');
 const { LauncherError, Codes } = require('../infra/errors');
 const marsanaClientModService = require('../mods/marsanaClientModService');
+const schematicFarmModService = require('../mods/schematicFarmModService');
 const hudDepsService = require('../mods/hudDepsService');
 const modCompatibilityService = require('../mods/modCompatibilityService');
 const modIsolationService = require('../mods/modIsolationService');
@@ -96,12 +97,45 @@ function legacyProfileDir(gameRoot, loader, version) {
   return path.join(gameRoot, 'profiles', `${loader}-${version}`);
 }
 
+function stripUnavailableBundledModPresets(modPresets, repoRoot, gameVersion, emit) {
+  const p = { ...(modPresets || {}) };
+  if (!repoRoot) return p;
+  const skipped = [];
+  if (p.clientHudPack && !/^26\./.test(String(gameVersion || ''))) {
+    p.clientHudPack = false;
+    skipped.push('Client HUD paketi');
+  }
+  if (
+    p.marsanaClientMenu &&
+    !marsanaClientModService.bundledJarAvailable(repoRoot, gameVersion)
+  ) {
+    p.marsanaClientMenu = false;
+    skipped.push('Marsana Client menüsü');
+  }
+  if (
+    p.schematicFarm &&
+    !schematicFarmModService.bundledJarAvailable(repoRoot, gameVersion)
+  ) {
+    p.schematicFarm = false;
+    skipped.push('Sematik Farm');
+  }
+  if (skipped.length > 0 && emit && emit.status) {
+    emit.status({
+      text:
+        `${skipped.join(' ve ')} bu Minecraft sürümü için pakette yok — atlanıyor. ` +
+        'Diğer modlar kurulmaya devam edecek.',
+    });
+  }
+  return p;
+}
+
 function createLaunchService({
   paths,
   httpClient,
   authService,
   shaderStackService,
   bedrockLaunchService,
+  robloxLaunchService,
   fabricInstaller,
   forgeInstaller,
   neoforgeInstaller,
@@ -115,6 +149,7 @@ function createLaunchService({
   versionService,
   javaRuntimeService,
   logger,
+  repoRoot,
 }) {
   function ensureGameRoot() {
     if (!fs.existsSync(paths.gameRoot)) fs.mkdirSync(paths.gameRoot, { recursive: true });
@@ -174,7 +209,7 @@ function createLaunchService({
 
   async function buildFabricBetaSpec({ version, modPresets, shaderSlug, playMode, emit }) {
     const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false, roundTrees: false, crops3d: false };
-    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.clientHudPack);
+    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.clientHudPack || presets.marsanaClientMenu);
     if (useMods) {
       const effectiveVersion = effectiveModGameVersion(version);
       if (effectiveVersion !== version && emit && emit.status) {
@@ -293,7 +328,7 @@ function createLaunchService({
 
   async function buildFabricSpec({ version, modPresets, shaderSlug, playMode, emit }) {
     const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false, roundTrees: false, crops3d: false };
-    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.clientHudPack);
+    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.clientHudPack || presets.marsanaClientMenu);
     if (!useFabric) {
       return { spec: { number: version, type: 'release' }, overrides: { detached: false }, extra: {} };
     }
@@ -1013,6 +1048,12 @@ function createLaunchService({
       return bedrockLaunchService.launch(emit);
     }
 
+    if (loaderId === 'roblox') {
+      return robloxLaunchService.launch(emit, {
+        username: opts && opts.robloxUsername,
+      });
+    }
+
     if (!opts || !opts.version) {
       throw new LauncherError(Codes.VERSION_NOT_SELECTED, 'Sürüm seçilmedi.');
     }
@@ -1034,22 +1075,27 @@ function createLaunchService({
 
     const memMb = clampMemory(opts.memoryMb);
     const playMode = opts.playMode === 'launcher' ? 'launcher' : opts.playMode === 'client' ? 'client' : 'launcher';
-    const modPresets = marsanaClientModService.sanitizeModPresetsForPlayMode(
-      opts.modPresets || {
-        optifine: false,
-        shaderFps: !!opts.shaderStack,
-        embossedBlocks: false,
-        voiceChat: false,
-        fullbrightUb: false,
-        betterLeaves: false,
-        glowingOres: false,
-        roundTrees: false,
-        crops3d: false,
-        schematicFarm: playMode === 'client',
-        marsanaClientMenu: playMode === 'client',
-        clientHudPack: playMode === 'client',
-      },
-      playMode
+    const modPresets = stripUnavailableBundledModPresets(
+      marsanaClientModService.sanitizeModPresetsForPlayMode(
+        opts.modPresets || {
+          optifine: false,
+          shaderFps: !!opts.shaderStack,
+          embossedBlocks: false,
+          voiceChat: false,
+          fullbrightUb: false,
+          betterLeaves: false,
+          glowingOres: false,
+          roundTrees: false,
+          crops3d: false,
+          schematicFarm: playMode === 'client',
+          marsanaClientMenu: playMode === 'client',
+          clientHudPack: playMode === 'client',
+        },
+        playMode
+      ),
+      repoRoot,
+      effectiveModGameVersion(opts.version),
+      emit
     );
 
     const modsDirPath = path.join(paths.gameRoot, 'mods');

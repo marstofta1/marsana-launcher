@@ -13,6 +13,8 @@ const { createVersionService } = require('../core/minecraft/versionService');
 const { createJavaRuntimeService } = require('../core/minecraft/javaRuntimeService');
 const { createLaunchService } = require('../core/minecraft/launchService');
 const { createBedrockLaunchService } = require('../core/minecraft/bedrockLaunchService');
+const { createRobloxAccountStore } = require('../core/games/robloxAccountStore');
+const { createRobloxLaunchService } = require('../core/games/robloxLaunchService');
 
 const { createModrinthClient } = require('../core/mods/modrinthClient');
 const { createFabricInstaller } = require('../core/mods/fabricInstaller');
@@ -76,6 +78,11 @@ function buildContainer({ userDataDir, repoRoot }) {
   });
 
   const bedrockLaunchService = createBedrockLaunchService({ logger: logger.child('bedrock') });
+  const robloxAccountStore = createRobloxAccountStore({ userDataDir });
+  const robloxLaunchService = createRobloxLaunchService({
+    logger: logger.child('roblox'),
+    robloxAccountStore,
+  });
 
   const launchService = createLaunchService({
     paths,
@@ -83,6 +90,7 @@ function buildContainer({ userDataDir, repoRoot }) {
     authService,
     shaderStackService,
     bedrockLaunchService,
+    robloxLaunchService,
     fabricInstaller,
     forgeInstaller,
     neoforgeInstaller,
@@ -96,6 +104,7 @@ function buildContainer({ userDataDir, repoRoot }) {
     versionService,
     javaRuntimeService,
     logger: logger.child('launch'),
+    repoRoot,
   });
 
   const loaderSupport = Object.freeze({
@@ -124,6 +133,8 @@ function buildContainer({ userDataDir, repoRoot }) {
     launchService,
     recommendedServersService,
     analyticsService,
+    robloxAccountStore,
+    robloxLaunchService,
   });
 }
 

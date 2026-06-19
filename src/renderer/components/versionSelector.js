@@ -250,11 +250,22 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     filterHint.textContent = i18n.t('versionFilters.filtering', { parts: parts.join(', ') });
   }
 
-  function updateBedrockUi(state) {
-    const isBedrock = (state.selectedLoader || '') === 'bedrock';
-    if (versionField) versionField.style.display = isBedrock ? 'none' : '';
-    if (bedrockVersionHint) bedrockVersionHint.style.display = isBedrock ? '' : 'none';
-    if (filterHint && isBedrock) {
+  function updateExternalLoaderUi(state) {
+    const loader = state.selectedLoader || '';
+    const hideVersion = loader === 'bedrock' || loader === 'roblox';
+    if (versionField) versionField.style.display = hideVersion ? 'none' : '';
+    if (bedrockVersionHint) {
+      if (loader === 'bedrock') {
+        bedrockVersionHint.style.display = '';
+        bedrockVersionHint.textContent = i18n.t('version.bedrockHint');
+      } else if (loader === 'roblox') {
+        bedrockVersionHint.style.display = '';
+        bedrockVersionHint.textContent = i18n.t('version.robloxHint');
+      } else {
+        bedrockVersionHint.style.display = 'none';
+      }
+    }
+    if (filterHint && hideVersion) {
       filterHint.style.display = 'none';
       filterHint.textContent = '';
     }
@@ -269,8 +280,8 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     }
     clearVersionLoadError();
     const state = store.getState();
-    updateBedrockUi(state);
-    if ((state.selectedLoader || '') === 'bedrock') {
+    updateExternalLoaderUi(state);
+    if ((state.selectedLoader || '') === 'bedrock' || (state.selectedLoader || '') === 'roblox') {
       if (state.selectedVersion !== null) {
         store.setState({ selectedVersion: null, selectedVersionType: 'release' });
       }
@@ -371,9 +382,10 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     void refreshManifestFromNetwork();
     const unsubs = [
       store.subscribe((state) => {
-        updateBedrockUi(state);
+        updateExternalLoaderUi(state);
         const nextKey = filterKey(state);
-        if ((state.selectedLoader || '') === 'bedrock') {
+        const extLoader = (state.selectedLoader || '') === 'bedrock' || (state.selectedLoader || '') === 'roblox';
+        if (extLoader) {
           if (state.selectedVersion !== null) {
             store.setState({ selectedVersion: null, selectedVersionType: 'release' });
           }

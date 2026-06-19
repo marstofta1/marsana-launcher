@@ -1,3 +1,5 @@
+import { schematicFarmJarBundledForVersion } from './schematicFarmBundledLines.js';
+
 function isReleaseStyleVersionId(id) {
   return /^\d+\.\d+(\.\d+)?$/.test(String(id || ''));
 }
@@ -127,9 +129,24 @@ export function roundTreesSupported(versionId) {
   return fullbrightUbSupported(versionId);
 }
 
-/** Marsana Sematik Farm — Fabric client modu; 26.x ve 1.16+ desteklenir. */
+/** Marsana Sematik Farm — Fabric client modu; 1.20 – 26.2 araliginda desteklenir. */
 export function schematicFarmSupported(versionId) {
-  return voiceChatSupported(versionId);
+  const v = String(versionId || '').trim();
+  if (!v || v === 'Yükleniyor...') return true;
+  if (/^26\./.test(v)) return true;
+  const m = v.match(/^1\.(\d+)/);
+  if (!m) return voiceChatSupported(versionId);
+  return parseInt(m[1], 10) >= 20;
+}
+
+/** Launcher paketinde gömülü Marsana Client menüsü jar'ı yalnızca 26.x için mevcut. */
+export function marsanaBundledClientModsAvailable(versionId) {
+  return /^26\./.test(String(versionId || '').trim());
+}
+
+/** Sematik Farm bundled jar — surum satiri pakette jar varsa true. */
+export function schematicFarmBundledAvailable(versionId) {
+  return schematicFarmJarBundledForVersion(versionId);
 }
 
 export function selectionRequiresReleaseVersions({

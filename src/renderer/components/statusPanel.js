@@ -38,13 +38,38 @@ export function createStatusPanel({ root, store, events }) {
   const bar = root.querySelector('[data-role="bar"]');
   const log = root.querySelector('[data-role="log"]');
 
-  function render(state) {
-    text.textContent = state.statusText || 'Hazır.';
-    bar.style.width = `${(state.progressPercent || 0).toFixed(1)}%`;
-    if (Array.isArray(state.logLines)) {
-      log.textContent = state.logLines.join('\n');
-      log.scrollTop = log.scrollHeight;
+  let lastStatusText = '';
+  let lastProgress = -1;
+  let lastLogCount = 0;
+
+  function updateStatus(state) {
+    const st = state.statusText || 'Hazır.';
+    if (st !== lastStatusText) {
+      lastStatusText = st;
+      text.textContent = st;
     }
+    const pct = state.progressPercent || 0;
+    if (pct !== lastProgress) {
+      lastProgress = pct;
+      bar.style.width = `${pct.toFixed(1)}%`;
+    }
+  }
+
+  function syncLogLines(lines) {
+    const arr = Array.isArray(lines) ? lines : [];
+    if (arr.length === lastLogCount) return;
+    if (arr.length < lastLogCount || lastLogCount === 0) {
+      log.textContent = arr.join('\n');
+    } else {
+      log.textContent += `\n${arr.slice(lastLogCount).join('\n')}`;
+    }
+    lastLogCount = arr.length;
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function render(state) {
+    updateStatus(state);
+    syncLogLines(state.logLines);
   }
 
   function appendLog(line) {
@@ -79,7 +104,9 @@ export function createStatusPanel({ root, store, events }) {
       const crashed = code === 4294967295 || code === -1;
       let statusText = loader === 'bedrock'
         ? 'Minecraft Bedrock başlatıldı.'
-        : `Oyun kapandı (kod: ${code}).`;
+        : loader === 'roblox'
+          ? 'Roblox Player başlatıldı.'
+          : `Oyun kapandı (kod: ${code}).`;
       const hint = code === 1 || crashed ? launchFailureHint(logLines) : '';
       if (hint) statusText = `${statusText} ${hint}`;
       if (crashed && loader === 'ornithe') {

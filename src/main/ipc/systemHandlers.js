@@ -6,6 +6,7 @@ const path = require('path');
 const { app } = require('electron');
 
 const { SYSTEM } = require('../../shared/ipcChannels');
+const platformInfo = require('../../shared/platform');
 const modIsolationService = require('../../core/mods/modIsolationService');
 const marsanaClientModService = require('../../core/mods/marsanaClientModService');
 
@@ -13,6 +14,8 @@ const ALLOWED_PROTOCOLS = new Set(['https:', 'http:']);
 
 function registerSystemHandlers({ ipcMain, shell, paths }) {
   ipcMain.handle(SYSTEM.GET_VERSION, () => app.getVersion());
+
+  ipcMain.handle(SYSTEM.GET_PLATFORM, () => platformInfo.platform);
 
   ipcMain.handle(SYSTEM.OPEN_EXTERNAL, (_event, url) => {
     try {

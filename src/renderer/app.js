@@ -14,6 +14,8 @@ import { createRecommendedServers } from './components/recommendedServers.js';
 import { createPlayerProfileCard } from './components/playerProfileCard.js';
 import { createBottomLinks } from './components/bottomLinks.js';
 import { createWebsiteLinksPanel } from './components/websiteLinksPanel.js';
+import { createPlatformsPanel } from './components/platformsPanel.js';
+import { initBootSplash, setBootSplashStatus, dismissBootSplash } from './bootSplash.js';
 import { createModeSwitcher, updateBranding } from './components/modeSwitcher.js';
 import { createCosmeticsPanel } from './components/cosmeticsPanel.js';
 import { wireUpdateFlow } from './components/updateFlow.js';
@@ -42,8 +44,10 @@ function $(id) {
 }
 
 async function bootstrap() {
+  initBootSplash();
   const persistedSettings = loadSettings();
   applyAmbientSettings(persistedSettings);
+  setBootSplashStatus('Ayarlar yükleniyor…');
 
   const verEl = document.querySelector('.app-version');
   if (verEl && api.app && typeof api.app.getVersion === 'function') {
@@ -140,10 +144,16 @@ async function bootstrap() {
     createMemorySlider({ root: $('memory-slot'), store, i18n }),
     createModsPanel({ root: $('mods-slot'), store, i18n }),
     createLaunchOptions({ root: $('launch-options-slot'), store, i18n }),
-    createPlayButton({ root: $('play-slot'), store, launchApi: api.launch, i18n }),
+    createPlayButton({ root: $('play-slot'), store, launchApi: api.launch, i18n, robloxApi: api.roblox }),
     createStatusPanel({ root: $('status-slot'), store, events: api.events }),
     createPlayerProfileCard({ root: $('profile-slot'), store, i18n }),
     createCosmeticsPanel({ root: $('cosmetics-slot'), store, i18n }),
+    createPlatformsPanel({
+      root: $('platforms-slot'),
+      openExternal: api.openExternal,
+      i18n,
+      getNativePlatform: () => api.app.getPlatform(),
+    }),
     createWebsiteLinksPanel({ root: $('website-links-slot'), openExternal: api.openExternal, i18n }),
     createRecommendedServers({
       root: $('servers-slot'),
@@ -156,7 +166,8 @@ async function bootstrap() {
     createBottomLinks({ root: $('bottom-links-slot'), openExternal: api.openExternal, i18n }),
   ];
 
-  for (const c of components) await c.mount();
+  setBootSplashStatus('Arayüz hazırlanıyor…');
+  await Promise.all(components.map((c) => c.mount()));
 
   createModeSwitcher({
     root: $('mode-switcher-slot'),
@@ -176,18 +187,40 @@ async function bootstrap() {
     modalRoot: $('settings-modal-slot'),
     store,
     i18n,
+    robloxApi: api.roblox,
+    openExternal: api.openExternal,
   });
 
   startAutoThemeWatcher(store);
 
-  const cached = await api.auth.current();
-  if (cached) {
-    store.setState({ user: cached });
-    const refreshed = await api.auth.refresh();
-    if (refreshed) store.setState({ user: refreshed });
-  }
+  setBootSplashStatus('Hesap kontrol ediliyor…');
+  const authPromise = (async () => {
+    const cached = await api.auth.current();
+    if (cached) {
+      store.setState({
+        user: cached,
+        ...(cached.bedrockOnly ? { selectedLoader: 'bedrock' } : {}),
+      });
+      if (cached.bedrockOnly) {
+        store.setState({
+          statusText: i18n.t('auth.bedrockOnlyReady', { name: cached.name }),
+        });
+      }
+      const refreshed = await api.auth.refresh();
+      if (refreshed) {
+        store.setState({
+          user: refreshed,
+          ...(refreshed.bedrockOnly ? { selectedLoader: 'bedrock' } : {}),
+        });
+      }
+    }
+  })();
+
+  await authPromise;
+  dismissBootSplash();
 }
 
 bootstrap().catch((err) => {
   console.error('Bootstrap error', err);
+  dismissBootSplash();
 });

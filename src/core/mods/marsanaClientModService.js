@@ -30,6 +30,10 @@ function bundledJarPath(repoRoot, gameVersion) {
   return null;
 }
 
+function bundledJarAvailable(repoRoot, gameVersion) {
+  return !!bundledJarPath(repoRoot, gameVersion);
+}
+
 /** Gömülü jar CPS/HUD sınıflarını içeriyor mu (eski build uyarısı). */
 function bundledJarIncludesHud(jarPath) {
   if (!jarPath || !fs.existsSync(jarPath)) return false;
@@ -183,6 +187,7 @@ module.exports = {
   bundledModsRoot,
   modLineForGameVersion,
   bundledJarPath,
+  bundledJarAvailable,
   bundledJarIncludesHud,
   configPath,
   readConfig,

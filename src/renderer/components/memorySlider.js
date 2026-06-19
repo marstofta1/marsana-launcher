@@ -28,7 +28,8 @@ export function createMemorySlider({ root, store, i18n }) {
     }
 
     slider.addEventListener('input', publish);
-    wrap.style.display = (state.selectedLoader || '') === 'bedrock' ? 'none' : '';
+    const hide = (state.selectedLoader || '') === 'bedrock' || (state.selectedLoader || '') === 'roblox';
+    wrap.style.display = hide ? 'none' : '';
   }
 
   function mount() {
@@ -36,7 +37,11 @@ export function createMemorySlider({ root, store, i18n }) {
     const unsubs = [
       store.subscribe((state) => {
         const wrap = root.querySelector('[data-role="memory-wrap"]');
-        if (wrap) wrap.style.display = (state.selectedLoader || '') === 'bedrock' ? 'none' : '';
+        if (wrap) {
+          const hide =
+            (state.selectedLoader || '') === 'bedrock' || (state.selectedLoader || '') === 'roblox';
+          wrap.style.display = hide ? 'none' : '';
+        }
       }),
       i18n.onChange(render),
     ];

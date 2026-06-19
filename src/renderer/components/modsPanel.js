@@ -10,6 +10,7 @@ import {
   roundTreesSupported,
   crops3dSupported,
   schematicFarmSupported,
+  schematicFarmBundledAvailable,
   forgeOptifineLikelySupported,
   fabricOptifinePackSupported,
 } from '../../shared/versionCompatibility.js';
@@ -17,6 +18,7 @@ import {
 const LOADER_OPTIONS = [
   { value: 'vanilla' },
   { value: 'bedrock' },
+  { value: 'roblox' },
   { value: 'fabric' },
   { value: 'fabric-beta' },
   { value: 'forge' },
@@ -324,7 +326,7 @@ export function createModsPanel({ root, store, i18n }) {
     const goOk = !isSnapshot && glowingOresSupported(v);
     const rtOk = !isSnapshot && roundTreesSupported(v);
     const c3Ok = !isSnapshot && crops3dSupported(v);
-    const sfOk = !isSnapshot && schematicFarmSupported(v);
+    const sfOk = !isSnapshot && schematicFarmSupported(v) && schematicFarmBundledAvailable(v);
 
     if (isSnapshot) {
       const reason = modT('tooltips.snapshot');
@@ -541,6 +543,12 @@ export function createModsPanel({ root, store, i18n }) {
       shaderLabelKey: null,
       embossedLabelKey: null,
     },
+    roblox: {
+      rows: [],
+      titleKey: 'titles.roblox',
+      shaderLabelKey: null,
+      embossedLabelKey: null,
+    },
   };
 
   const LOADER_WARNING_KEYS = {
@@ -554,6 +562,7 @@ export function createModsPanel({ root, store, i18n }) {
     rift: 'loaderWarnings.rift',
     vanilla: 'loaderWarnings.vanilla',
     bedrock: 'loaderWarnings.bedrock',
+    roblox: 'loaderWarnings.roblox',
   };
 
   function applyLoaderState() {
@@ -666,6 +675,15 @@ export function createModsPanel({ root, store, i18n }) {
           loaderWarning.style.display = 'none';
         }
       }
+    }
+    const bedrockOnly = !!store.getState().user?.bedrockOnly;
+    for (const opt of LOADER_OPTIONS) {
+      const el = loaderRadioEls[opt.value];
+      if (!el) continue;
+      const allowed = !bedrockOnly || opt.value === 'bedrock';
+      el.disabled = !allowed;
+      const optionWrap = el.closest('.loader-option');
+      if (optionWrap) optionWrap.style.opacity = allowed ? '' : '0.45';
     }
     updateShaderPickerVisibility();
   }
@@ -825,6 +843,27 @@ export function createModsPanel({ root, store, i18n }) {
     applyPlayModeVisibility(state);
   }
 
+  function modsStoreKey(state) {
+    return [
+      state.selectedLoader,
+      state.playMode,
+      state.selectedVersion,
+      state.selectedVersionType,
+      state.modOptifine,
+      state.modShaderFps,
+      state.modEmbossedBlocks,
+      state.modVoiceChat,
+      state.modFullbrightUb,
+      state.modBetterLeaves,
+      state.modGlowingOres,
+      state.modRoundTrees,
+      state.modCrops3d,
+      state.modSchematicFarm,
+      state.selectedShader,
+      state.user?.bedrockOnly ? '1' : '0',
+    ].join('\0');
+  }
+
   function mount() {
     const initial = store.getState();
     const patch = {};
@@ -832,8 +871,12 @@ export function createModsPanel({ root, store, i18n }) {
     if (!initial.selectedShader) patch.selectedShader = DEFAULT_SHADER_SLUG;
     if (Object.keys(patch).length > 0) store.setState(patch);
     renderFromStore(store.getState());
+    let lastModsKey = modsStoreKey(store.getState());
     const unsubs = [
       store.subscribe((state) => {
+        const key = modsStoreKey(state);
+        if (key === lastModsKey) return;
+        lastModsKey = key;
         renderFromStore(state);
       }),
       i18n.onChange(applyModsI18n),

@@ -11,7 +11,7 @@ const version = pkg.version;
 const downloadsDir = path.join(root, 'docs', 'downloads');
 
 /** GitHub'daki son macOS paketi (yerel .dmg yoksa kullanılır). */
-const MACOS_RELEASE = process.env.MARSANA_MACOS_RELEASE || '0.1.27';
+const MACOS_RELEASE = process.env.MARSANA_MACOS_RELEASE || version;
 const GITHUB_REPO = 'marstofta1/marsana-launcher';
 
 const PLATFORMS = [

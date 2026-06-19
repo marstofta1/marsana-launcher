@@ -8,6 +8,7 @@ const {
   SERVERS,
   SYSTEM,
   UPDATE,
+  ROBLOX,
   RENDERER_EVENT_CHANNELS,
 } = require('../shared/ipcChannels');
 
@@ -33,6 +34,7 @@ const api = Object.freeze({
   applyModIsolation: (payload) => ipcRenderer.invoke(SYSTEM.APPLY_MOD_ISOLATION, payload),
   app: Object.freeze({
     getVersion: () => ipcRenderer.invoke(SYSTEM.GET_VERSION),
+    getPlatform: () => ipcRenderer.invoke(SYSTEM.GET_PLATFORM),
   }),
   updates: Object.freeze({
     check: () => ipcRenderer.invoke(UPDATE.CHECK),
@@ -43,6 +45,12 @@ const api = Object.freeze({
       ipcRenderer.on(channel, listener);
       return () => ipcRenderer.removeListener(channel, listener);
     },
+  }),
+  roblox: Object.freeze({
+    getAccount: () => ipcRenderer.invoke(ROBLOX.GET_ACCOUNT),
+    saveAccount: (payload) => ipcRenderer.invoke(ROBLOX.SAVE_ACCOUNT, payload),
+    clearAccount: () => ipcRenderer.invoke(ROBLOX.CLEAR_ACCOUNT),
+    signupUrl: () => ipcRenderer.invoke(ROBLOX.SIGNUP_URL),
   }),
   on: (channel, handler) => {
     if (!allowedEventChannels.has(channel)) return () => {};

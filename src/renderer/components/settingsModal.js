@@ -11,7 +11,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   masterVolume: 100,        // 0-100
   musicVolume: 50,          // 0-100
   animations: true,
-  rememberSelection: false, // Kapalıyken her açılış Fabric+Shader; açıkken son loader/mod seçimi geri yüklenir.
+  rememberSelection: false,
+  robloxUsername: '',
 });
 
 export function resolveAutoTheme(date = new Date()) {
@@ -100,11 +101,19 @@ export function startAutoThemeWatcher(store) {
   }, 60 * 1000);
 }
 
-export function wireSettingsModal({ button, modalRoot, store, i18n }) {
+export function wireSettingsModal({ button, modalRoot, store, i18n, robloxApi, openExternal }) {
   const { t, LOCALES: localeOptions } = i18n;
 
-  function render() {
-    const s = store.getState().settings || { ...DEFAULT_SETTINGS };
+  async function render() {
+    const s = { ...DEFAULT_SETTINGS, ...(store.getState().settings || {}) };
+    if (robloxApi && typeof robloxApi.getAccount === 'function') {
+      try {
+        const rbx = await robloxApi.getAccount();
+        if (rbx?.username) s.robloxUsername = rbx.username;
+      } catch {
+        /* ignore */
+      }
+    }
     const lang = s.language || 'tr';
     modalRoot.innerHTML = `
       <div class="modal-overlay" data-role="overlay">
@@ -184,6 +193,13 @@ export function wireSettingsModal({ button, modalRoot, store, i18n }) {
             <p class="settings-hint">${t('settings.rememberSelectionHint')}</p>
           </div>
 
+          <div class="settings-group">
+            <span class="settings-group-label">${t('settings.robloxUsername')}</span>
+            <input type="text" class="settings-text-input" data-role="robloxUsername" maxlength="64" value="${String(s.robloxUsername || '').replace(/"/g, '&quot;')}" placeholder="${t('settings.robloxUsernamePlaceholder')}" autocomplete="off" />
+            <p class="settings-hint">${t('settings.robloxUsernameHint')}</p>
+            <button type="button" class="btn ghost settings-inline-btn" data-role="robloxSignup">${t('settings.robloxSignup')}</button>
+          </div>
+
           <div class="modal-actions">
             <button class="btn ghost" data-role="cancel">${t('common.close')}</button>
             <button class="btn primary" data-role="save">${t('common.save')}</button>
@@ -200,6 +216,8 @@ export function wireSettingsModal({ button, modalRoot, store, i18n }) {
     const musicVal = modalRoot.querySelector('[data-role="musicVolume-val"]');
     const animationsCb = modalRoot.querySelector('[data-role="animations"]');
     const rememberCb = modalRoot.querySelector('[data-role="rememberSelection"]');
+    const robloxUsernameInput = modalRoot.querySelector('[data-role="robloxUsername"]');
+    const robloxSignupBtn = modalRoot.querySelector('[data-role="robloxSignup"]');
     const themeNight = modalRoot.querySelector('[data-role="theme-night"]');
     const themeDay = modalRoot.querySelector('[data-role="theme-day"]');
     const themeAuto = modalRoot.querySelector('[data-role="theme-auto"]');
@@ -231,6 +249,20 @@ export function wireSettingsModal({ button, modalRoot, store, i18n }) {
     rememberCb.addEventListener('change', () => {
       setDraft({ rememberSelection: rememberCb.checked });
     });
+    if (robloxUsernameInput) {
+      robloxUsernameInput.addEventListener('input', () => {
+        setDraft({ robloxUsername: robloxUsernameInput.value.trim() });
+      });
+    }
+    if (robloxSignupBtn && openExternal) {
+      robloxSignupBtn.addEventListener('click', async () => {
+        const url =
+          robloxApi && typeof robloxApi.signupUrl === 'function'
+            ? await robloxApi.signupUrl()
+            : 'https://www.roblox.com/CreateAccount?locale=en_us';
+        openExternal(url);
+      });
+    }
     languageSelect.addEventListener('change', () => {
       const language = languageSelect.value;
       setDraft({ language });
@@ -265,10 +297,18 @@ export function wireSettingsModal({ button, modalRoot, store, i18n }) {
     }
 
     cancelBtn.addEventListener('click', () => close(true));
-    saveBtn.addEventListener('click', () => {
+    saveBtn.addEventListener('click', async () => {
       saveSettings(draft);
       store.setState({ settings: draft });
       applyAmbientSettings(draft);
+      const rbxName = String(draft.robloxUsername || '').trim();
+      if (rbxName && robloxApi && typeof robloxApi.saveAccount === 'function') {
+        try {
+          await robloxApi.saveAccount({ username: rbxName, locale: 'en-us' });
+        } catch {
+          /* ignore */
+        }
+      }
       close(false);
     });
 

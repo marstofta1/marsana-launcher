@@ -504,6 +504,7 @@ function modrinthSlugsForPresets(p, gameVersion) {
     for (const slug of CLIENT_HUD_REQUIRED_SLUGS) add(slug);
     for (const slug of CLIENT_HUD_MOD_SLUGS) add(slug);
   }
+  if (p.schematicFarm || p.marsanaClientMenu) add('fabric-api');
   return out;
 }
 
@@ -1027,8 +1028,14 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       !allFilesExist(resourcepacksDir, existing.resourcepacks || []) ||
       (existing.shaderpacks || []).some((name) => /§/.test(String(name))) ||
       !clientHudDependenciesOk(modsDir, modPresets) ||
-      (modPresets.marsanaClientMenu && !marsanaClientModService.marsanaClientJarPresent(modsDir)) ||
-      (modPresets.schematicFarm && !schematicFarmModService.schematicFarmJarPresent(modsDir)) ||
+      (modPresets.marsanaClientMenu &&
+        repoRoot &&
+        marsanaClientModService.bundledJarAvailable(repoRoot, gameVersion) &&
+        !marsanaClientModService.marsanaClientJarPresent(modsDir)) ||
+      (modPresets.schematicFarm &&
+        repoRoot &&
+        schematicFarmModService.bundledJarAvailable(repoRoot, gameVersion) &&
+        !schematicFarmModService.schematicFarmJarPresent(modsDir)) ||
       (modPresets.shaderFps &&
         !modPresets.optifine &&
         !modCompatibilityService.coreSodiumJarPresent(modsDir, gameVersion)) ||
@@ -1840,7 +1847,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable', playMode }) {
     const presets = normalizePresets(modPresets);
-    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm && !presets.clientHudPack) {
+    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm && !presets.clientHudPack && !presets.marsanaClientMenu) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
     }
 

@@ -47,7 +47,9 @@ export function createAccountCard({ root, store, auth, openExternal, i18n }) {
 
     const via = document.createElement('span');
     via.className = 'user-via';
-    via.textContent = methodLabel(user.loginMethod);
+    via.textContent = user.bedrockOnly
+      ? i18n.t('account.bedrockOnly')
+      : methodLabel(user.loginMethod);
     meta.appendChild(via);
 
     wrap.appendChild(meta);
@@ -71,10 +73,16 @@ export function createAccountCard({ root, store, auth, openExternal, i18n }) {
     store.setState({ statusText: i18n.t(openingKey) });
     try {
       const user = await auth.login(option.id);
-      store.setState({
+      const patch = {
         user,
-        statusText: i18n.t('auth.loginSuccess', { name: user.name }),
-      });
+        statusText: user.bedrockOnly
+          ? i18n.t('auth.bedrockOnlyLoginSuccess', { name: user.name })
+          : i18n.t('auth.loginSuccess', { name: user.name }),
+      };
+      if (user.bedrockOnly) {
+        patch.selectedLoader = 'bedrock';
+      }
+      store.setState(patch);
     } catch (err) {
       store.setState({
         statusText: i18n.t('auth.loginFailed', { error: err.message || err }),
