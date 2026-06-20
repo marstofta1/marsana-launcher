@@ -71,6 +71,11 @@ export function createAccountCard({ root, store, auth, openExternal, i18n }) {
     loggingIn = true;
     const openingKey = OPENING_KEYS[option.id] || OPENING_KEYS[AUTH_METHODS.MICROSOFT];
     store.setState({ statusText: i18n.t(openingKey) });
+    const buttons = root.querySelectorAll('.auth-method');
+    for (const b of buttons) {
+      b.disabled = true;
+      b.setAttribute('aria-busy', 'true');
+    }
     try {
       const user = await auth.login(option.id);
       const patch = {
@@ -89,6 +94,10 @@ export function createAccountCard({ root, store, auth, openExternal, i18n }) {
       });
     } finally {
       loggingIn = false;
+      for (const b of root.querySelectorAll('.auth-method')) {
+        b.disabled = false;
+        b.removeAttribute('aria-busy');
+      }
     }
   }
 

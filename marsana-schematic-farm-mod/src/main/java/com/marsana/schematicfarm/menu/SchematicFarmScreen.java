@@ -46,7 +46,11 @@ public class SchematicFarmScreen extends Screen {
         addRenderableWidget(hologramToggleBtn);
 
         rebuildContent();
-        refreshScan();
+        if (this.minecraft != null) {
+            this.minecraft.execute(this::refreshScan);
+        } else {
+            refreshScan();
+        }
     }
 
     private void clearDynamic() {
@@ -137,7 +141,8 @@ public class SchematicFarmScreen extends Screen {
         FarmTemplate template = FarmTemplateRegistry.get(selectedFarm);
         int rightX = this.width / 2 + 10;
         int y = 58;
-        graphics.text(this.font, template.description(), rightX, y, 0xCCCCCC);
+        String description = template != null ? template.description() : "";
+        graphics.text(this.font, description, rightX, y, 0xCCCCCC);
         y += 14;
 
         BlockPos anchor = SchematicConfigManager.getSchematicAnchor();

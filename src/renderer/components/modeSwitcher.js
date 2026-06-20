@@ -3,6 +3,7 @@ import {
   CLIENT_FEATURES,
   applyClientPreset,
   isClientMode,
+  isExternalLoader,
   LAUNCHER_MODE_RESET,
 } from '../../shared/marsanaClient.js';
 
@@ -87,7 +88,14 @@ export function createModeSwitcher({ root, store, applyModIsolation, i18n }) {
     if (mode === PLAY_MODES.CLIENT) {
       store.setState(applyClientPreset(store.getState()));
     } else {
-      store.setState(LAUNCHER_MODE_RESET);
+      const prev = store.getState();
+      const patch = { ...LAUNCHER_MODE_RESET };
+      if (isExternalLoader(prev.selectedLoader)) {
+        patch.selectedLoader = prev.selectedLoader;
+      } else if (!prev.selectedLoader || prev.selectedLoader === 'fabric') {
+        patch.selectedLoader = 'fabric';
+      }
+      store.setState(patch);
     }
     updateBranding(mode, i18n.t);
     setActiveTab(mode);

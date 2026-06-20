@@ -74,19 +74,38 @@ export function isClientMode(playMode) {
   return playMode === PLAY_MODES.CLIENT;
 }
 
+export const EXTERNAL_LOADERS = Object.freeze(['bedrock', 'roblox']);
+
+export function isExternalLoader(loader) {
+  return EXTERNAL_LOADERS.includes(loader);
+}
+
+/** Client modunda Roblox/Bedrock gibi harici loader seçimleri geçersiz — preset zorunlu. */
+export function sanitizeSelectionForPlayMode(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object') return snapshot;
+  if (isClientMode(snapshot.playMode)) {
+    return applyClientPreset(snapshot);
+  }
+  return snapshot;
+}
+
 /** Gelişmiş launcher sekmesine geçince client paketi bayraklarını kapat. */
 export function normalizePersistedSelection(snapshot) {
   if (!snapshot || typeof snapshot !== 'object') return snapshot;
-  if (!isClientMode(snapshot.playMode)) {
+  const sanitized = sanitizeSelectionForPlayMode(snapshot);
+  if (!isClientMode(sanitized.playMode)) {
     return {
-      ...snapshot,
+      ...sanitized,
       ...LAUNCHER_MODE_RESET,
-      selectedLoader: snapshot.selectedLoader || 'vanilla',
-      selectedShader: snapshot.selectedShader,
-      selectedCosmetic: snapshot.selectedCosmetic,
+      selectedLoader: sanitized.selectedLoader || 'vanilla',
+      selectedShader: sanitized.selectedShader,
+      selectedCosmetic: sanitized.selectedCosmetic ?? DEFAULT_COSMETIC,
     };
   }
-  return snapshot;
+  return {
+    ...sanitized,
+    selectedCosmetic: sanitized.selectedCosmetic ?? DEFAULT_COSMETIC,
+  };
 }
 
 export const LAUNCHER_MODE_RESET = Object.freeze({

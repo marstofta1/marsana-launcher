@@ -1,10 +1,14 @@
-import { sanitizeModPresetsForPlayMode, PLAY_MODES } from '../../shared/marsanaClient.js';
+import {
+  sanitizeModPresetsForPlayMode,
+  sanitizeSelectionForPlayMode,
+  isExternalLoader,
+  isClientMode,
+  PLAY_MODES,
+} from '../../shared/marsanaClient.js';
 import {
   marsanaBundledClientModsAvailable,
   schematicFarmBundledAvailable,
 } from '../../shared/versionCompatibility.js';
-
-const EXTERNAL_LOADERS = new Set(['bedrock', 'roblox']);
 
 function launchErrorMessage(err) {
   if (!err) return 'Bilinmeyen hata';
@@ -18,8 +22,13 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
 
   let isLaunching = false;
 
+  function resolveLoader(state) {
+    if (isClientMode(state.playMode)) return 'fabric';
+    return state.selectedLoader || 'fabric';
+  }
+
   function applyLabels(state = store.getState()) {
-    const loader = state.selectedLoader || 'fabric';
+    const loader = resolveLoader(state);
     if (loader === 'bedrock') {
       btn.textContent = i18n.t('play.bedrockButton');
     } else if (loader === 'roblox') {
@@ -38,14 +47,18 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
     updateDisabled(state);
   }
 
-  function isExternalLoader(loader) {
-    return EXTERNAL_LOADERS.has(loader);
-  }
-
   async function handleClick() {
     if (isLaunching) return;
+    const raw = store.getState();
+    const sanitized = sanitizeSelectionForPlayMode(raw);
+    if (
+      sanitized.selectedLoader !== raw.selectedLoader ||
+      sanitized.modSchematicFarm !== raw.modSchematicFarm
+    ) {
+      store.setState(sanitized);
+    }
     const state = store.getState();
-    const loader = state.selectedLoader || 'fabric';
+    const loader = resolveLoader(state);
 
     if (state.user?.bedrockOnly && !isExternalLoader(loader)) {
       store.setState({ statusText: i18n.t('play.bedrockOnlyBlocked') });
@@ -140,7 +153,7 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
       btn.disabled = true;
       return;
     }
-    const loader = state.selectedLoader || 'fabric';
+    const loader = resolveLoader(state);
 
     if (loader === 'bedrock') {
       btn.disabled = false;

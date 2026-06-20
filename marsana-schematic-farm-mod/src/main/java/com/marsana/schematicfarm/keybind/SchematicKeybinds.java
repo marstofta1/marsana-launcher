@@ -38,9 +38,17 @@ public final class SchematicKeybinds {
             return;
         }
         client.execute(() -> {
-            if (client.player != null) {
-                client.setScreen(new SchematicFarmScreen());
+            if (client.player == null) {
+                return;
             }
+            if (client.screen instanceof SchematicFarmScreen) {
+                client.setScreen(null);
+                return;
+            }
+            if (client.screen != null) {
+                return;
+            }
+            client.setScreen(new SchematicFarmScreen());
         });
     }
 }

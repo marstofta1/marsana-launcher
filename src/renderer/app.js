@@ -24,6 +24,7 @@ import {
   CLIENT_MOD_PRESET,
   DEFAULT_COSMETIC,
   normalizePersistedSelection,
+  sanitizeSelectionForPlayMode,
 } from '../shared/marsanaClient.js';
 import { wireHowToPlayGuide } from './components/howToPlayGuide.js';
 import {
@@ -112,6 +113,7 @@ async function bootstrap() {
     const last = loadLastSelection();
     if (last) Object.assign(seededState, normalizePersistedSelection(last));
   }
+  Object.assign(seededState, sanitizeSelectionForPlayMode(seededState));
 
   const store = createStore(seededState);
   const i18n = initI18n(store);
@@ -194,40 +196,46 @@ async function bootstrap() {
   ];
 
   setBootSplashStatus('Arayüz hazırlanıyor…');
-  await mountAll(components);
+  await mountAll([
+    ...components,
+    {
+      name: 'modeSwitcher',
+      mount: createModeSwitcher({
+        root: $('mode-switcher-slot'),
+        store,
+        applyModIsolation: api.applyModIsolation,
+        i18n,
+      }).mount,
+    },
+  ]);
 
-  createModeSwitcher({
-    root: $('mode-switcher-slot'),
-    store,
-    applyModIsolation: api.applyModIsolation,
-    i18n,
-  }).mount();
-
-  wireHowToPlayGuide({
-    button: $('how-to-play-trigger'),
-    modalRoot: $('how-to-play-slot'),
-    i18n,
-  });
-
-  wireSettingsModal({
-    button: $('settings-trigger'),
-    modalRoot: $('settings-modal-slot'),
-    store,
-    i18n,
-    robloxApi: api.roblox,
-    openExternal: api.openExternal,
-  });
-
-  startAutoThemeWatcher(store);
+  try {
+    wireHowToPlayGuide({
+      button: $('how-to-play-trigger'),
+      modalRoot: $('how-to-play-slot'),
+      i18n,
+    });
+    wireSettingsModal({
+      button: $('settings-trigger'),
+      modalRoot: $('settings-modal-slot'),
+      store,
+      i18n,
+      robloxApi: api.roblox,
+      openExternal: api.openExternal,
+    });
+    startAutoThemeWatcher(store);
+  } catch (err) {
+    console.error('[bootstrap] Ayarlar / rehber bağlanamadı', err);
+  }
 
   setBootSplashStatus('Hesap kontrol ediliyor…');
-  const authPromise = (async () => {
+  const AUTH_BOOT_TIMEOUT_MS = 15000;
+  const authWork = (async () => {
     const cached = await api.auth.current();
     if (cached) {
-      store.setState({
-        user: cached,
-        ...(cached.bedrockOnly ? { selectedLoader: 'bedrock' } : {}),
-      });
+      const patch = { user: cached };
+      if (cached.bedrockOnly) patch.selectedLoader = 'bedrock';
+      store.setState(patch);
       if (cached.bedrockOnly) {
         store.setState({
           statusText: i18n.t('auth.bedrockOnlyReady', { name: cached.name }),
@@ -235,15 +243,18 @@ async function bootstrap() {
       }
       const refreshed = await api.auth.refresh();
       if (refreshed) {
-        store.setState({
-          user: refreshed,
-          ...(refreshed.bedrockOnly ? { selectedLoader: 'bedrock' } : {}),
-        });
+        const refreshPatch = { user: refreshed };
+        if (refreshed.bedrockOnly) refreshPatch.selectedLoader = 'bedrock';
+        else Object.assign(refreshPatch, sanitizeSelectionForPlayMode(store.getState()));
+        store.setState(refreshPatch);
       }
     }
   })();
 
-  await authPromise;
+  await Promise.race([
+    authWork,
+    new Promise((resolve) => setTimeout(resolve, AUTH_BOOT_TIMEOUT_MS)),
+  ]);
   dismissBootSplash();
 }
 

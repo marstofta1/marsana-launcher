@@ -1,4 +1,4 @@
-import { isClientMode } from '../../shared/marsanaClient.js';
+import { isClientMode, sanitizeSelectionForPlayMode } from '../../shared/marsanaClient.js';
 import {
   shaderFpsSupported,
   embossedBlocksSupported,
@@ -689,7 +689,9 @@ export function createModsPanel({ root, store, i18n }) {
   }
 
   for (const opt of LOADER_OPTIONS) {
-    loaderRadioEls[opt.value].addEventListener('change', () => {
+    const el = loaderRadioEls[opt.value];
+    if (!el) continue;
+    el.addEventListener('change', () => {
       if (syncing) return;
       applyLoaderState();
       applyVersionGates();
@@ -818,12 +820,13 @@ export function createModsPanel({ root, store, i18n }) {
   applyModsI18n();
 
   function renderFromStore(state) {
-    const loader = state.selectedLoader || DEFAULT_LOADER;
+    const sanitized = sanitizeSelectionForPlayMode(state);
+    const loader = sanitized.selectedLoader || DEFAULT_LOADER;
     for (const opt of LOADER_OPTIONS) {
+      const el = loaderRadioEls[opt.value];
+      if (!el) continue;
       const should = opt.value === loader;
-      if (loaderRadioEls[opt.value].checked !== should) {
-        loaderRadioEls[opt.value].checked = should;
-      }
+      if (el.checked !== should) el.checked = should;
     }
     if (optifineCb.checked !== !!state.modOptifine) optifineCb.checked = !!state.modOptifine;
     if (shaderCb.checked !== !!state.modShaderFps) shaderCb.checked = !!state.modShaderFps;
@@ -865,11 +868,11 @@ export function createModsPanel({ root, store, i18n }) {
   }
 
   function mount() {
-    const initial = store.getState();
-    const patch = {};
-    if (!initial.selectedLoader) patch.selectedLoader = DEFAULT_LOADER;
-    if (!initial.selectedShader) patch.selectedShader = DEFAULT_SHADER_SLUG;
-    if (Object.keys(patch).length > 0) store.setState(patch);
+    const initial = sanitizeSelectionForPlayMode(store.getState());
+    const patch = { ...initial };
+    if (!patch.selectedLoader) patch.selectedLoader = DEFAULT_LOADER;
+    if (!patch.selectedShader) patch.selectedShader = DEFAULT_SHADER_SLUG;
+    store.setState(patch);
     renderFromStore(store.getState());
     let lastModsKey = modsStoreKey(store.getState());
     const unsubs = [
