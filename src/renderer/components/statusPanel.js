@@ -20,8 +20,8 @@ function launchFailureHint(logLines) {
   if (/Incompatible mods found/i.test(text)) {
     return 'Mod uyumsuzluğu — eksik bağımlılık veya sürüm çakışması. Logdaki mod adlarına bakın.';
   }
-  if (/marsana-schematic-farm|SchematicFarmScreen|SchematicHologramRenderer/i.test(text)) {
-    return 'Sematik Farm (F8) modu çöktü — launcher güncellemesini kurun veya Ayarlar’dan hologramı kapatıp tekrar deneyin.';
+  if (/SchematicHologramRenderer|SchematicFarmScreen|at com\.marsana\.schematicfarm/i.test(text)) {
+    return 'Sematik Farm (F8) modu çöktü — güncel launcher sürümünü kurun. F8 menüsünden hologramı kapalı tutup tekrar deneyin.';
   }
   const caused = text.match(/Caused by: ([^\n]+)/);
   if (caused) return caused[1].trim().slice(0, 220);

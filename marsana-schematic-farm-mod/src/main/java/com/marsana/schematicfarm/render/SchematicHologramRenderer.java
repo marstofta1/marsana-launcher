@@ -8,6 +8,7 @@ import com.marsana.schematicfarm.schematic.SchematicBlock;
 import com.marsana.schematicfarm.schematic.SchematicScanner;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
@@ -24,15 +25,38 @@ import org.slf4j.LoggerFactory;
 public final class SchematicHologramRenderer {
     private static final Logger LOGGER = LoggerFactory.getLogger("marsana-schematic-farm");
     private static final int MAX_RENDER_DISTANCE_SQ = 96 * 96;
+    /** Dünya / sunucuya girince ilk karelerde render pipeline hazır olmayabilir. */
+    private static final int MIN_STABLE_TICKS = 60;
+
+    private static boolean pipelineRegistered;
+    private static int stableWorldTicks;
 
     private SchematicHologramRenderer() {}
 
-    public static void register() {
+    public static void initPipeline() {
+        if (pipelineRegistered) {
+            return;
+        }
+        pipelineRegistered = true;
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.player != null && client.level != null && client.screen == null) {
+                stableWorldTicks = Math.min(stableWorldTicks + 1, MIN_STABLE_TICKS + 1);
+            } else if (client.level == null || client.player == null) {
+                stableWorldTicks = 0;
+            }
+        });
         LevelRenderEvents.END_MAIN.register(SchematicHologramRenderer::render);
+    }
+
+    public static void syncWithConfig() {
+        initPipeline();
     }
 
     private static void render(LevelRenderContext context) {
         if (!SchematicConfigManager.isHologramsEnabled()) {
+            return;
+        }
+        if (stableWorldTicks < MIN_STABLE_TICKS) {
             return;
         }
 
@@ -47,8 +71,8 @@ public final class SchematicHologramRenderer {
         }
 
         String anchorDim = SchematicConfigManager.getSchematicAnchorDimension();
-        String currentDim = String.valueOf(client.level.dimension());
-        if (anchorDim != null && !anchorDim.equals(currentDim)) {
+        String currentDim = normalizeDimensionId(String.valueOf(client.level.dimension()));
+        if (anchorDim != null && !normalizeDimensionId(anchorDim).equals(currentDim)) {
             return;
         }
 
@@ -70,7 +94,6 @@ public final class SchematicHologramRenderer {
 
             PoseStack poseStack = context.poseStack();
             MultiBufferSource.BufferSource bufferSource = context.bufferSource();
-            VertexConsumer fillBuffer = bufferSource.getBuffer(RenderTypes.debugFilledBox());
             VertexConsumer lineBuffer = bufferSource.getBuffer(RenderTypes.lines());
 
             poseStack.pushPose();
@@ -78,23 +101,14 @@ public final class SchematicHologramRenderer {
 
             for (SchematicBlock spec : template.blocks()) {
                 BlockPos pos = anchor.offset(spec.x(), spec.y(), spec.z());
+                if (!client.level.hasChunkAt(pos)) {
+                    continue;
+                }
                 BlockState expected = SchematicScanner.expectedState(spec.blockId());
                 BlockState actual = client.level.getBlockState(pos);
                 boolean placed = SchematicScanner.matchesExpected(expected, actual);
-
-                int fillColor = placed ? 0x5533FF88 : 0x66FF8844;
                 int lineColor = placed ? 0xFF55FFAA : 0xFFFFAA55;
 
-                ShapeRenderer.renderShape(
-                    poseStack,
-                    fillBuffer,
-                    Shapes.block(),
-                    pos.getX(),
-                    pos.getY(),
-                    pos.getZ(),
-                    fillColor,
-                    0.35f
-                );
                 ShapeRenderer.renderShape(
                     poseStack,
                     lineBuffer,
@@ -108,11 +122,26 @@ public final class SchematicHologramRenderer {
             }
 
             poseStack.popPose();
-            bufferSource.endBatch(RenderTypes.debugFilledBox());
-            bufferSource.endBatch(RenderTypes.lines());
-        } catch (Exception e) {
-            LOGGER.warn("Sematik hologram cizilemedi", e);
+        } catch (Throwable e) {
+            LOGGER.warn("Sematik hologram cizilemedi — hologram kapatildi", e);
+            SchematicConfigManager.setHologramsEnabled(false);
         }
+    }
+
+    private static String normalizeDimensionId(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String s = raw.trim();
+        int bracket = s.indexOf("location=");
+        if (bracket >= 0) {
+            s = s.substring(bracket + "location=".length());
+            int end = s.indexOf(']');
+            if (end >= 0) {
+                s = s.substring(0, end);
+            }
+        }
+        return s.replace("ResourceKey[minecraft:", "").replace("]", "");
     }
 
     private static Vec3 resolveCamera(Minecraft client, LevelRenderContext context) {
@@ -125,7 +154,7 @@ public final class SchematicHologramRenderer {
                 return levelState.cameraRenderState.pos;
             }
         } catch (Exception ignored) {
-            // 26.x render durumu hazir degilse guvenli kamera kullan
+            // render durumu hazir degilse guvenli kamera
         }
         return fallback;
     }

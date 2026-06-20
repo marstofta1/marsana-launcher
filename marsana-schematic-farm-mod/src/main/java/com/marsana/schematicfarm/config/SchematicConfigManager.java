@@ -19,7 +19,7 @@ import java.nio.file.Path;
 public final class SchematicConfigManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(SchematicFarmMod.MOD_ID);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 2;
 
     private static SchematicConfig config = SchematicConfig.defaults();
 
@@ -39,6 +39,11 @@ public final class SchematicConfigManager {
         try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             SchematicConfig loaded = GSON.fromJson(reader, SchematicConfig.class);
             config = loaded != null ? loaded : SchematicConfig.defaults();
+            if (config.version < SCHEMA_VERSION) {
+                config.version = SCHEMA_VERSION;
+                config.showHolograms = false;
+                save();
+            }
         } catch (IOException e) {
             LOGGER.warn("Sematik farm config okunamadi, varsayilan kullaniliyor", e);
             config = SchematicConfig.defaults();
@@ -84,7 +89,7 @@ public final class SchematicConfigManager {
             config.schematicAnchorY = null;
             config.schematicAnchorZ = null;
         } else {
-            config.schematicAnchorDimension = dimension;
+            config.schematicAnchorDimension = normalizeDimensionId(dimension);
             config.schematicAnchorX = pos.getX();
             config.schematicAnchorY = pos.getY();
             config.schematicAnchorZ = pos.getZ();
@@ -99,6 +104,25 @@ public final class SchematicConfigManager {
     public static void setHologramsEnabled(boolean enabled) {
         config.showHolograms = enabled;
         save();
+        if (enabled) {
+            com.marsana.schematicfarm.render.SchematicHologramRenderer.syncWithConfig();
+        }
+    }
+
+    public static String normalizeDimensionId(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String s = raw.trim();
+        int bracket = s.indexOf("location=");
+        if (bracket >= 0) {
+            s = s.substring(bracket + "location=".length());
+            int end = s.indexOf(']');
+            if (end >= 0) {
+                s = s.substring(0, end);
+            }
+        }
+        return s.replace("ResourceKey[minecraft:", "").replace("]", "");
     }
 
     public static final class SchematicConfig {
@@ -121,7 +145,7 @@ public final class SchematicConfigManager {
         public Integer schematicAnchorZ;
 
         @SerializedName("showHolograms")
-        public boolean showHolograms = true;
+        public boolean showHolograms = false;
 
         public static SchematicConfig defaults() {
             return new SchematicConfig();

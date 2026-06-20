@@ -1,6 +1,6 @@
 {
   "name": "marsana-launcher",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "Marsana Minecraft Launcher",
   "private": true,
   "main": "src/main/index.js",
@@ -25,7 +25,7 @@
     "version:resolve": "node scripts/resolve-release-version.js",
     "mobile:sync": "node scripts/sync-mobile-www.js",
     "build:client-mod": "cd marsana-client-mod && gradlew.bat build copyToBundled",
-    "build:schematic-farm-mod": "cd marsana-schematic-farm-mod && gradlew.bat build copyToBundled && node scripts/ensure-schematic-farm-mod.js",
+    "build:schematic-farm-mod": "cd marsana-schematic-farm-mod && gradlew.bat build copyToBundled && cd .. && node scripts/ensure-schematic-farm-mod.js",
     "build:schematic-farm-mod-legacy": "cd marsana-schematic-farm-mod-1.20 && gradlew.bat build copyToBundled && node scripts/ensure-schematic-farm-mod.js",
     "build:marsana-mods": "npm run build:client-mod && npm run build:schematic-farm-mod"
   },

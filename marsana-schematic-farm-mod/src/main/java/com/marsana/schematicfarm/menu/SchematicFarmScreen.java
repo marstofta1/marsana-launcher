@@ -125,7 +125,7 @@ public class SchematicFarmScreen extends Screen {
             return;
         }
         String dim = SchematicConfigManager.getSchematicAnchorDimension();
-        if (dim != null && String.valueOf(this.minecraft.level.dimension()).equals(dim)) {
+        if (dim != null && SchematicConfigManager.normalizeDimensionId(String.valueOf(this.minecraft.level.dimension())).equals(dim)) {
             FarmTemplate template = FarmTemplateRegistry.get(selectedFarm);
             lastScan = SchematicScanner.scan(this.minecraft.level, anchor, template);
         } else {
@@ -148,7 +148,7 @@ public class SchematicFarmScreen extends Screen {
         BlockPos anchor = SchematicConfigManager.getSchematicAnchor();
         String anchorDim = SchematicConfigManager.getSchematicAnchorDimension();
         String currentDim = this.minecraft != null && this.minecraft.level != null
-            ? String.valueOf(this.minecraft.level.dimension())
+            ? SchematicConfigManager.normalizeDimensionId(String.valueOf(this.minecraft.level.dimension()))
             : null;
 
         if (anchor == null) {
