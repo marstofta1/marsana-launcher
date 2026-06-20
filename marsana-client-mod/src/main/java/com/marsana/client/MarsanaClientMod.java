@@ -14,7 +14,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 public class MarsanaClientMod implements ClientModInitializer {
     public static final String MOD_ID = "marsana-client";
-    private static boolean runtimePrefsApplied;
     private static java.util.UUID lastRecordedUuid;
 
     @Override
@@ -36,10 +35,6 @@ public class MarsanaClientMod implements ClientModInitializer {
                     lastRecordedUuid = uuid;
                     MarsanaConfigManager.setLocalPlayerUuid(uuid);
                 }
-            }
-            if (!runtimePrefsApplied && client.level != null && client.player != null) {
-                runtimePrefsApplied = true;
-                ModToggleManager.applyRuntimeFromConfig();
             }
         });
     }

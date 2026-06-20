@@ -1858,6 +1858,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const versionDir = path.join(gameRoot, 'versions', customId);
     const modsDir = path.join(gameRoot, 'mods');
     modIsolationService.enforceModIsolation(modsDir, presets, playMode);
+    if (!presets.schematicFarm) {
+      schematicFarmModService.removeSchematicFarmJars(modsDir);
+    }
     const shaderpacksDir = path.join(gameRoot, 'shaderpacks');
     const resourcepacksDir = path.join(gameRoot, 'resourcepacks');
     const versionJsonPath = path.join(versionDir, `${customId}.json`);

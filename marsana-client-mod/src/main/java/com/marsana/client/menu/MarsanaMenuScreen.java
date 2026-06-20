@@ -33,6 +33,7 @@ public class MarsanaMenuScreen extends Screen {
 
     @Override
     protected void init() {
+        ModToggleManager.syncConfigFromRuntime();
         int centerX = this.width / 2;
         int top = 28;
 

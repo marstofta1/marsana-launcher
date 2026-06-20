@@ -98,6 +98,22 @@ function schematicFarmJarPresent(modsDir) {
   );
 }
 
+/** Sematik Farm kapaliysa eski jar'lari mods klasorunden kaldir (Fabric yuklemesin). */
+function removeSchematicFarmJars(modsDir) {
+  if (!modsDir || !fs.existsSync(modsDir)) return 0;
+  let removed = 0;
+  for (const entry of fs.readdirSync(modsDir)) {
+    if (!isSchematicFarmJar(entry.replace(/\.disabled$/i, ''))) continue;
+    try {
+      fs.unlinkSync(path.join(modsDir, entry));
+      removed += 1;
+    } catch {
+      /* ignore */
+    }
+  }
+  return removed;
+}
+
 module.exports = {
   bundledModsRoot,
   modLineForGameVersion,
@@ -108,6 +124,7 @@ module.exports = {
   installBundledMod,
   isSchematicFarmJar,
   schematicFarmJarPresent,
+  removeSchematicFarmJars,
   MOD_JAR_PREFIX,
   SCHEMATIC_BUNDLED_LINES,
 };

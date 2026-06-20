@@ -1087,7 +1087,7 @@ function createLaunchService({
           glowingOres: false,
           roundTrees: false,
           crops3d: false,
-          schematicFarm: playMode === 'client',
+          schematicFarm: false,
           marsanaClientMenu: playMode === 'client',
           clientHudPack: playMode === 'client',
         },
@@ -1099,6 +1099,9 @@ function createLaunchService({
     );
 
     const modsDirPath = path.join(paths.gameRoot, 'mods');
+    if (!modPresets.schematicFarm) {
+      schematicFarmModService.removeSchematicFarmJars(modsDirPath);
+    }
     const iso = modIsolationService.enforceModIsolation(modsDirPath, modPresets, playMode);
     if (iso.stashed > 0 && emit && emit.status) {
       emit.status({

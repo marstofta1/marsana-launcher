@@ -124,12 +124,12 @@ public final class RuntimeModControl {
             List<String> selected = new ArrayList<>(repo.getSelectedIds());
             client.options.resourcePacks = selected;
             client.options.updateResourcePacks(repo);
-            client.reloadResourcePacks();
-            return true;
+            // reloadResourcePacks() dunyaya girerken Iris/Sodium ile JVM cokertmesine yol acabiliyor.
         } catch (Exception e) {
             LOGGER.warn("Fullbright kaynak paketi guncellenemedi", e);
             return false;
         }
+        return true;
     }
 
     private static boolean applyIrisShadersViaApi(boolean enable) {
