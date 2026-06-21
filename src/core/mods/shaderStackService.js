@@ -1013,7 +1013,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   function cachedReady({ versionDir, modsDir, shaderpacksDir, resourcepacksDir, gameVersion, versionJsonPath, readyPath, modPresets, shaderSlug }) {
     const existing = readBundle(modsDir);
-    const expectedPack = modPresets.shaderFps && !modPresets.optifine ? shaderPackLocalName(shaderSlug) : null;
+    const wantsShader = modPresets.shaderFps && !modPresets.optifine;
+    const expectedSlug = wantsShader ? resolveShaderSlug(shaderSlug) : null;
+    const expectedPack = wantsShader ? shaderPackLocalName(expectedSlug) : null;
     if (
       !existing ||
       (existing.bundleVersion || 1) < SHADER_BUNDLE_VERSION ||
@@ -1021,7 +1023,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       !fs.existsSync(versionJsonPath) ||
       !fs.existsSync(readyPath) ||
       existing.gameVersion !== gameVersion ||
-      existing.shaderSlug !== shaderSlug ||
+      (wantsShader && existing.shaderSlug !== expectedSlug) ||
       (expectedPack && (existing.shaderpacks || [])[0] !== expectedPack) ||
       !allFilesExist(modsDir, existing.jars) ||
       !allFilesExist(shaderpacksDir, existing.shaderpacks || []) ||
@@ -1343,6 +1345,28 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   // OptiFine'ın shader config dosyası ayrı: `optionsshaders.txt`. Format ana
   // options.txt'e benzer ama OptiFine bunu shader pack seçimi için okur.
+  function deactivateShaderConfig(gameRoot) {
+    for (const name of ['iris.properties', 'oculus.properties']) {
+      const propsPath = path.join(gameRoot, 'config', name);
+      if (!fs.existsSync(propsPath)) continue;
+      const lines = fs.readFileSync(propsPath, 'utf8').split(/\r?\n/);
+      let touchedEnable = false;
+      let touchedPack = false;
+      for (let i = 0; i < lines.length; i++) {
+        if (/^enableShaders\s*=/.test(lines[i])) {
+          lines[i] = 'enableShaders=false';
+          touchedEnable = true;
+        } else if (/^shaderPack\s*=/.test(lines[i])) {
+          lines[i] = 'shaderPack=';
+          touchedPack = true;
+        }
+      }
+      if (!touchedEnable) lines.push('enableShaders=false');
+      if (!touchedPack) lines.push('shaderPack=');
+      fs.writeFileSync(propsPath, `${lines.join('\n')}\n`, 'utf8');
+    }
+  }
+
   function activateShaderPackInOptifineConfig({ gameRoot, shaderpackFilename }) {
     if (!shaderpackFilename) return;
     const optionsPath = path.join(gameRoot, 'optionsshaders.txt');
@@ -1852,7 +1876,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
 
     const loaderPrefix = fabricChannel === 'beta' ? 'marsana-fabric-beta' : 'marsana';
-    const resolvedShaderSlug = resolveShaderSlug(shaderSlug);
+    const wantsShader = presets.shaderFps && !presets.optifine;
+    const resolvedShaderSlug = wantsShader ? resolveShaderSlug(shaderSlug) : DEFAULT_SHADER_SLUG;
     const status = statusEmitter(emit);
     const customId = customIdFor(gameVersion, presets, resolvedShaderSlug, { loaderPrefix });
     const versionDir = path.join(gameRoot, 'versions', customId);
@@ -1869,12 +1894,16 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     hudDepsService.recoverFabricModsFromMisstash(modsDir, gameVersion);
     modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
 
-    repairLegacyShaderPack({
-      gameRoot,
-      shaderpacksDir,
-      shaderSlug: resolvedShaderSlug,
-      activateFns: [activateShaderPackInIrisConfig],
-    });
+    if (wantsShader) {
+      repairLegacyShaderPack({
+        gameRoot,
+        shaderpacksDir,
+        shaderSlug: resolvedShaderSlug,
+        activateFns: [activateShaderPackInIrisConfig],
+      });
+    } else {
+      deactivateShaderConfig(gameRoot);
+    }
 
     const cached = cachedReady({
       versionDir,

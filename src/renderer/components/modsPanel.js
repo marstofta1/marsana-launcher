@@ -729,7 +729,15 @@ export function createModsPanel({ root, store, i18n }) {
   roundTreesCb.addEventListener('change', publish);
   crops3dCb.addEventListener('change', publish);
   schematicFarmCb.addEventListener('change', publish);
-  shaderPicker.addEventListener('change', publish);
+  shaderPicker.addEventListener('change', () => {
+    if (!shaderCb.checked && !shaderCb.disabled) {
+      shaderCb.checked = true;
+      store.setState({ modShaderFps: true });
+      applyMutualExclusion();
+      updateShaderPickerVisibility();
+    }
+    publish();
+  });
 
   function applyPlayModeVisibility(state) {
     const client = isClientMode(state.playMode);
