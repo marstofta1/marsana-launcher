@@ -4,6 +4,8 @@ import {
   embossedBlocksSupported,
   optifineSupported,
   voiceChatSupported,
+  sodiumSupported,
+  sodiumExtraSupported,
   fullbrightUbSupported,
   betterLeavesSupported,
   glowingOresSupported,
@@ -142,6 +144,26 @@ export function createModsPanel({ root, store, i18n }) {
             </p>
           </div>
 
+          <div data-role="row-sodium">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="sodium" />
+              <span>Sodium</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-sodium">
+              Fabric/Quilt için performans modu; Iris shader ile birlikte kullanılır. Shader + FPS artık Sodium kurmaz — ayrı seçilir.
+            </p>
+          </div>
+
+          <div data-role="row-sodiumExtra">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="sodiumExtra" />
+              <span>Sodium Extra</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-sodiumExtra">
+              Sodium için ek video ayarları (chunk fade, hava, partikül vb.). Sodium seçili olmalıdır; yalnız seçilirse Sodium otomatik eklenir.
+            </p>
+          </div>
+
           <div data-role="row-fullbrightUb">
             <label class="field checkbox">
               <input type="checkbox" data-role="fullbrightUb" />
@@ -213,6 +235,8 @@ export function createModsPanel({ root, store, i18n }) {
   const shaderCb = root.querySelector('[data-role="shaderFps"]');
   const embossedCb = root.querySelector('[data-role="embossed"]');
   const voiceChatCb = root.querySelector('[data-role="voiceChat"]');
+  const sodiumCb = root.querySelector('[data-role="sodium"]');
+  const sodiumExtraCb = root.querySelector('[data-role="sodiumExtra"]');
   const fullbrightUbCb = root.querySelector('[data-role="fullbrightUb"]');
   const betterLeavesCb = root.querySelector('[data-role="betterLeaves"]');
   const glowingOresCb = root.querySelector('[data-role="glowingOres"]');
@@ -223,6 +247,8 @@ export function createModsPanel({ root, store, i18n }) {
   const shaderRow = root.querySelector('[data-role="row-shaderFps"]');
   const embossedRow = root.querySelector('[data-role="row-embossed"]');
   const voiceChatRow = root.querySelector('[data-role="row-voiceChat"]');
+  const sodiumRow = root.querySelector('[data-role="row-sodium"]');
+  const sodiumExtraRow = root.querySelector('[data-role="row-sodiumExtra"]');
   const fullbrightUbRow = root.querySelector('[data-role="row-fullbrightUb"]');
   const betterLeavesRow = root.querySelector('[data-role="row-betterLeaves"]');
   const glowingOresRow = root.querySelector('[data-role="row-glowingOres"]');
@@ -259,6 +285,8 @@ export function createModsPanel({ root, store, i18n }) {
       modShaderFps: shaderCb.checked,
       modEmbossedBlocks: embossedCb.checked,
       modVoiceChat: voiceChatCb.checked,
+      modSodium: sodiumCb.checked,
+      modSodiumExtra: sodiumExtraCb.checked,
       modFullbrightUb: fullbrightUbCb.checked,
       modBetterLeaves: betterLeavesCb.checked,
       modGlowingOres: glowingOresCb.checked,
@@ -321,6 +349,8 @@ export function createModsPanel({ root, store, i18n }) {
     const shOk = !isSnapshot && shaderFpsSupported(v);
     const emOk = !isSnapshot && embossedBlocksSupported(v);
     const vcOk = !isSnapshot && voiceChatSupported(v);
+    const naOk = !isSnapshot && sodiumSupported(v);
+    const seOk = !isSnapshot && sodiumExtraSupported(v);
     const fbOk = !isSnapshot && fullbrightUbSupported(v);
     const blOk = !isSnapshot && betterLeavesSupported(v);
     const goOk = !isSnapshot && glowingOresSupported(v);
@@ -345,6 +375,14 @@ export function createModsPanel({ root, store, i18n }) {
       if (voiceChatCb.checked) {
         voiceChatCb.checked = false;
         store.setState({ modVoiceChat: false });
+      }
+      if (sodiumCb.checked) {
+        sodiumCb.checked = false;
+        store.setState({ modSodium: false });
+      }
+      if (sodiumExtraCb.checked) {
+        sodiumExtraCb.checked = false;
+        store.setState({ modSodiumExtra: false });
       }
       if (fullbrightUbCb.checked) {
         fullbrightUbCb.checked = false;
@@ -374,6 +412,8 @@ export function createModsPanel({ root, store, i18n }) {
       shaderCb.disabled = true;
       embossedCb.disabled = true;
       voiceChatCb.disabled = true;
+      sodiumCb.disabled = true;
+      sodiumExtraCb.disabled = true;
       fullbrightUbCb.disabled = true;
       betterLeavesCb.disabled = true;
       glowingOresCb.disabled = true;
@@ -384,6 +424,8 @@ export function createModsPanel({ root, store, i18n }) {
       shaderCb.title = reason;
       embossedCb.title = reason;
       voiceChatCb.title = reason;
+      sodiumCb.title = reason;
+      sodiumExtraCb.title = reason;
       fullbrightUbCb.title = reason;
       betterLeavesCb.title = reason;
       glowingOresCb.title = reason;
@@ -396,6 +438,8 @@ export function createModsPanel({ root, store, i18n }) {
     optifineCb.disabled = !opOk;
     embossedCb.disabled = !emOk;
     voiceChatCb.disabled = !vcOk;
+    sodiumCb.disabled = !naOk;
+    sodiumExtraCb.disabled = !seOk || !sodiumCb.checked;
     fullbrightUbCb.disabled = !fbOk;
     betterLeavesCb.disabled = !blOk;
     glowingOresCb.disabled = !goOk;
@@ -416,6 +460,12 @@ export function createModsPanel({ root, store, i18n }) {
     }
     embossedCb.title = emOk ? '' : modT('tooltips.embossedVersion');
     voiceChatCb.title = vcOk ? '' : modT('tooltips.voiceChatVersion');
+    sodiumCb.title = naOk ? '' : modT('tooltips.sodiumVersion');
+    sodiumExtraCb.title = !seOk
+      ? modT('tooltips.sodiumExtraVersion')
+      : !sodiumCb.checked
+        ? modT('tooltips.sodiumExtraNeedsSodium')
+        : '';
     fullbrightUbCb.title = fbOk ? '' : modT('tooltips.fullbrightUnsupported');
     betterLeavesCb.title = blOk ? '' : modT('tooltips.betterLeavesUnsupported');
     glowingOresCb.title = goOk ? '' : modT('tooltips.glowingOresVersion');
@@ -434,6 +484,18 @@ export function createModsPanel({ root, store, i18n }) {
     if (!vcOk && voiceChatCb.checked) {
       voiceChatCb.checked = false;
       store.setState({ modVoiceChat: false });
+    }
+    if (!naOk && sodiumCb.checked) {
+      sodiumCb.checked = false;
+      store.setState({ modSodium: false });
+    }
+    if (!seOk && sodiumExtraCb.checked) {
+      sodiumExtraCb.checked = false;
+      store.setState({ modSodiumExtra: false });
+    }
+    if (!sodiumCb.checked && sodiumExtraCb.checked) {
+      sodiumExtraCb.checked = false;
+      store.setState({ modSodiumExtra: false });
     }
     if (!fbOk && fullbrightUbCb.checked) {
       fullbrightUbCb.checked = false;
@@ -466,19 +528,19 @@ export function createModsPanel({ root, store, i18n }) {
 
   const ROWS_BY_LOADER = {
     fabric: {
-      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'schematicFarm', 'crops3d'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'sodium', 'sodiumExtra', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'schematicFarm', 'crops3d'],
       titleKey: 'titles.fabric',
       shaderLabelKey: 'shaderLabels.fabric',
       embossedLabelKey: 'embossedLabels.fabric',
     },
     'fabric-beta': {
-      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'schematicFarm', 'crops3d'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'sodium', 'sodiumExtra', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'schematicFarm', 'crops3d'],
       titleKey: 'titles.fabric-beta',
       shaderLabelKey: 'shaderLabels.fabric-beta',
       embossedLabelKey: 'embossedLabels.fabric-beta',
     },
     quilt: {
-      rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
+      rows: ['shaderFps', 'voiceChat', 'sodium', 'sodiumExtra', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
       titleKey: 'titles.quilt',
       shaderLabelKey: 'shaderLabels.quilt',
       embossedLabelKey: 'embossedLabels.quilt',
@@ -575,6 +637,8 @@ export function createModsPanel({ root, store, i18n }) {
       optifine: optifineRow,
       embossed: embossedRow,
       voiceChat: voiceChatRow,
+      sodium: sodiumRow,
+      sodiumExtra: sodiumExtraRow,
       fullbrightUb: fullbrightUbRow,
       betterLeaves: betterLeavesRow,
       glowingOres: glowingOresRow,
@@ -590,6 +654,8 @@ export function createModsPanel({ root, store, i18n }) {
       config.rows.includes('optifine') ||
       config.rows.includes('embossed') ||
       config.rows.includes('voiceChat') ||
+      config.rows.includes('sodium') ||
+      config.rows.includes('sodiumExtra') ||
       config.rows.includes('fullbrightUb') ||
       config.rows.includes('betterLeaves') ||
       config.rows.includes('glowingOres') ||
@@ -619,6 +685,14 @@ export function createModsPanel({ root, store, i18n }) {
     if (!config.rows.includes('voiceChat') && voiceChatCb.checked) {
       voiceChatCb.checked = false;
       store.setState({ modVoiceChat: false });
+    }
+    if (!config.rows.includes('sodium') && sodiumCb.checked) {
+      sodiumCb.checked = false;
+      store.setState({ modSodium: false });
+    }
+    if (!config.rows.includes('sodiumExtra') && sodiumExtraCb.checked) {
+      sodiumExtraCb.checked = false;
+      store.setState({ modSodiumExtra: false });
     }
     if (!config.rows.includes('fullbrightUb') && fullbrightUbCb.checked) {
       fullbrightUbCb.checked = false;
@@ -723,6 +797,15 @@ export function createModsPanel({ root, store, i18n }) {
 
   embossedCb.addEventListener('change', publish);
   voiceChatCb.addEventListener('change', publish);
+  sodiumCb.addEventListener('change', () => {
+    if (!sodiumCb.checked && sodiumExtraCb.checked) {
+      sodiumExtraCb.checked = false;
+      store.setState({ modSodiumExtra: false });
+    }
+    applyVersionGates();
+    publish();
+  });
+  sodiumExtraCb.addEventListener('change', publish);
   fullbrightUbCb.addEventListener('change', publish);
   betterLeavesCb.addEventListener('change', publish);
   glowingOresCb.addEventListener('change', publish);
@@ -776,6 +859,14 @@ export function createModsPanel({ root, store, i18n }) {
     if (voiceSpan) voiceSpan.textContent = t('mods.voiceChat');
     const hintVoice = root.querySelector('[data-role="hint-voiceChat"]');
     if (hintVoice) hintVoice.textContent = t('mods.voiceChatHint');
+    const sodiumSpan = root.querySelector('[data-role="row-sodium"] label span');
+    if (sodiumSpan) sodiumSpan.textContent = t('mods.sodium');
+    const hintSodium = root.querySelector('[data-role="hint-sodium"]');
+    if (hintSodium) hintSodium.textContent = t('mods.sodiumHint');
+    const sodiumExtraSpan = root.querySelector('[data-role="row-sodiumExtra"] label span');
+    if (sodiumExtraSpan) sodiumExtraSpan.textContent = t('mods.sodiumExtra');
+    const hintSodiumExtra = root.querySelector('[data-role="hint-sodiumExtra"]');
+    if (hintSodiumExtra) hintSodiumExtra.textContent = t('mods.sodiumExtraHint');
     const fullbrightSpan = root.querySelector('[data-role="row-fullbrightUb"] label span');
     if (fullbrightSpan) fullbrightSpan.textContent = t('mods.fullbrightUb');
     const hintFullbright = root.querySelector('[data-role="hint-fullbrightUb"]');
@@ -840,6 +931,8 @@ export function createModsPanel({ root, store, i18n }) {
     if (shaderCb.checked !== !!state.modShaderFps) shaderCb.checked = !!state.modShaderFps;
     if (embossedCb.checked !== !!state.modEmbossedBlocks) embossedCb.checked = !!state.modEmbossedBlocks;
     if (voiceChatCb.checked !== !!state.modVoiceChat) voiceChatCb.checked = !!state.modVoiceChat;
+    if (sodiumCb.checked !== !!state.modSodium) sodiumCb.checked = !!state.modSodium;
+    if (sodiumExtraCb.checked !== !!state.modSodiumExtra) sodiumExtraCb.checked = !!state.modSodiumExtra;
     if (fullbrightUbCb.checked !== !!state.modFullbrightUb) fullbrightUbCb.checked = !!state.modFullbrightUb;
     if (betterLeavesCb.checked !== !!state.modBetterLeaves) betterLeavesCb.checked = !!state.modBetterLeaves;
     if (glowingOresCb.checked !== !!state.modGlowingOres) glowingOresCb.checked = !!state.modGlowingOres;
@@ -864,6 +957,8 @@ export function createModsPanel({ root, store, i18n }) {
       state.modShaderFps,
       state.modEmbossedBlocks,
       state.modVoiceChat,
+      state.modSodium,
+      state.modSodiumExtra,
       state.modFullbrightUb,
       state.modBetterLeaves,
       state.modGlowingOres,

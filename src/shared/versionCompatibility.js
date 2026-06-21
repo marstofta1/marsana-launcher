@@ -28,6 +28,16 @@ export function voiceChatSupported(versionId) {
   return shaderFpsSupported(versionId);
 }
 
+/** Sodium (Fabric/Quilt); 1.16+ ve 26.x. */
+export function sodiumSupported(versionId) {
+  return shaderFpsSupported(versionId);
+}
+
+/** Sodium Extra (Fabric/Quilt); Sodium ile birlikte kullanılır — 1.16+ ve 26.x. */
+export function sodiumExtraSupported(versionId) {
+  return sodiumSupported(versionId);
+}
+
 /** Fullbright UB kaynak paketi; Vanilla, OptiFine ve Sodium yollarında geniş sürüm desteği. */
 export function fullbrightUbSupported(versionId) {
   const v = String(versionId || '').trim();
@@ -161,9 +171,11 @@ export function selectionRequiresReleaseVersions({
   modRoundTrees,
   modCrops3d,
   modSchematicFarm,
+  modSodium,
+  modSodiumExtra,
 }) {
   if (loader === 'forge-optifine') return true;
-  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat || modFullbrightUb || modBetterLeaves || modGlowingOres || modRoundTrees || modCrops3d || modSchematicFarm);
+  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat || modFullbrightUb || modBetterLeaves || modGlowingOres || modRoundTrees || modCrops3d || modSchematicFarm || modSodium || modSodiumExtra);
 }
 
 export function isVersionAllowedForSelection({
@@ -180,6 +192,8 @@ export function isVersionAllowedForSelection({
   modRoundTrees,
   modCrops3d,
   modSchematicFarm,
+  modSodium,
+  modSodiumExtra,
   legacyFabricSupportedSet = null,
   loaderSupportedSet = null,
 }) {
@@ -208,6 +222,8 @@ export function isVersionAllowedForSelection({
       modRoundTrees,
       modCrops3d,
       modSchematicFarm,
+      modSodium,
+      modSodiumExtra,
     }) &&
     versionType !== 'release'
   ) {
@@ -219,6 +235,8 @@ export function isVersionAllowedForSelection({
   if (modOptifine && !optifineSupported(id)) return false;
   if (modOptifine && !fabricOptifinePackSupported(id)) return false;
   if (modShaderFps && !shaderFpsSupported(id)) return false;
+  if (modSodium && !sodiumSupported(id)) return false;
+  if (modSodiumExtra && !sodiumExtraSupported(id)) return false;
   if (modVoiceChat && !voiceChatSupported(id)) return false;
   if (modFullbrightUb && !fullbrightUbSupported(id)) return false;
   if (modBetterLeaves && !betterLeavesSupported(id)) return false;
@@ -249,10 +267,12 @@ export function getVersionFilterEmptyMessage(state, { legacyFabric = false, load
     return LOADER_EMPTY_MESSAGES[loaderVal];
   }
 
-  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat, modFullbrightUb, modBetterLeaves, modGlowingOres, modRoundTrees, modCrops3d, modSchematicFarm } = state;
+  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat, modFullbrightUb, modBetterLeaves, modGlowingOres, modRoundTrees, modCrops3d, modSchematicFarm, modSodium, modSodiumExtra } = state;
   const labels = [];
   if (loader === 'forge-optifine' || modOptifine) labels.push('OptiFine');
   if (modShaderFps) labels.push('Shader + FPS');
+  if (modSodium) labels.push('Sodium');
+  if (modSodiumExtra) labels.push('Sodium Extra');
   if (modEmbossedBlocks) labels.push('Kabartmalı bloklar');
   if (modVoiceChat) labels.push('Voice Chat');
   if (modFullbrightUb) labels.push('Fullbright UB');

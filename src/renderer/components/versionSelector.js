@@ -164,6 +164,8 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
       modShaderFps: !!state.modShaderFps,
       modEmbossedBlocks: !!state.modEmbossedBlocks,
       modVoiceChat: !!state.modVoiceChat,
+      modSodium: !!state.modSodium,
+      modSodiumExtra: !!state.modSodiumExtra,
       modFullbrightUb: !!state.modFullbrightUb,
       modBetterLeaves: !!state.modBetterLeaves,
       modGlowingOres: !!state.modGlowingOres,
@@ -235,6 +237,8 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
       );
     }
     if (snap.modVoiceChat) parts.push(i18n.t('versionFilters.voiceChat'));
+    if (snap.modSodium) parts.push(i18n.t('versionFilters.sodium'));
+    if (snap.modSodiumExtra) parts.push(i18n.t('versionFilters.sodiumExtra'));
     if (snap.modFullbrightUb) parts.push(i18n.t('versionFilters.fullbrightUb'));
     if (snap.modBetterLeaves) parts.push(i18n.t('versionFilters.betterLeaves'));
     if (snap.modGlowingOres) parts.push(i18n.t('versionFilters.glowingOres'));

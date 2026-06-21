@@ -19,8 +19,8 @@ const SHADER_BUNDLE_VERSION = 48;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
-const SHADER_FPS_SLUGS = Object.freeze(['iris', 'sodium', 'fabric-api']);
-const EMBOSSED_SLUGS = Object.freeze(['continuity', 'sodium', 'fabric-api']);
+const SHADER_FPS_SLUGS = Object.freeze(['iris', 'fabric-api']);
+const EMBOSSED_SLUGS = Object.freeze(['continuity', 'fabric-api']);
 const VOICE_CHAT_SLUG = 'simple-voice-chat';
 const FULLBRIGHT_UB_SLUG = 'fullbright-ub';
 const POLYTONE_SLUG = 'polytone';
@@ -35,6 +35,8 @@ const ROUND_TREES_PACK_LOCAL_NAME = 'round-trees.zip';
 const CROPS_3D_SLUG = '3d-crops';
 const CROPS_3D_PACK_LOCAL_NAME = '3d-crops.zip';
 const CONTINUITY_SLUG = 'continuity';
+const SODIUM_EXTRA_SLUG = 'sodium-extra';
+const SODIUM_SLUG = 'sodium';
 const DEFAULT_SHADER_SLUG = 'complementary-reimagined';
 const OPTIFINE_PROJECT = 'optifine-for-fabric';
 
@@ -358,10 +360,16 @@ function customIdFor(gameVersion, presets, shaderSlug, { loaderPrefix = 'marsana
   if (presets.crops3d && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.schematicFarm) {
     return `${loaderPrefix}-crops3d-${gameVersion}`;
   }
-  if (presets.schematicFarm && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d) {
+  if (presets.schematicFarm && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.sodium && !presets.sodiumExtra) {
     return `${loaderPrefix}-schematic-${gameVersion}`;
   }
-  if (presets.shaderFps || presets.embossedBlocks || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm) {
+  if (presets.sodiumExtra && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm && !presets.sodium) {
+    return `${loaderPrefix}-sodiumextra-${gameVersion}`;
+  }
+  if (presets.sodium && !presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm && !presets.sodiumExtra) {
+    return `${loaderPrefix}-sodium-${gameVersion}`;
+  }
+  if (presets.shaderFps || presets.embossedBlocks || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.sodium || presets.sodiumExtra) {
     return `${loaderPrefix}-shader-${gameVersion}`;
   }
   return `${loaderPrefix}-shader-${gameVersion}`;
@@ -429,8 +437,10 @@ function repairLegacyShaderPack({ gameRoot, shaderpacksDir, shaderSlug, activate
 }
 
 function normalizePresets(p) {
+  const shaderFps = !!(p && p.shaderFps);
+  const sodiumExplicit = p && typeof p.sodium === 'boolean';
   return {
-    shaderFps: !!(p && p.shaderFps),
+    shaderFps,
     embossedBlocks: !!(p && p.embossedBlocks),
     optifine: !!(p && p.optifine),
     voiceChat: !!(p && p.voiceChat),
@@ -442,6 +452,8 @@ function normalizePresets(p) {
     schematicFarm: !!(p && p.schematicFarm),
     marsanaClientMenu: !!(p && p.marsanaClientMenu),
     clientHudPack: !!(p && p.clientHudPack),
+    sodium: sodiumExplicit ? !!p.sodium : shaderFps,
+    sodiumExtra: !!(p && p.sodiumExtra),
   };
 }
 
@@ -468,6 +480,7 @@ function fullbrightNeedsPolytone(p, gameVersion) {
   return !!(
     p.fullbrightUb &&
     p.shaderFps &&
+    p.sodium &&
     !p.optifine &&
     polytoneSupportedForGameVersion(gameVersion)
   );
@@ -480,6 +493,10 @@ function betterLeavesNeedsCullLeaves(p) {
 
 function glowingOresNeedsContinuity(p) {
   return !!(p.glowingOres && !p.optifine && !p.embossedBlocks);
+}
+
+function sodiumExtraNeedsSodiumStack(p) {
+  return !!(p.sodiumExtra && !p.sodium);
 }
 
 function modrinthSlugsForPresets(p, gameVersion) {
@@ -505,6 +522,17 @@ function modrinthSlugsForPresets(p, gameVersion) {
     for (const slug of CLIENT_HUD_MOD_SLUGS) add(slug);
   }
   if (p.schematicFarm || p.marsanaClientMenu) add('fabric-api');
+  if (p.sodium) {
+    add(SODIUM_SLUG);
+    add('fabric-api');
+  }
+  if (p.sodiumExtra) {
+    add(SODIUM_EXTRA_SLUG);
+    if (sodiumExtraNeedsSodiumStack(p)) {
+      add(SODIUM_SLUG);
+      add('fabric-api');
+    }
+  }
   return out;
 }
 
@@ -786,7 +814,9 @@ function presetsMatch(saved, wanted) {
     typeof saved.crops3d !== 'boolean' ||
     typeof saved.schematicFarm !== 'boolean' ||
     typeof saved.marsanaClientMenu !== 'boolean' ||
-    typeof saved.clientHudPack !== 'boolean'
+    typeof saved.clientHudPack !== 'boolean' ||
+    typeof saved.sodium !== 'boolean' ||
+    typeof saved.sodiumExtra !== 'boolean'
   ) {
     return false;
   }
@@ -802,7 +832,9 @@ function presetsMatch(saved, wanted) {
     saved.crops3d === wanted.crops3d &&
     saved.schematicFarm === wanted.schematicFarm &&
     saved.marsanaClientMenu === wanted.marsanaClientMenu &&
-    saved.clientHudPack === wanted.clientHudPack
+    saved.clientHudPack === wanted.clientHudPack &&
+    saved.sodium === wanted.sodium &&
+    saved.sodiumExtra === wanted.sodiumExtra
   );
 }
 
@@ -915,8 +947,16 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const need = [];
 
     if (presets.shaderFps && !presets.optifine) {
-      if (!modCompatibilityService.coreSodiumJarPresent(modsDir, gameVersion)) need.push('sodium');
       if (!modCompatibilityService.coreIrisJarPresent(modsDir, gameVersion)) need.push('iris');
+    }
+    if (presets.sodium && !presets.optifine) {
+      if (!modCompatibilityService.coreSodiumJarPresent(modsDir, gameVersion)) need.push(SODIUM_SLUG);
+    }
+    if (presets.sodiumExtra && !modCompatibilityService.sodiumExtraJarPresent(modsDir, gameVersion)) {
+      need.push(SODIUM_EXTRA_SLUG);
+    }
+    if (sodiumExtraNeedsSodiumStack(presets) && !modCompatibilityService.coreSodiumJarPresent(modsDir, gameVersion)) {
+      need.push(SODIUM_SLUG);
     }
     if (continuityResourcePacksNeeded(presets)) {
       if (!modCompatibilityService.continuityJarPresent(modsDir, gameVersion)) need.push('continuity');
@@ -932,7 +972,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       fs.readdirSync(modsDir).some(
         (f) => /^fabric-api/i.test(f) && f.endsWith('.jar') && modCompatibilityService.jarVersionMatchesGame(f, gameVersion)
       );
-    if ((presets.shaderFps || presets.embossedBlocks || presets.glowingOres) && !hasFabricApi) {
+    if ((presets.shaderFps || presets.embossedBlocks || presets.glowingOres || presets.sodium || sodiumExtraNeedsSodiumStack(presets)) && !hasFabricApi) {
       status('Fabric API eksik, indiriliyor...');
       const apiJars = await downloadModsFromSlugs({ modsDir, gameVersion, slugs: ['fabric-api'] });
       out = [...new Set([...out, ...apiJars])];
@@ -1038,12 +1078,14 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         repoRoot &&
         schematicFarmModService.bundledJarAvailable(repoRoot, gameVersion) &&
         !schematicFarmModService.schematicFarmJarPresent(modsDir)) ||
-      (modPresets.shaderFps &&
+      (modPresets.sodium &&
         !modPresets.optifine &&
         !modCompatibilityService.coreSodiumJarPresent(modsDir, gameVersion)) ||
       (modPresets.shaderFps &&
         !modPresets.optifine &&
         !modCompatibilityService.coreIrisJarPresent(modsDir, gameVersion)) ||
+      (modPresets.sodiumExtra &&
+        !modCompatibilityService.sodiumExtraJarPresent(modsDir, gameVersion)) ||
       (continuityResourcePacksNeeded(modPresets) &&
         !modCompatibilityService.continuityJarPresent(modsDir, gameVersion)) ||
       bundleListsIncompatibleManagedJars(existing.jars, gameVersion) ||
@@ -1871,7 +1913,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable', playMode }) {
     const presets = normalizePresets(modPresets);
-    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm && !presets.clientHudPack && !presets.marsanaClientMenu) {
+    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm && !presets.clientHudPack && !presets.marsanaClientMenu && !presets.sodium && !presets.sodiumExtra) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
     }
 

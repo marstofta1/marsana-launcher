@@ -35,9 +35,11 @@ function isCoreLauncherJar(fileName) {
   return CORE_LAUNCHER_JAR_HINTS.some((re) => re.test(lower));
 }
 
-function isClientPackJar(fileName) {
+function isClientPackJar(fileName, modPresets) {
   const lower = String(fileName || '').toLowerCase();
   if (!lower.endsWith('.jar')) return false;
+  if (/^sodium-[\d.]/i.test(lower) && modPresets && modPresets.sodium) return false;
+  if (/^sodium-extra-/i.test(lower) && modPresets && modPresets.sodiumExtra) return false;
   if (marsanaClientModService.isMarsanaClientJar(fileName)) return true;
   if (/^cloth-config/i.test(lower)) return true;
   if (isCoreLauncherJar(fileName)) return false;
@@ -94,7 +96,7 @@ function applyClientPackVisibility(modsDir, modPresets, playMode) {
       continue;
     }
     if (!entry.endsWith('.jar') || entry.endsWith('.jar.disabled')) continue;
-    if (!isClientPackJar(entry)) continue;
+    if (!isClientPackJar(entry, modPresets)) continue;
     if (!wantsClientPack && stashFile(modsDir, entry)) stashed += 1;
   }
 
@@ -120,7 +122,7 @@ function enforceModIsolation(modsDir, modPresets, playMode) {
 
   for (const entry of fs.readdirSync(modsDir)) {
     if (!entry.endsWith('.jar') || entry.endsWith('.jar.disabled')) continue;
-    if (!isClientPackJar(entry)) continue;
+    if (!isClientPackJar(entry, modPresets)) continue;
     if (stashFile(modsDir, entry)) result.stashed += 1;
   }
 

@@ -209,7 +209,7 @@ function createLaunchService({
 
   async function buildFabricBetaSpec({ version, modPresets, shaderSlug, playMode, emit }) {
     const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false, roundTrees: false, crops3d: false };
-    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.clientHudPack || presets.marsanaClientMenu);
+    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.sodium || presets.sodiumExtra || presets.clientHudPack || presets.marsanaClientMenu);
     if (useMods) {
       const effectiveVersion = effectiveModGameVersion(version);
       if (effectiveVersion !== version && emit && emit.status) {
@@ -328,7 +328,7 @@ function createLaunchService({
 
   async function buildFabricSpec({ version, modPresets, shaderSlug, playMode, emit }) {
     const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false, roundTrees: false, crops3d: false };
-    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.clientHudPack || presets.marsanaClientMenu);
+    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.sodium || presets.sodiumExtra || presets.clientHudPack || presets.marsanaClientMenu);
     if (!useFabric) {
       return { spec: { number: version, type: 'release' }, overrides: { detached: false }, extra: {} };
     }

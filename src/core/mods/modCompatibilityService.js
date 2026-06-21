@@ -18,6 +18,7 @@ const MOD_DEDUPE_FAMILIES = Object.freeze([
   { id: 'fabric-api', test: (name) => /^fabric-api/i.test(name) },
   { id: 'iris', test: (name) => /^iris-fabric-/i.test(name) },
   { id: 'sodium', test: (name) => /^sodium-fabric-/i.test(name) },
+  { id: 'sodium-extra', test: (name) => /^sodium-extra-/i.test(name) },
   { id: 'oculus', test: (name) => /^oculus-/i.test(name) },
   { id: 'rubidium', test: (name) => /^rubidium-/i.test(name) },
   { id: 'embeddium', test: (name) => /^embeddium-/i.test(name) },
@@ -420,6 +421,10 @@ function continuityJarPresent(modsDir, gameVersion) {
   return familyJarPresent(modsDir, (f) => /^continuity-/i.test(f), gameVersion);
 }
 
+function sodiumExtraJarPresent(modsDir, gameVersion) {
+  return familyJarPresent(modsDir, (f) => /^sodium-extra-/i.test(f), gameVersion);
+}
+
 function kryptonJarPresent(modsDir, gameVersion) {
   if (!fs.existsSync(modsDir)) return false;
   return fs.readdirSync(modsDir).some((f) => {
@@ -507,6 +512,7 @@ module.exports = {
   coreSodiumJarPresent,
   coreIrisJarPresent,
   continuityJarPresent,
+  sodiumExtraJarPresent,
   kryptonJarPresent,
   isManagedModFamilyJar,
 };

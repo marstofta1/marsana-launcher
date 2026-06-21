@@ -21,6 +21,8 @@ export const CLIENT_MOD_PRESET = Object.freeze({
   modRoundTrees: false,
   modCrops3d: false,
   modSchematicFarm: false,
+  modSodium: true,
+  modSodiumExtra: false,
   modClientHudPack: true,
 });
 
@@ -39,7 +41,7 @@ export const CLIENT_FEATURES = Object.freeze([
   {
     id: 'shaderFps',
     title: 'Shader + FPS',
-    description: 'Sodium + Iris ile yüksek FPS; Complementary Reimagined shader paketi.',
+    description: 'Iris ile shader desteği; Sodium ayrı mod olarak kurulur. Complementary Reimagined shader paketi.',
   },
   {
     id: 'fullbrightUb',
@@ -92,7 +94,11 @@ export function sanitizeSelectionForPlayMode(snapshot) {
 /** Gelişmiş launcher sekmesine geçince client paketi bayraklarını kapat. */
 export function normalizePersistedSelection(snapshot) {
   if (!snapshot || typeof snapshot !== 'object') return snapshot;
-  const sanitized = sanitizeSelectionForPlayMode(snapshot);
+  let migrated = snapshot;
+  if (typeof migrated.modSodium !== 'boolean' && migrated.modShaderFps) {
+    migrated = { ...migrated, modSodium: true };
+  }
+  const sanitized = sanitizeSelectionForPlayMode(migrated);
   if (!isClientMode(sanitized.playMode)) {
     return {
       ...sanitized,
@@ -120,6 +126,8 @@ export const LAUNCHER_MODE_RESET = Object.freeze({
   modRoundTrees: false,
   modCrops3d: false,
   modSchematicFarm: false,
+  modSodium: false,
+  modSodiumExtra: false,
   modClientHudPack: false,
 });
 

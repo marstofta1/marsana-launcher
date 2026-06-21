@@ -102,6 +102,8 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
           roundTrees: !!state.modRoundTrees,
           crops3d: !!state.modCrops3d,
           schematicFarm: !!state.modSchematicFarm && schematicOk,
+          sodium: !!state.modSodium,
+          sodiumExtra: !!state.modSodiumExtra,
           clientHudPack: state.playMode === 'client' && !!state.modClientHudPack && clientMenuOk,
         },
         state.playMode
