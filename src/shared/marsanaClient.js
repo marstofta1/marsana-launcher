@@ -20,7 +20,7 @@ export const CLIENT_MOD_PRESET = Object.freeze({
   modGlowingOres: false,
   modRoundTrees: false,
   modCrops3d: false,
-  modSchematicFarm: false,
+  modSchematicFarm: true,
   modSodium: true,
   modSodiumExtra: false,
   modClientHudPack: true,

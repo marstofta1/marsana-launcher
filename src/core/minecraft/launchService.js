@@ -129,6 +129,29 @@ function stripUnavailableBundledModPresets(modPresets, repoRoot, gameVersion, em
   return p;
 }
 
+function syncSchematicFarmJar(modPresets, gameVersion, emit) {
+  const modsDirPath = path.join(paths.gameRoot, 'mods');
+  const gv = effectiveModGameVersion(gameVersion);
+  if (modPresets && modPresets.schematicFarm && repoRoot) {
+    if (
+      !schematicFarmModService.schematicFarmJarPresent(modsDirPath) &&
+      schematicFarmModService.bundledJarAvailable(repoRoot, gv)
+    ) {
+      const installed = schematicFarmModService.installBundledMod({
+        repoRoot,
+        modsDir: modsDirPath,
+        gameVersion: gv,
+        onNotice: emit && emit.status ? (msg) => emit.status({ text: msg }) : null,
+      });
+      if (installed && emit && emit.status) {
+        emit.status({ text: 'Sematik Farm modu hazır — oyunda F8 ile menüyü açın.' });
+      }
+    }
+    return;
+  }
+  schematicFarmModService.removeSchematicFarmJars(modsDirPath);
+}
+
 function createLaunchService({
   paths,
   httpClient,
@@ -1099,9 +1122,6 @@ function createLaunchService({
     );
 
     const modsDirPath = path.join(paths.gameRoot, 'mods');
-    if (!modPresets.schematicFarm) {
-      schematicFarmModService.removeSchematicFarmJars(modsDirPath);
-    }
     const iso = modIsolationService.enforceModIsolation(modsDirPath, modPresets, playMode);
     if (iso.stashed > 0 && emit && emit.status) {
       emit.status({
@@ -1138,6 +1158,8 @@ function createLaunchService({
       javaPath,
       emit,
     });
+
+    syncSchematicFarmJar(modPresets, opts.version, emit);
 
     const overrides = { ...planOverrides };
     let optionsGameDir = paths.gameRoot;

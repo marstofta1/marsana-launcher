@@ -89,6 +89,8 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
         loader === 'bedrock' ? 'bedrock' : loader === 'roblox' ? 'roblox' : state.selectedVersion;
       const clientMenuOk = marsanaBundledClientModsAvailable(version);
       const schematicOk = schematicFarmBundledAvailable(version);
+      const schematicFarmEnabled =
+        schematicOk && (isClientMode(state.playMode) || !!state.modSchematicFarm);
       const modPresets = sanitizeModPresetsForPlayMode(
         {
           marsanaClientMenu: state.playMode === 'client' && clientMenuOk,
@@ -101,7 +103,7 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
           glowingOres: !!state.modGlowingOres,
           roundTrees: !!state.modRoundTrees,
           crops3d: !!state.modCrops3d,
-          schematicFarm: !!state.modSchematicFarm && schematicOk,
+          schematicFarm: schematicFarmEnabled,
           sodium: !!state.modSodium,
           sodiumExtra: !!state.modSodiumExtra,
           clientHudPack: state.playMode === 'client' && !!state.modClientHudPack && clientMenuOk,
