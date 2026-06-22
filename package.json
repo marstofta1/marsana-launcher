@@ -1,6 +1,6 @@
 {
   "name": "marsana-launcher",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "Marsana Minecraft Launcher",
   "private": true,
   "main": "src/main/index.js",
@@ -71,6 +71,16 @@
       "target": "nsis",
       "signAndEditExecutable": false,
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Marsana Launcher",
+      "guid": "com.marsana.launcher",
+      "runAfterFinish": true
     },
     "linux": {
       "target": "AppImage",

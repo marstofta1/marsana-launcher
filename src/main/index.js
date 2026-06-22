@@ -12,6 +12,7 @@ const { buildContainer } = require('./container');
 const { createMainWindow } = require('./window');
 const { registerAllHandlers } = require('./ipc');
 const { isMac } = require('../shared/platform');
+const { redirectToNewestLauncherInstall } = require('./launcherInstall');
 
 let mainWindow = null;
 let container = null;
@@ -66,6 +67,8 @@ function bootstrap() {
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();
+} else if (redirectToNewestLauncherInstall()) {
+  /* güncel kurulum yolundan yeniden başlatıldı */
 } else {
   bootstrap();
 }

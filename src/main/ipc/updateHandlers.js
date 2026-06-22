@@ -4,29 +4,11 @@ const { app } = require('electron');
 
 const { isWin } = require('../../shared/platform');
 const { UPDATE } = require('../../shared/ipcChannels');
+const { isRemoteVersionNewer } = require('../../shared/appVersion');
+const { recordPendingUpdateInstall } = require('../launcherInstall');
 
 const DEFAULT_UPDATES_BASE_URL =
   'https://marstofta1.github.io/marsana-launcher/downloads';
-
-function parseVersionParts(version) {
-  return String(version)
-    .replace(/^v/i, '')
-    .split('.')
-    .map((part) => parseInt(part, 10) || 0);
-}
-
-function isRemoteVersionNewer(remoteVersion, currentVersion) {
-  const remote = parseVersionParts(remoteVersion);
-  const current = parseVersionParts(currentVersion);
-  const len = Math.max(remote.length, current.length);
-  for (let i = 0; i < len; i += 1) {
-    const rv = remote[i] || 0;
-    const cv = current[i] || 0;
-    if (rv > cv) return true;
-    if (rv < cv) return false;
-  }
-  return false;
-}
 
 function configureFeedUrl(autoUpdater) {
   const envBase = process.env.MARSANA_UPDATES_BASE_URL;
@@ -52,9 +34,19 @@ function sleep(ms) {
 function registerUpdateHandlers({ ipcMain, getWindow }) {
   const { autoUpdater } = require('electron-updater');
   autoUpdater.autoDownload = false;
-  autoUpdater.autoInstallOnAppQuit = false;
+  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.disableDifferentialDownload = true;
   // İmzasız NSIS/generic güncellemeleri Windows'ta varsayılan doğrulamada bloklanabilir.
   if (isWin) autoUpdater.verifyUpdateCodeSignature = false;
+
+  let pendingUpdateVersion = null;
+
+  autoUpdater.on('update-downloaded', (info) => {
+    pendingUpdateVersion = info && info.version ? String(info.version) : pendingUpdateVersion;
+    if (pendingUpdateVersion) {
+      recordPendingUpdateInstall(app.getPath('userData'), pendingUpdateVersion);
+    }
+  });
 
   const MANUAL_UPDATE_HINT =
     'Güncelleme sunucusuna ulaşılamadı. GitHub Pages etkin olmalı ve repo herkese açık olmalıdır. ' +
@@ -167,10 +159,15 @@ function registerUpdateHandlers({ ipcMain, getWindow }) {
       }
       autoUpdater.removeListener('download-progress', onProgress);
 
+      const installVersion = pendingUpdateVersion || ver || probe.version || '';
+      if (installVersion) {
+        recordPendingUpdateInstall(app.getPath('userData'), installVersion);
+      }
+
       emit({ phase: 'installing', message: 'Kurulum için yeniden başlatılıyor…', percent: 100 });
       await sleep(450);
       setImmediate(() => {
-        autoUpdater.quitAndInstall(false, true);
+        autoUpdater.quitAndInstall(isWin, true);
       });
       return { ok: true, willInstall: true };
     } catch (e) {
