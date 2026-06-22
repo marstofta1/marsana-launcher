@@ -48,5 +48,5 @@ tasks.register('copyToBundled', Copy) {
     dependsOn jar
     from jar.archiveFile
     into "${rootProject.projectDir.parentFile}/bundled-mods/schematic-farm"
-    rename { "marsana-schematic-farm-26.1.jar" }
+    rename { "marsana-schematic-farm-26.2.jar" }
 }

@@ -276,8 +276,18 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v1.0.32 — Sematik Farm başlatma hatası düzeltmesi</span>
+            <span class="release-version">v1.0.33 — Sematik Farm F8 çökme düzeltmesi (Minecraft 26.2)</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li>Minecraft 26.2'de F8'e basınca oyunun çökmesi giderildi — mod artık <code>gui.screen()</code> API'sini kullanıyor.</li>
+            <li>26.2 için ayrı <code>marsana-schematic-farm-26.2.jar</code> paketleniyor; launcher doğru jar'ı otomatik seçiyor.</li>
+            <li>Hologram çizimi 26.2 render API'sine uyarlanana kadar geçici olarak devre dışı (F8 menüsü ve ilerleme taraması çalışır).</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v1.0.32 — Sematik Farm başlatma hatası düzeltmesi</span>
           </div>
           <ul class="release-changes">
             <li><code>paths is not defined</code> hatası giderildi — Sematik Farm açıkken oyun başlatılamıyordu.</li>

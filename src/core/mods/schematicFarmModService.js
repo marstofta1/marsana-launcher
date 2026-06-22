@@ -6,7 +6,7 @@ const fs = require('fs');
 const MOD_JAR_PREFIX = 'marsana-schematic-farm';
 
 /** Launcher bundled jar satirlari — 1.20.x icin ayri build gerekir. */
-const SCHEMATIC_BUNDLED_LINES = Object.freeze(['26.1', '1.22', '1.21', '1.20']);
+const SCHEMATIC_BUNDLED_LINES = Object.freeze(['26.2', '26.1', '1.22', '1.21', '1.20']);
 
 function bundledModsRoot(repoRoot) {
   return path.join(repoRoot, 'bundled-mods', 'schematic-farm');
@@ -14,6 +14,7 @@ function bundledModsRoot(repoRoot) {
 
 function modLineForGameVersion(gameVersion) {
   const id = String(gameVersion || '').trim();
+  if (/^26\.2/.test(id)) return '26.2';
   if (/^26\./.test(id)) return '26.1';
   if (/^1\.22/.test(id)) return '1.22';
   if (/^1\.21/.test(id)) return '1.21';
@@ -32,10 +33,6 @@ function bundledJarPath(repoRoot, gameVersion) {
   if (primary) {
     const exact = jarPathForLine(repoRoot, primary);
     if (exact) return exact;
-  }
-  // 26.x: 26.1 satiri tum 26.x surumlerinde kullanilir
-  if (/^26\./.test(String(gameVersion || ''))) {
-    return jarPathForLine(repoRoot, '26.1');
   }
   return null;
 }
@@ -87,6 +84,24 @@ function installBundledMod({ repoRoot, modsDir, gameVersion, onNotice }) {
   return destName;
 }
 
+function ensureBundledModInstalled({ repoRoot, modsDir, gameVersion, onNotice }) {
+  const line = modLineForGameVersion(gameVersion);
+  const expectedName = line ? `marsana-schematic-farm-${line}.jar` : null;
+  const src = bundledJarPath(repoRoot, gameVersion);
+  if (!expectedName || !src) return null;
+
+  const present = fs.existsSync(modsDir)
+    ? fs.readdirSync(modsDir).filter((f) => isSchematicFarmJar(f) && !f.endsWith('.disabled'))
+    : [];
+
+  if (present.length === 1 && present[0] === expectedName) {
+    return expectedName;
+  }
+
+  removeSchematicFarmJars(modsDir);
+  return installBundledMod({ repoRoot, modsDir, gameVersion, onNotice });
+}
+
 function isSchematicFarmJar(name) {
   return String(name || '').toLowerCase().startsWith(MOD_JAR_PREFIX) && name.endsWith('.jar');
 }
@@ -122,6 +137,7 @@ module.exports = {
   listAvailableLines,
   schematicFarmSupportedForGameVersion,
   installBundledMod,
+  ensureBundledModInstalled,
   isSchematicFarmJar,
   schematicFarmJarPresent,
   removeSchematicFarmJars,

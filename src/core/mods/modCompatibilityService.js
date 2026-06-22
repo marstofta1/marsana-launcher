@@ -85,7 +85,7 @@ function marsanaBundledMc26LineTag(filename) {
   return m ? m[1] : null;
 }
 
-/** 26.1 satiri jar 26.2+ oyununda calisir; daha eski oyunda reddedilir. null = bu kural uygulanmaz. */
+/** 26.x jar satiri oyunun minor surumuyle eslesmeli (26.1 jar 26.2'de API kirilir). null = bu kural uygulanmaz. */
 function marsanaBundledCompatibleWithGame(filename, gameVersion) {
   const gv = String(gameVersion || '').trim();
   if (!isMarsanaBundledModJar(filename) || !/^26\./.test(gv)) return null;
@@ -94,7 +94,7 @@ function marsanaBundledCompatibleWithGame(filename, gameVersion) {
   const gvMinor = mc26MinorOf(gv);
   const lineMinor = mc26MinorOf(line);
   if (gvMinor == null || lineMinor == null) return true;
-  return gvMinor >= lineMinor;
+  return gvMinor === lineMinor;
 }
 
 function mc26VersionsCompatible(tag, gameVersion) {

@@ -41,14 +41,14 @@ public final class SchematicKeybinds {
             if (client.player == null) {
                 return;
             }
-            if (client.screen instanceof SchematicFarmScreen) {
-                client.setScreen(null);
+            if (client.gui.screen() instanceof SchematicFarmScreen) {
+                client.gui.setScreen(null);
                 return;
             }
-            if (client.screen != null) {
+            if (client.gui.screen() != null) {
                 return;
             }
-            client.setScreen(new SchematicFarmScreen());
+            client.gui.setScreen(new SchematicFarmScreen());
         });
     }
 }

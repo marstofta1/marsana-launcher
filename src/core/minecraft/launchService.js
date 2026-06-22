@@ -172,11 +172,8 @@ function createLaunchService({
     const modsDirPath = path.join(paths.gameRoot, 'mods');
     const gv = effectiveModGameVersion(gameVersion);
     if (modPresets && modPresets.schematicFarm && repoRoot) {
-      if (
-        !schematicFarmModService.schematicFarmJarPresent(modsDirPath) &&
-        schematicFarmModService.bundledJarAvailable(repoRoot, gv)
-      ) {
-        const installed = schematicFarmModService.installBundledMod({
+      if (schematicFarmModService.bundledJarAvailable(repoRoot, gv)) {
+        const installed = schematicFarmModService.ensureBundledModInstalled({
           repoRoot,
           modsDir: modsDirPath,
           gameVersion: gv,
