@@ -1,5 +1,5 @@
 {
-  "version": "1.0.35",
+  "version": "1.0.36",
   "releaseVersion": "0.1.24",
   "note": "Mobil Marsana Launcher Bedrock (PE) başlatıcıdır. Bilinmeyen kaynaklardan kuruluma izin vermen gerekebilir.",
   "source": "Marsana.Launcher-0.1.24-android.apk",
@@ -10,40 +10,40 @@
       "id": "android16",
       "title": "Android 16",
       "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-android.apk",
-      "downloadName": "Marsana-Launcher-1.0.35-android16.apk",
+      "downloadName": "Marsana-Launcher-1.0.36-android16.apk",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": ".apk · Bedrock başlatıcı · v1.0.35",
+      "note": ".apk · Bedrock başlatıcı · v1.0.36",
       "minOs": "Android 16"
     },
     {
       "id": "android15",
       "title": "Android 15",
       "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-android.apk",
-      "downloadName": "Marsana-Launcher-1.0.35-android15.apk",
+      "downloadName": "Marsana-Launcher-1.0.36-android15.apk",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": ".apk · Bedrock başlatıcı · v1.0.35",
+      "note": ".apk · Bedrock başlatıcı · v1.0.36",
       "minOs": "Android 15"
     },
     {
       "id": "android14",
       "title": "Android 14",
       "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-android.apk",
-      "downloadName": "Marsana-Launcher-1.0.35-android14.apk",
+      "downloadName": "Marsana-Launcher-1.0.36-android14.apk",
       "badge": "Desteklenir",
       "badgeClass": "ready",
-      "note": ".apk · Bedrock başlatıcı · v1.0.35",
+      "note": ".apk · Bedrock başlatıcı · v1.0.36",
       "minOs": "Android 14"
     },
     {
       "id": "android13",
       "title": "Android 13",
       "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v0.1.24/Marsana.Launcher-0.1.24-android.apk",
-      "downloadName": "Marsana-Launcher-1.0.35-android13.apk",
+      "downloadName": "Marsana-Launcher-1.0.36-android13.apk",
       "badge": "Desteklenir",
       "badgeClass": "legacy",
-      "note": ".apk · Bedrock başlatıcı · v1.0.35",
+      "note": ".apk · Bedrock başlatıcı · v1.0.36",
       "minOs": "Android 13"
     }
   ]

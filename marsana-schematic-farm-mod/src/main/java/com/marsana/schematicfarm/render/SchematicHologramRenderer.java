@@ -1,6 +1,7 @@
 package com.marsana.schematicfarm.render;
 
 import com.marsana.schematicfarm.config.SchematicConfigManager;
+import com.marsana.schematicfarm.menu.SchematicFarmScreen;
 import com.marsana.schematicfarm.schematic.FarmTemplate;
 import com.marsana.schematicfarm.schematic.FarmTemplateRegistry;
 import com.marsana.schematicfarm.schematic.FarmType;
@@ -10,14 +11,14 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,11 +30,8 @@ import org.slf4j.LoggerFactory;
 public final class SchematicHologramRenderer {
     private static final Logger LOGGER = LoggerFactory.getLogger("marsana-schematic-farm");
     private static final int MAX_RENDER_DISTANCE_SQ = 96 * 96;
-    private static final int LABEL_DISTANCE_SQ = 16 * 16;
-    /** Dünya / sunucuya girince ilk karelerde render pipeline hazır olmayabilir. */
-    private static final int MIN_STABLE_TICKS = 60;
-    /** Yarı saydam hayalet blok tonu (ARGB). */
-    private static final int GHOST_OUTLINE_COLOR = 0x99FFFFFF;
+    private static final int LABEL_DISTANCE_SQ = 64 * 64;
+    private static final int MIN_STABLE_TICKS = 20;
 
     private static boolean pipelineRegistered;
     private static int stableWorldTicks;
@@ -46,7 +44,7 @@ public final class SchematicHologramRenderer {
         }
         pipelineRegistered = true;
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.player != null && client.level != null && client.gui.screen() == null) {
+            if (client.player != null && client.level != null && !shouldHideForScreen(client.gui.screen())) {
                 stableWorldTicks = Math.min(stableWorldTicks + 1, MIN_STABLE_TICKS + 1);
             } else if (client.level == null || client.player == null) {
                 stableWorldTicks = 0;
@@ -59,6 +57,14 @@ public final class SchematicHologramRenderer {
         initPipeline();
     }
 
+    /** ESC envanteri vb. acikken gizle; normal oyun ve F8 sematik menusunde goster. */
+    private static boolean shouldHideForScreen(Screen screen) {
+        if (screen == null) {
+            return false;
+        }
+        return !(screen instanceof SchematicFarmScreen);
+    }
+
     private static void render(LevelRenderContext context) {
         if (!SchematicConfigManager.isHologramsEnabled()) {
             return;
@@ -68,7 +74,7 @@ public final class SchematicHologramRenderer {
         }
 
         Minecraft client = Minecraft.getInstance();
-        if (client.level == null || client.player == null || client.gui.screen() == null) {
+        if (client.level == null || client.player == null || shouldHideForScreen(client.gui.screen())) {
             return;
         }
 
@@ -105,7 +111,10 @@ public final class SchematicHologramRenderer {
                 return;
             }
 
-            Font font = client.font;
+            CameraRenderState cameraState = context.levelState() != null
+                ? context.levelState().cameraRenderState
+                : null;
+
             BlockPos playerPos = client.player.blockPosition();
 
             poseStack.pushPose();
@@ -122,37 +131,34 @@ public final class SchematicHologramRenderer {
                 }
                 BlockState actual = client.level.getBlockState(pos);
                 boolean placed = SchematicScanner.matchesExpected(expected, actual);
+                int typeColor = blockTypeColor(spec.blockId());
 
                 poseStack.pushPose();
                 poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
 
                 if (!placed) {
                     MovingBlockRenderState ghost = ghostState(client, pos, expected);
-                    ordered.submitMovingBlock(poseStack, ghost, GHOST_OUTLINE_COLOR);
+                    ordered.submitMovingBlock(poseStack, ghost, typeColor | 0x99000000);
 
                     ordered.submitShapeOutline(
                         poseStack,
                         Shapes.block(),
                         RenderTypes.lines(),
-                        0xFFFFCC66,
-                        1.2f,
+                        typeColor | 0xFF000000,
+                        1.4f,
                         false
                     );
 
-                    if (playerPos.distSqr(pos) <= LABEL_DISTANCE_SQ) {
+                    if (playerPos.distSqr(pos) <= LABEL_DISTANCE_SQ && cameraState != null) {
                         String label = expected.getBlock().getName().getString();
-                        FormattedCharSequence text = font.split(Component.literal(label), 140).getFirst();
-                        ordered.submitText(
+                        ordered.submitNameTag(
                             poseStack,
-                            0.5f,
-                            1.2f,
-                            text,
-                            false,
-                            Font.DisplayMode.SEE_THROUGH,
+                            new Vec3(0.5, 0.92, 0.5),
+                            0,
+                            Component.literal(label),
+                            true,
                             LightCoordsUtil.FULL_BRIGHT,
-                            0xFFFFFFFF,
-                            0x77000000,
-                            0xFFFFCC66
+                            cameraState
                         );
                     }
                 } else {
@@ -174,6 +180,15 @@ public final class SchematicHologramRenderer {
             LOGGER.warn("Sematik hologram cizilemedi — hologram kapatildi", e);
             SchematicConfigManager.setHologramsEnabled(false);
         }
+    }
+
+    /** Her blok turu icin ayirt edici renk (eksik blok cizimi). */
+    private static int blockTypeColor(String blockId) {
+        int hash = blockId.hashCode();
+        int r = 160 + (hash & 0x5F);
+        int g = 120 + ((hash >> 7) & 0x5F);
+        int b = 90 + ((hash >> 14) & 0x5F);
+        return (r << 16) | (g << 8) | b;
     }
 
     private static MovingBlockRenderState ghostState(Minecraft client, BlockPos worldPos, BlockState state) {
