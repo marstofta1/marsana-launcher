@@ -1,6 +1,6 @@
 {
   "name": "marsana-launcher",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "description": "Marsana Minecraft Launcher",
   "private": true,
   "main": "src/main/index.js",

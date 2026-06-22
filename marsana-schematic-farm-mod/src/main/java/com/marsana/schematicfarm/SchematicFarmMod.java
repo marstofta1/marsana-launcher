@@ -12,8 +12,6 @@ public class SchematicFarmMod implements ClientModInitializer {
     public void onInitializeClient() {
         SchematicConfigManager.load();
         SchematicKeybinds.register();
-        if (SchematicConfigManager.isHologramsEnabled()) {
-            SchematicHologramRenderer.syncWithConfig();
-        }
+        SchematicHologramRenderer.initPipeline();
     }
 }

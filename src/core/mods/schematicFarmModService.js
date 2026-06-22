@@ -94,7 +94,14 @@ function ensureBundledModInstalled({ repoRoot, modsDir, gameVersion, onNotice })
     ? fs.readdirSync(modsDir).filter((f) => isSchematicFarmJar(f) && !f.endsWith('.disabled'))
     : [];
 
-  if (present.length === 1 && present[0] === expectedName) {
+  const dest = path.join(modsDir, expectedName);
+  const srcStat = fs.statSync(src);
+  const destStat = fs.existsSync(dest) ? fs.statSync(dest) : null;
+  const upToDate = destStat
+    && destStat.size === srcStat.size
+    && destStat.mtimeMs >= srcStat.mtimeMs;
+
+  if (present.length === 1 && present[0] === expectedName && upToDate) {
     return expectedName;
   }
 
