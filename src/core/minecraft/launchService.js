@@ -129,29 +129,6 @@ function stripUnavailableBundledModPresets(modPresets, repoRoot, gameVersion, em
   return p;
 }
 
-function syncSchematicFarmJar(modPresets, gameVersion, emit) {
-  const modsDirPath = path.join(paths.gameRoot, 'mods');
-  const gv = effectiveModGameVersion(gameVersion);
-  if (modPresets && modPresets.schematicFarm && repoRoot) {
-    if (
-      !schematicFarmModService.schematicFarmJarPresent(modsDirPath) &&
-      schematicFarmModService.bundledJarAvailable(repoRoot, gv)
-    ) {
-      const installed = schematicFarmModService.installBundledMod({
-        repoRoot,
-        modsDir: modsDirPath,
-        gameVersion: gv,
-        onNotice: emit && emit.status ? (msg) => emit.status({ text: msg }) : null,
-      });
-      if (installed && emit && emit.status) {
-        emit.status({ text: 'Sematik Farm modu hazır — oyunda F8 ile menüyü açın.' });
-      }
-    }
-    return;
-  }
-  schematicFarmModService.removeSchematicFarmJars(modsDirPath);
-}
-
 function createLaunchService({
   paths,
   httpClient,
@@ -189,6 +166,29 @@ function createLaunchService({
     // 26.2 gibi tam release surumlerinde 26.2.1 diye bir MC/Fabric surumu yok.
     const m = id.match(/^1\.(\d+)$/);
     return m ? `${id}.1` : id;
+  }
+
+  function syncSchematicFarmJar(modPresets, gameVersion, emit) {
+    const modsDirPath = path.join(paths.gameRoot, 'mods');
+    const gv = effectiveModGameVersion(gameVersion);
+    if (modPresets && modPresets.schematicFarm && repoRoot) {
+      if (
+        !schematicFarmModService.schematicFarmJarPresent(modsDirPath) &&
+        schematicFarmModService.bundledJarAvailable(repoRoot, gv)
+      ) {
+        const installed = schematicFarmModService.installBundledMod({
+          repoRoot,
+          modsDir: modsDirPath,
+          gameVersion: gv,
+          onNotice: emit && emit.status ? (msg) => emit.status({ text: msg }) : null,
+        });
+        if (installed && emit && emit.status) {
+          emit.status({ text: 'Sematik Farm modu hazır — oyunda F8 ile menüyü açın.' });
+        }
+      }
+      return;
+    }
+    schematicFarmModService.removeSchematicFarmJars(modsDirPath);
   }
 
   function syncModResourcePacks({ gameRoot, gameVersion, modPresets }) {
