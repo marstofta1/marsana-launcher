@@ -7,6 +7,7 @@ import com.marsana.schematicfarm.schematic.FarmTemplateRegistry;
 import com.marsana.schematicfarm.schematic.FarmType;
 import com.marsana.schematicfarm.schematic.SchematicBlock;
 import com.marsana.schematicfarm.schematic.SchematicScanner;
+import com.marsana.schematicfarm.schematic.SchematicTargetFinder;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
@@ -116,6 +117,7 @@ public final class SchematicHologramRenderer {
                 : null;
 
             BlockPos playerPos = client.player.blockPosition();
+            BlockPos highlight = SchematicTargetFinder.getHighlightedTarget();
 
             poseStack.pushPose();
             poseStack.translate(-camera.x, -camera.y, -camera.z);
@@ -140,12 +142,14 @@ public final class SchematicHologramRenderer {
                     MovingBlockRenderState ghost = ghostState(client, pos, expected);
                     ordered.submitMovingBlock(poseStack, ghost, typeColor | 0x99000000);
 
+                    int outlineColor = pos.equals(highlight) ? 0xFFFFFFFF : (typeColor | 0xFF000000);
+                    float outlineWidth = pos.equals(highlight) ? 2.2f : 1.4f;
                     ordered.submitShapeOutline(
                         poseStack,
                         Shapes.block(),
                         RenderTypes.lines(),
-                        typeColor | 0xFF000000,
-                        1.4f,
+                        outlineColor,
+                        outlineWidth,
                         false
                     );
 

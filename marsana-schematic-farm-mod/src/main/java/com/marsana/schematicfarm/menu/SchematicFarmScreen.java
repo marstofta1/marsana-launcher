@@ -42,7 +42,7 @@ public class SchematicFarmScreen extends Screen {
             .bounds(centerX + 5, this.height - 28, 100, 20).build());
 
         hologramToggleBtn = Button.builder(Component.literal(hologramToggleText()), b -> toggleHolograms())
-            .bounds(centerX - 160, 36, 155, 20).build();
+            .bounds(centerX - 160, 48, 155, 20).build();
         addRenderableWidget(hologramToggleBtn);
 
         rebuildContent();
@@ -63,7 +63,7 @@ public class SchematicFarmScreen extends Screen {
     private void rebuildContent() {
         clearDynamic();
         int leftX = this.width / 2 - 160;
-        int y = 58;
+        int y = 72;
         for (FarmType type : FarmTemplateRegistry.allTypes()) {
             boolean active = type == selectedFarm;
             String prefix = active ? "> " : "  ";
@@ -137,6 +137,7 @@ public class SchematicFarmScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         graphics.centeredText(this.font, this.title, this.width / 2, 12, 0x55FF88);
         graphics.centeredText(this.font, "F8 — farm sec, hologram ve ilerlemeyi gor", this.width / 2, 24, 0xAAAAAA);
+        graphics.centeredText(this.font, "Yaratıcı: holograma bak + sag tik = havaya blok", this.width / 2, 36, 0x88CCFF);
 
         FarmTemplate template = FarmTemplateRegistry.get(selectedFarm);
         int rightX = this.width / 2 + 10;
