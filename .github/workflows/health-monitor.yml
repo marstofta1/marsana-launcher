@@ -1,0 +1,78 @@
+name: Daily Health Monitor
+
+# P2 — gunluk denetim/analiz sistemi. Her gun otomatik kosar; guvenlik verify
+# suite'ini + site/release saglik kontrolunu calistirir. Bir sorun cikarsa job
+# kirmizi olur ve tek bir "health-check" issue'su acilir/guncellenir (spam yok).
+# Kendi dosyalarina push'ta da kosar ki degisiklik dogrulanabilsin.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # her gun 06:00 UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/health-check.js'
+      - 'scripts/verify-update-feed-url.js'
+      - 'scripts/verify-zip-containment.js'
+      - 'scripts/verify-download-safety.js'
+      - '.github/workflows/health-monitor.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: health-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Bagimliliklar (verify scriptleri adm-zip kullanir; electron'a gerek yok)
+        run: npm ci --omit=dev
+
+      - name: Guvenlik verify suite
+        run: |
+          node scripts/verify-update-feed-url.js
+          node scripts/verify-zip-containment.js
+          node scripts/verify-download-safety.js
+
+      - name: Site + release saglik denetimi
+        run: node scripts/health-check.js
+
+      - name: Sorun varsa issue ac / guncelle
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Gunluk saglik denetimi BASARISIZ';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = `Otomatik gunluk denetim (\`health-monitor.yml\`) bir sorun buldu.\n\n`
+              + `Kosu: ${runUrl}\nTarih: ${new Date().toISOString()}\n\n`
+              + `Ayrinti icin kosu loglarina bakin (verify suite veya site/release saglik kontrolu).`;
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'health-monitor', per_page: 1,
+            });
+            if (existing.data.length) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.data[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['health-monitor'],
+              });
+            }
