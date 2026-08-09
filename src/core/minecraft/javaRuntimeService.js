@@ -102,7 +102,12 @@ async function downloadRuntimeFiles({ files, runtimeRoot, httpClient, emit }) {
           `Java çalıştırıcısı güvenli değil: "${relPath}" kurulum klasörünün dışına yazmaya çalışıyor.`
         );
         await fs.promises.mkdir(path.dirname(dest), { recursive: true });
-        await httpClient.download(spec.downloads.raw.url, dest);
+        // Mojang runtime manifest'i her dosya için raw.sha1 ve raw.size verir.
+        // Bu dosya birazdan çalıştırma izni alacağı için doğrulama kritik.
+        await httpClient.download(spec.downloads.raw.url, dest, {
+          sha1: spec.downloads.raw.sha1,
+          size: spec.downloads.raw.size,
+        });
         if (spec.executable && process.platform !== 'win32') {
           await fs.promises.chmod(dest, 0o755);
         }

@@ -60,7 +60,8 @@ function createMrpackInstaller({ httpClient, modrinthClient }) {
 
     try {
       if (emit) emit.status({ text: 'OptiFine mod paketi indiriliyor…' });
-      await httpClient.download(fileInfo.url, mrpackPath);
+      // .mrpack kabının kendisini Modrinth'in yayınladığı sha512/boyutla doğrula.
+      await httpClient.download(fileInfo.url, mrpackPath, modrinthClient.fileIntegrity(fileInfo));
 
       const zip = new AdmZip(mrpackPath);
       const indexEntry = zip.getEntry('modrinth.index.json');
@@ -78,7 +79,14 @@ function createMrpackInstaller({ httpClient, modrinthClient }) {
         if (!rel || !spec.downloads || !spec.downloads[0]) continue;
         const dest = assertInsideGameRoot(gameRoot, rel);
         await fs.promises.mkdir(path.dirname(dest), { recursive: true });
-        await httpClient.download(spec.downloads[0], dest);
+        // modrinth.index.json her dosya için hashes ve fileSize (camelCase!) verir.
+        const integrity = {};
+        if (spec.hashes) {
+          if (spec.hashes.sha512) integrity.sha512 = spec.hashes.sha512;
+          if (spec.hashes.sha1) integrity.sha1 = spec.hashes.sha1;
+        }
+        if (Number.isFinite(spec.fileSize)) integrity.size = spec.fileSize;
+        await httpClient.download(spec.downloads[0], dest, integrity);
         installedPaths.push(rel);
         done += 1;
         if (emit && (done === files.length || done % 10 === 0)) {

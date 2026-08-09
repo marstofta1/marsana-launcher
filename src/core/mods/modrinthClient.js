@@ -16,6 +16,19 @@ function primaryFile(files) {
   return files.find((f) => f.primary) || files[0];
 }
 
+// Modrinth her dosyaya sha512+sha1 ve boyut verir; bunları httpClient.download'ın
+// beklediği { sha512, sha1, size } biçimine çevirir. httpClient "varsa doğrula"
+// uyguladığı için eksik alanlar sorun değil. sha512 tercih edilir (daha güçlü),
+// ama ikisi de verilirse ikisi de doğrulanır.
+function fileIntegrity(file) {
+  const h = (file && file.hashes) || {};
+  const out = {};
+  if (h.sha512) out.sha512 = h.sha512;
+  if (h.sha1) out.sha1 = h.sha1;
+  if (file && Number.isFinite(file.size)) out.size = file.size;
+  return out;
+}
+
 function createModrinthClient({ httpClient }) {
   async function listProjectVersions(slug, { loaders, gameVersions } = {}) {
     const qs = buildVersionQuery({ loaders, gameVersions });
@@ -43,7 +56,16 @@ function createModrinthClient({ httpClient }) {
     if (!file) {
       throw new LauncherError(Codes.MODRINTH_NOT_FOUND, `Modrinth: ${slug} dosyası yok.`);
     }
-    return { url: file.url, filename: file.filename, version: sorted[0] };
+    // hashes/size'ı da taşı ki indirme bütünlüğü doğrulanabilsin (eskiden
+    // düşürülüyordu). fileIntegrity(file) hem bu sonuç hem de primaryFileOf
+    // için aynı şekilde çalışır.
+    return {
+      url: file.url,
+      filename: file.filename,
+      hashes: file.hashes,
+      size: file.size,
+      version: sorted[0],
+    };
   }
 
   async function latestVersion(slug, opts) {
@@ -70,7 +92,7 @@ function createModrinthClient({ httpClient }) {
     return primaryFile(version && version.files);
   }
 
-  return { listProjectVersions, latestPrimaryFile, latestVersion, versionById, primaryFileOf };
+  return { listProjectVersions, latestPrimaryFile, latestVersion, versionById, primaryFileOf, fileIntegrity };
 }
 
 module.exports = { createModrinthClient };

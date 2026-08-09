@@ -139,6 +139,20 @@ function createNeoForgeInstaller({ httpClient, paths }) {
     return path.join(paths.userDataDir, 'neoforge-installers');
   }
 
+  // NeoForged maven'ı her jar'ın yanında `<url>.sha256` sidecar'ı yayınlar.
+  // İndirilen kurucu birazdan `java -jar` ile ÇALIŞTIRILACAĞI için doğrulamak
+  // en değerli koruma. Sidecar yoksa/okunamazsa doğrulamadan devam edilir
+  // ("varsa doğrula"); hash tutmazsa httpClient jar'ı reddeder.
+  async function installerSha256(jarUrl) {
+    try {
+      const text = await httpClient.fetchText(`${jarUrl}.sha256`);
+      const m = String(text).match(/\b[0-9a-f]{64}\b/i);
+      return m ? m[0].toLowerCase() : null;
+    } catch {
+      return null;
+    }
+  }
+
   async function ensureInstallerJar({ mcVersion, emit }) {
     const legacy = isLegacy1201(mcVersion);
     const neoforgeVersion = await pickNeoForgeVersion(mcVersion);
@@ -161,7 +175,9 @@ function createNeoForgeInstaller({ httpClient, paths }) {
     if (emit && emit.status) {
       emit.status({ text: `NeoForge yükleyicisi indiriliyor (${neoforgeVersion})...` });
     }
-    await httpClient.download(installerJarUrl(neoforgeVersion, legacy), installerPath);
+    const jarUrl = installerJarUrl(neoforgeVersion, legacy);
+    const sha256 = await installerSha256(jarUrl);
+    await httpClient.download(jarUrl, installerPath, sha256 ? { sha256 } : {});
     return { installerPath, neoforgeVersion, legacy };
   }
 

@@ -85,6 +85,20 @@ function createForgeInstaller({ httpClient, paths }) {
     return path.join(paths.userDataDir, 'forge-installers');
   }
 
+  // Maven her jar'ın yanında bir `<url>.sha1` sidecar'ı yayınlar. İndirilen
+  // kurucu birazdan `java -jar` ile ÇALIŞTIRILACAĞI için bunu doğrulamak en
+  // değerli koruma. Sidecar yoksa/okunamazsa doğrulamadan devam edilir
+  // ("varsa doğrula"); hash tutmazsa httpClient jar'ı reddeder.
+  async function installerSha1(jarUrl) {
+    try {
+      const text = await httpClient.fetchText(`${jarUrl}.sha1`);
+      const m = String(text).match(/\b[0-9a-f]{40}\b/i);
+      return m ? m[0].toLowerCase() : null;
+    } catch {
+      return null;
+    }
+  }
+
   async function ensureInstallerJar({ mcVersion, forgeVersionOverride, emit }) {
     const forgeVersion = forgeVersionOverride || (await pickForgeVersion(mcVersion));
     const dir = installersDir();
@@ -105,7 +119,9 @@ function createForgeInstaller({ httpClient, paths }) {
     if (emit && emit.status) {
       emit.status({ text: `Forge yükleyicisi indiriliyor (${forgeVersion})...` });
     }
-    await httpClient.download(installerJarUrl(mcVersion, forgeVersion), installerPath);
+    const jarUrl = installerJarUrl(mcVersion, forgeVersion);
+    const sha1 = await installerSha1(jarUrl);
+    await httpClient.download(jarUrl, installerPath, sha1 ? { sha1 } : {});
     return { installerPath, forgeVersion };
   }
 

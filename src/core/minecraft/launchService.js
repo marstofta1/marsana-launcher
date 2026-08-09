@@ -679,7 +679,11 @@ function createLaunchService({
       `Asset index adı güvenli değil: "${assetIndex.id}".`
     );
     if (fs.existsSync(target)) return;
-    await httpClient.download(assetIndex.url, target);
+    // Mojang assetIndex kaydı sha1+size taşır; varsa doğrula.
+    await httpClient.download(assetIndex.url, target, {
+      sha1: assetIndex.sha1,
+      size: assetIndex.size,
+    });
   }
 
   async function buildQuiltSpec({ version, includeShader, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, emit }) {

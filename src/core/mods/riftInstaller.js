@@ -165,7 +165,8 @@ function createRiftInstaller({ httpClient, versionService }) {
       if (emit && emit.status) {
         emit.status({ text: `Minecraft client jar indiriliyor (${gameVersion})…` });
       }
-      await httpClient.download(parentJson.downloads.client.url, gameJarPath);
+      const client = parentJson.downloads.client;
+      await httpClient.download(client.url, gameJarPath, { sha1: client.sha1, size: client.size });
     }
 
     const assetIndexId = (parentJson.assetIndex && parentJson.assetIndex.id) || gameVersion;

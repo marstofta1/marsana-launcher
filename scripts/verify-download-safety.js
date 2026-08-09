@@ -14,6 +14,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const http = require('http');
+const crypto = require('crypto');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const { createHttpClient } = require(path.join(REPO_ROOT, 'src/core/infra/httpClient'));
@@ -151,6 +152,67 @@ async function run() {
         fs.readFileSync(path.join(REPO_ROOT, 'src/core/infra/httpClient.js'), 'utf8')
       )
     );
+
+    // ------------------------------------------------- G) içerik bütünlüğü (K5b)
+    console.log('\nG) Hash/boyut verilmişse doğrulanır; tutmazsa dosya reddedilir');
+    // /ok rotasının gönderdiği baytın gerçek parmak izleri (sunucuyla birebir).
+    const okBody = Buffer.from('GERÇEK-İÇERİK-1234');
+    const okSha1 = crypto.createHash('sha1').update(okBody).digest('hex');
+    const okSha512 = crypto.createHash('sha512').update(okBody).digest('hex');
+    const okSize = okBody.length;
+
+    // Doğru sha512 + boyut → iner.
+    await withTempDir(async (dir) => {
+      const dest = path.join(dir, 'h1.bin');
+      await client.download(`${base}/ok`, dest, { sha512: okSha512, size: okSize });
+      check('Doğru sha512+boyut: indirildi', fs.existsSync(dest));
+      check('Doğru sha512+boyut: içerik doğru', fs.readFileSync(dest, 'utf8') === 'GERÇEK-İÇERİK-1234');
+    });
+
+    // Doğru sha1 BÜYÜK harfle → yine iner (harf duyarsız karşılaştırma).
+    await withTempDir(async (dir) => {
+      const dest = path.join(dir, 'h2.bin');
+      await client.download(`${base}/ok`, dest, { sha1: okSha1.toUpperCase() });
+      check('Büyük harfli sha1: indirildi', fs.existsSync(dest));
+    });
+
+    // Yanlış sha512 → reddedilir, dosya ve .part kalmaz.
+    await withTempDir(async (dir) => {
+      const dest = path.join(dir, 'h3.bin');
+      let threw = false;
+      try {
+        await client.download(`${base}/ok`, dest, { sha512: 'a'.repeat(128) });
+      } catch { threw = true; }
+      check('Yanlış sha512: reddedildi', threw, 'hata fırlatılmadı');
+      check('Yanlış sha512: dosya bırakılmadı', !fs.existsSync(dest));
+      const leftover = fs.readdirSync(dir).filter((f) => f.endsWith('.part'));
+      check('Yanlış sha512: .part bırakılmadı', leftover.length === 0, leftover.join(', '));
+    });
+
+    // Yanlış boyut → reddedilir.
+    await withTempDir(async (dir) => {
+      const dest = path.join(dir, 'h4.bin');
+      let threw = false;
+      try {
+        await client.download(`${base}/ok`, dest, { size: okSize + 999 });
+      } catch { threw = true; }
+      check('Yanlış boyut: reddedildi', threw, 'hata fırlatılmadı');
+      check('Yanlış boyut: dosya bırakılmadı', !fs.existsSync(dest));
+    });
+
+    // Hash verilmezse (boş nesne) → eskisi gibi iner (geri uyumluluk).
+    await withTempDir(async (dir) => {
+      const dest = path.join(dir, 'h5.bin');
+      await client.download(`${base}/ok`, dest, {});
+      check('Hash yok: indirildi (geri uyumlu)', fs.existsSync(dest));
+    });
+
+    // Bozuk/hex olmayan hash → o alan atlanır, indirme bloklanmaz.
+    await withTempDir(async (dir) => {
+      const dest = path.join(dir, 'h6.bin');
+      await client.download(`${base}/ok`, dest, { sha512: 'BOZUK-HASH-!!' , size: okSize });
+      check('Bozuk hash metni: atlandı, indirildi', fs.existsSync(dest));
+    });
   } finally {
     server.close();
   }
@@ -198,6 +260,29 @@ async function run() {
     'shaderStackService: ham path.join(modsDir, file.filename) kalmadı',
     !/path\.join\(\s*modsDir\s*,\s*file\.filename\s*\)/.test(shader)
   );
+
+  // ---------------------------------------------------------- H) bütünlük bağlantısı
+  console.log('\nH) Hash/boyut doğrulaması çağrı yerlerine bağlı (K5b)');
+  const readSrc = (rel) => fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
+  const WIRING = [
+    ['httpClient: crypto.createHash kullanılıyor', 'src/core/infra/httpClient.js', /crypto\.createHash\(/],
+    ['httpClient: download integrity parametresi', 'src/core/infra/httpClient.js', /download\(url,\s*destPath,\s*integrity\s*=\s*\{\}\)/],
+    ['httpClient: boyut doğrulaması', 'src/core/infra/httpClient.js', /Boyut uyuşmuyor/],
+    ['modrinthClient: fileIntegrity dışa aktarılıyor', 'src/core/mods/modrinthClient.js', /fileIntegrity[\s\S]*module\.exports|primaryFileOf,\s*fileIntegrity/],
+    ['mrpack: fileSize (camelCase) okunuyor', 'src/core/mods/mrpackInstaller.js', /spec\.fileSize/],
+    ['mrpack: kap fileIntegrity ile doğrulanıyor', 'src/core/mods/mrpackInstaller.js', /fileIntegrity\(fileInfo\)/],
+    ['shader/mod: fileIntegrity çağrılıyor', 'src/core/mods/shaderStackService.js', /modrinthClient\.fileIntegrity\(/],
+    ['javaRuntime: raw.sha1 doğrulanıyor', 'src/core/minecraft/javaRuntimeService.js', /raw\.sha1/],
+    ['launchService: assetIndex.sha1 doğrulanıyor', 'src/core/minecraft/launchService.js', /assetIndex\.sha1/],
+    ['forge: installer .sha1 sidecar', 'src/core/mods/forgeInstaller.js', /installerSha1\(/],
+    ['neoforge: installer .sha256 sidecar', 'src/core/mods/neoforgeInstaller.js', /installerSha256\(/],
+    ['nilloader: jar .sha1 sidecar', 'src/core/mods/nilloaderInstaller.js', /jarSha1\(/],
+    ['rift: client jar sha1/size', 'src/core/mods/riftInstaller.js', /client\.sha1,\s*size:\s*client\.size/],
+    ['ornithe: client jar sha1/size', 'src/core/mods/ornitheInstaller.js', /client\.sha1,\s*size:\s*client\.size/],
+  ];
+  for (const [name, rel, re] of WIRING) {
+    check(name, re.test(readSrc(rel)));
+  }
 
   console.log(`\nToplam: ${pass + fail} kontrol — ${pass} geçti, ${fail} kaldı`);
   if (fail > 0) {

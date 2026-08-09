@@ -15,11 +15,29 @@ function createNilLoaderInstaller({ httpClient, paths }) {
     return path.join(gameRoot || paths.gameRoot, NILLOADER_JAR_NAME);
   }
 
+  // repo.sleeping.town bir Reposilite Maven'ı; her jar'ın yanında `<url>.sha1`
+  // sidecar'ı sunar. NilLoader jar'ı `-javaagent` olarak ÇALIŞTIRILDIĞI için
+  // doğrulamak değerli. sha1 URL'e özeldir (fallback'ler farklı SÜRÜMlerdir), o
+  // yüzden her URL'in kendi sidecar'ı çekilir. Aynı-origin sidecar olduğundan bu
+  // CDN/ayna bozulmasına ve kesik indirmeye karşı garanti verir (aktif MITM'e
+  // değil; TLS onu ayrıca engeller). Sidecar yoksa doğrulamasız devam ("varsa
+  // doğrula"); hash tutmazsa httpClient.download jar'ı reddeder.
+  async function jarSha1(jarUrl) {
+    try {
+      const text = await httpClient.fetchText(`${jarUrl}.sha1`);
+      const m = String(text).match(/\b[0-9a-f]{40}\b/i);
+      return m ? m[0].toLowerCase() : null;
+    } catch {
+      return null;
+    }
+  }
+
   async function downloadAgentJar(dest) {
     let lastError;
     for (const url of NILLOADER_DOWNLOAD_URLS) {
       try {
-        await httpClient.download(url, dest);
+        const sha1 = await jarSha1(url);
+        await httpClient.download(url, dest, sha1 ? { sha1 } : {});
         return url;
       } catch (err) {
         lastError = err;

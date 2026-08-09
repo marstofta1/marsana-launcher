@@ -1143,7 +1143,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       `Asset index adı güvenli değil: "${assetIndex.id}".`
     );
     if (fs.existsSync(targetPath)) return;
-    await httpClient.download(assetIndex.url, targetPath);
+    await httpClient.download(assetIndex.url, targetPath, {
+      sha1: assetIndex.sha1,
+      size: assetIndex.size,
+    });
   }
 
   function cleanupPreviousBundle({ modsDir, shaderpacksDir, resourcepacksDir }) {
@@ -1228,7 +1231,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       // aynı alanda path.basename uyguluyor — burada da modsDir dışına çıkışı engelle.
       const safeName = path.basename(String(file.filename || ''));
       if (!safeName) return;
-      await httpClient.download(file.url, assertInside(modsDir, safeName));
+      await httpClient.download(file.url, assertInside(modsDir, safeName), modrinthClient.fileIntegrity(file));
       jars.push(safeName);
 
       for (const dep of version.dependencies || []) {
@@ -1324,7 +1327,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         const safeName = shaderPackLocalName(slug);
         cleanupStaleShaderPacks(shaderpacksDir, slug);
         await fs.promises.mkdir(shaderpacksDir, { recursive: true });
-        await httpClient.download(file.url, path.join(shaderpacksDir, safeName));
+        await httpClient.download(file.url, path.join(shaderpacksDir, safeName), modrinthClient.fileIntegrity(file));
         if (onNotice) {
           onNotice(`Shader paketi hazır: ${safeName}`);
         }
@@ -1349,7 +1352,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         const safeName = shaderPackLocalName(DEFAULT_SHADER_SLUG);
         cleanupStaleShaderPacks(shaderpacksDir, DEFAULT_SHADER_SLUG);
         await fs.promises.mkdir(shaderpacksDir, { recursive: true });
-        await httpClient.download(fallback.url, path.join(shaderpacksDir, safeName));
+        await httpClient.download(fallback.url, path.join(shaderpacksDir, safeName), modrinthClient.fileIntegrity(fallback));
         return [safeName];
       } catch {
         return [];
@@ -1594,7 +1597,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
 
     await fs.promises.mkdir(resourcepacksDir, { recursive: true });
-    await httpClient.download(file.url, path.join(resourcepacksDir, localName));
+    await httpClient.download(file.url, path.join(resourcepacksDir, localName), modrinthClient.fileIntegrity(file));
     ensureResourcePackCompatibleForGame({ resourcepacksDir, localName, gameVersion });
     const versionLabel = picked.name || picked.version_number || label;
     if (onNotice) onNotice(`${label} ${versionLabel} hazır: ${localName}`);
@@ -1623,7 +1626,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
 
     await fs.promises.mkdir(resourcepacksDir, { recursive: true });
-    await httpClient.download(file.url, path.join(resourcepacksDir, GLOWING_ORES_PACK_LOCAL_NAME));
+    await httpClient.download(file.url, path.join(resourcepacksDir, GLOWING_ORES_PACK_LOCAL_NAME), modrinthClient.fileIntegrity(file));
     ensureResourcePackCompatibleForGame({
       resourcepacksDir,
       localName: GLOWING_ORES_PACK_LOCAL_NAME,
@@ -1658,7 +1661,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
 
     await fs.promises.mkdir(resourcepacksDir, { recursive: true });
-    await httpClient.download(file.url, path.join(resourcepacksDir, FULLBRIGHT_PACK_LOCAL_NAME));
+    await httpClient.download(file.url, path.join(resourcepacksDir, FULLBRIGHT_PACK_LOCAL_NAME), modrinthClient.fileIntegrity(file));
     ensureResourcePackCompatibleForGame({
       resourcepacksDir,
       localName: FULLBRIGHT_PACK_LOCAL_NAME,
