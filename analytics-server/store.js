@@ -33,8 +33,14 @@ function createAnalyticsStore({ dataDir }) {
     }
   }
 
+  // D1 — çökme-güvenli kalıcılık: önce geçici dosyaya yaz, sonra atomik rename.
+  // Doğrudan writeFileSync yazma sırasında süreç çökerse JSON yarım kalıp
+  // bozuluyordu (sonraki load() parse edemez -> tüm veri kaybı). rename atomiktir:
+  // filePath ya eski tam sürüm ya yeni tam sürümdür, asla yarım.
   function save() {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    const tmp = `${filePath}.${process.pid}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf8');
+    fs.renameSync(tmp, filePath);
   }
 
   load();
