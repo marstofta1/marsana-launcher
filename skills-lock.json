@@ -7,6 +7,12 @@
       "skillPath": "skills/community/electron-builder/SKILL.md",
       "computedHash": "ecc23906ac23271fd9b20020b4d29bb6d5440abfa9d474787ae79c595ef18caa"
     },
+    "electron-development": {
+      "source": "mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "electron-development/SKILL.md",
+      "computedHash": "70fd62ad484e35884485ae043d22f3ea7ff3e1365c536569c1994a4c211ba931"
+    },
     "minecraft-datapack": {
       "source": "jahrome907/minecraft-agent-skills",
       "sourceType": "github",
