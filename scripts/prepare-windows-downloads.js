@@ -83,6 +83,25 @@ function findSourceExe() {
   return null;
 }
 
+// Sürdürülebilirlik (Y1): docs/downloads yalnizca GUNCEL Windows kurucusunu
+// tutar. Eski surumlerin .exe/.blockmap dosyalari birikip Pages yayinini
+// sisiriyordu (7.6GB, 1GB limitini asiyordu). Yeni surum eklenince eskiler
+// otomatik budanir; manifest'ler, latest.yml ve guncel exe korunur.
+function pruneOldWindowsInstallers(keepExe) {
+  if (!fs.existsSync(downloadsDir)) return;
+  const keep = new Set([keepExe, `${keepExe}.blockmap`]);
+  for (const name of fs.readdirSync(downloadsDir)) {
+    if (!/-win-x64\.exe(\.blockmap)?$/.test(name)) continue; // sadece win kurucu/blockmap
+    if (keep.has(name)) continue;
+    try {
+      fs.unlinkSync(path.join(downloadsDir, name));
+      console.log(`[windows] eski kurucu budandi: ${name}`);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 function main() {
   const sourceFile = findSourceExe();
   if (!sourceFile) {
@@ -113,6 +132,9 @@ function main() {
   const manifestPath = path.join(downloadsDir, 'windows-manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
   console.log(`[windows] manifest -> ${path.relative(root, manifestPath)} (${manifest.platforms.length} platform)`);
+
+  // Guncel kurucu yerine oturdu; eski surumleri buda (Pages sismesin).
+  pruneOldWindowsInstallers(sourceFile);
 }
 
 main();
