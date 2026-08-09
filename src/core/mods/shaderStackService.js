@@ -2309,4 +2309,18 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   return { ensure, applyModResourcePackPresets, installShadersForExternalLoader, installEmbossedForExternalLoader, installVoiceChatForExternalLoader, installFullbrightForExternalLoader, installBetterLeavesForExternalLoader, installGlowingOresForExternalLoader, installRoundTreesForExternalLoader, installCrops3dForExternalLoader };
 }
 
-module.exports = { createShaderStackService };
+module.exports = {
+  createShaderStackService,
+  // O1/O4 — kritik Modrinth sürüm-eşleştirme mantığı test edilebilsin diye dışa
+  // aktarılır (davranış DEĞİŞMEZ; ayrıca ileride ayrı modüle güvenli çıkarım
+  // için test güvenlik ağı). Bu fonksiyonlar saf (yan etkisiz).
+  resolveShaderSlug,
+  extractMcVersionFromModMeta,
+  modrinthLoaderModGameVersionCandidates,
+  modrinthClassicFallbacksForGameVersion,
+  modrinthGameVersionCandidates,
+  versionListsAnyGame,
+  modrinthCandidateRank,
+  pickNewestModrinthVersion,
+  glowingOresVariantLabel,
+};
