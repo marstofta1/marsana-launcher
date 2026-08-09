@@ -61,7 +61,9 @@ function createMrpackInstaller({ httpClient, modrinthClient }) {
       throw e;
     }
 
-    if (!fileInfo.filename.toLowerCase().endsWith('.mrpack')) {
+    // Sunucudan gelen dosya adı yol bileşeni içerebilir; sadece son parçası kullanılır.
+    const safeFileName = path.basename(String(fileInfo.filename || ''));
+    if (!safeFileName.toLowerCase().endsWith('.mrpack')) {
       throw new LauncherError(
         Codes.UNSUPPORTED_VERSION,
         'OptiFine paketi beklenen .mrpack biçiminde değil.'
@@ -69,7 +71,7 @@ function createMrpackInstaller({ httpClient, modrinthClient }) {
     }
 
     const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'marsana-mrpack-'));
-    const mrpackPath = path.join(tmpDir, fileInfo.filename);
+    const mrpackPath = path.join(tmpDir, safeFileName);
 
     try {
       if (emit) emit.status({ text: 'OptiFine mod paketi indiriliyor…' });
