@@ -276,13 +276,17 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v1.0.37 — Sematik havaya blok yerleştirme</span>
+            <span class="release-version">v1.0.37 — Sematik havaya blok yerleştirme + güvenlik sertleştirmesi</span>
             <span class="release-tag latest">Yeni</span>
           </div>
           <ul class="release-changes">
             <li><strong>Yaratıcı modda</strong> holograma bakıp sağ tıklayınca eksik blok havaya yerleştirilir (spawner, duvar vb.).</li>
             <li>Baktığınız hologram hücresi beyaz çerçeve ile vurgulanır.</li>
             <li>Hayatta kalma modunda alt bloktan yukarı inşa; tam havaya yerleştirme yaratıcı mod gerektirir.</li>
+            <li><strong>Güvenlik &amp; güvenilirlik:</strong> indirilen tüm dosyalar (modlar, shader'lar, kaynak paketleri, Java çalıştırıcısı ve Forge/NeoForge kurucuları) artık <strong>sha512/sha1 parmak izi ve boyutla doğrulanıyor</strong> — bozuk veya değiştirilmiş bir dosya reddedilir, oyuna hiç ulaşmaz.</li>
+            <li>Mod paketi açma ve indirmelerde <strong>klasör dışına yazma (path traversal) koruması</strong> güçlendirildi; kötü niyetli bir arşiv oyun klasörünüzün dışına dosya bırakamaz.</li>
+            <li>Güncelleme besleme adresi <strong>resmi kaynağa sabitlendi</strong>; yarım kalan indirmeler artık diske düşmez (atomik yazma), bozuk önbellek dosyası oluşmaz.</li>
+            <li>Artık <strong>macOS (.dmg)</strong> ve <strong>Linux (.AppImage)</strong> paketleri de her sürümde otomatik yayınlanıyor.</li>
           </ul>
         </li>
         <li class="release">
