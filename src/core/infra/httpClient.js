@@ -99,6 +99,22 @@ function createHttpClient({ userAgent = DEFAULT_USER_AGENT } = {}) {
               reject(new LauncherError(Codes.HTTP, `Redirect URL geçersiz: ${loc}`, err));
               return;
             }
+            // K5c — güvenlik: https -> http DÜŞÜRME reddedilir. Meşru hiçbir
+            // indirme HTTPS'ten HTTP'ye yönlendirmez; bu, dosyayı şifresiz
+            // (MITM'e açık) kanala kaydırmak isteyen bir saldırı/yanlış
+            // yapılandırma işaretidir. LiteLoader baştan http kullanır (düşürme
+            // değil); OptiFine http->https ya da çapraz-host https kullanır —
+            // ikisi de bundan etkilenmez.
+            if (
+              new URL(absoluteUrl).protocol === 'https:' &&
+              new URL(nextUrl).protocol === 'http:'
+            ) {
+              reject(new LauncherError(
+                Codes.HTTP,
+                `Güvensiz yönlendirme reddedildi (https→http): ${absoluteUrl} → ${nextUrl}`
+              ));
+              return;
+            }
             resolve(get(nextUrl, { headers }, redirects + 1));
             return;
           }

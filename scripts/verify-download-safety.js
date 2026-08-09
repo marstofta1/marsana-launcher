@@ -64,6 +64,10 @@ function startServer() {
       res.writeHead(200, { 'Content-Length': '1000' });
       res.write(part);
       setTimeout(() => res.end(part), 20);
+    } else if (u === '/redirect') {
+      // Aynı-protokol (http->http) yönlendirme: download bunu takip edip /ok'e gitmeli.
+      res.writeHead(302, { Location: '/ok' });
+      res.end();
     } else if (u === '/500') {
       res.writeHead(500);
       res.end('sunucu-hatasi');
@@ -213,6 +217,17 @@ async function run() {
       await client.download(`${base}/ok`, dest, { sha512: 'BOZUK-HASH-!!' , size: okSize });
       check('Bozuk hash metni: atlandı, indirildi', fs.existsSync(dest));
     });
+
+    // ------------------------------------------------- I) yönlendirme (K5c)
+    console.log('\nI) Yönlendirme: aynı-protokol takip edilir (K5c regresyon)');
+    await withTempDir(async (dir) => {
+      const dest = path.join(dir, 'redir.bin');
+      await client.download(`${base}/redirect`, dest);
+      check(
+        'http→http yönlendirme takip edildi (redirect bozulmadı)',
+        fs.existsSync(dest) && fs.readFileSync(dest, 'utf8') === 'GERÇEK-İÇERİK-1234'
+      );
+    });
   } finally {
     server.close();
   }
@@ -268,6 +283,7 @@ async function run() {
     ['httpClient: crypto.createHash kullanılıyor', 'src/core/infra/httpClient.js', /crypto\.createHash\(/],
     ['httpClient: download integrity parametresi', 'src/core/infra/httpClient.js', /download\(url,\s*destPath,\s*integrity\s*=\s*\{\}\)/],
     ['httpClient: boyut doğrulaması', 'src/core/infra/httpClient.js', /Boyut uyuşmuyor/],
+    ['httpClient: https→http düşürme yasağı (K5c)', 'src/core/infra/httpClient.js', /absoluteUrl\)\.protocol === 'https:'/],
     ['modrinthClient: fileIntegrity dışa aktarılıyor', 'src/core/mods/modrinthClient.js', /fileIntegrity[\s\S]*module\.exports|primaryFileOf,\s*fileIntegrity/],
     ['mrpack: fileSize (camelCase) okunuyor', 'src/core/mods/mrpackInstaller.js', /spec\.fileSize/],
     ['mrpack: kap fileIntegrity ile doğrulanıyor', 'src/core/mods/mrpackInstaller.js', /fileIntegrity\(fileInfo\)/],
