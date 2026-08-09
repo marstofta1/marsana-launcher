@@ -5,6 +5,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const { LauncherError, Codes } = require('../infra/errors');
+const { assertInside } = require('../infra/safeZip');
 
 // Modern NeoForge (1.20.2+) ve legacy 1.20.1 farklı maven path'lerinde
 // barınıyor. 1.20.1 NeoForged ekibi tarafından eski Forge fork'unun "forge"
@@ -143,10 +144,16 @@ function createNeoForgeInstaller({ httpClient, paths }) {
     const neoforgeVersion = await pickNeoForgeVersion(mcVersion);
     const dir = installersDir();
     await fs.promises.mkdir(dir, { recursive: true });
+    // neoforgeVersion, uzak maven-metadata.xml'den geliyor ve dosya adına
+    // gömülüyor; "../" içeren bir sürüm installersDir dışına yazabilirdi.
     const installerName = legacy
       ? `forge-${neoforgeVersion}-installer.jar`
       : `neoforge-${neoforgeVersion}-installer.jar`;
-    const installerPath = path.join(dir, installerName);
+    const installerPath = assertInside(
+      dir,
+      installerName,
+      `NeoForge sürümü güvenli değil: "${neoforgeVersion}".`
+    );
 
     if (fs.existsSync(installerPath) && fs.statSync(installerPath).size > 0) {
       return { installerPath, neoforgeVersion, legacy };

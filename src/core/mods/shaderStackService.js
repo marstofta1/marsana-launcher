@@ -6,7 +6,7 @@ const os = require('os');
 const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
-const { extractZipInside } = require('../infra/safeZip');
+const { extractZipInside, assertInside } = require('../infra/safeZip');
 const marsanaClientModService = require('./marsanaClientModService');
 const schematicFarmModService = require('./schematicFarmModService');
 const modIsolationService = require('./modIsolationService');
@@ -1136,7 +1136,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (!assetIndex || !assetIndex.id || !assetIndex.url) return;
     const indexesDir = path.join(gameRoot, 'assets', 'indexes');
     await fs.promises.mkdir(indexesDir, { recursive: true });
-    const targetPath = path.join(indexesDir, `${assetIndex.id}.json`);
+    // assetIndex.id uzak Mojang JSON'undan geliyor; dosya adına doğrudan gömülüyor.
+    const targetPath = assertInside(
+      indexesDir,
+      `${assetIndex.id}.json`,
+      `Asset index adı güvenli değil: "${assetIndex.id}".`
+    );
     if (fs.existsSync(targetPath)) return;
     await httpClient.download(assetIndex.url, targetPath);
   }
@@ -1219,8 +1224,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       if (!file) return;
       downloadedVersionIds.add(version.id);
       if (version.project_id) downloadedProjectIds.add(version.project_id);
-      await httpClient.download(file.url, path.join(modsDir, file.filename));
-      jars.push(file.filename);
+      // file.filename Modrinth'ten geliyor; yol bileşeni içerebilir. mrpackInstaller
+      // aynı alanda path.basename uyguluyor — burada da modsDir dışına çıkışı engelle.
+      const safeName = path.basename(String(file.filename || ''));
+      if (!safeName) return;
+      await httpClient.download(file.url, assertInside(modsDir, safeName));
+      jars.push(safeName);
 
       for (const dep of version.dependencies || []) {
         if (dep.dependency_type !== 'required') continue;

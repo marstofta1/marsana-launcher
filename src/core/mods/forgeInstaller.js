@@ -5,6 +5,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const { LauncherError, Codes } = require('../infra/errors');
+const { assertInside } = require('../infra/safeZip');
 
 const FORGE_PROMOS_URL =
   'https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json';
@@ -88,8 +89,14 @@ function createForgeInstaller({ httpClient, paths }) {
     const forgeVersion = forgeVersionOverride || (await pickForgeVersion(mcVersion));
     const dir = installersDir();
     await fs.promises.mkdir(dir, { recursive: true });
+    // forgeVersion, uzak promos JSON'undan geliyor ve dosya adına gömülüyor;
+    // "../" içeren bir sürüm installersDir dışına yazabilirdi.
     const installerName = `forge-${mcVersion}-${forgeVersion}-installer.jar`;
-    const installerPath = path.join(dir, installerName);
+    const installerPath = assertInside(
+      dir,
+      installerName,
+      `Forge sürümü güvenli değil: "${forgeVersion}".`
+    );
 
     if (fs.existsSync(installerPath) && fs.statSync(installerPath).size > 0) {
       return { installerPath, forgeVersion };

@@ -17,7 +17,29 @@ function httpModuleForUrl(urlString) {
   }
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Windows'ta antivirüs/arama dizinleyici, kapatılan .part dosyasını rename'den
+// hemen önce kısa süre kilitleyip EPERM/EBUSY üretebiliyor; bayt eksik olmadığı
+// halde indirme "başarısız" görünür. Kısa geri çekilmelerle birkaç kez dene.
+async function renameWithRetry(from, to) {
+  const codes = new Set(['EPERM', 'EACCES', 'EBUSY']);
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      await fs.promises.rename(from, to);
+      return;
+    } catch (err) {
+      if (!codes.has(err.code) || attempt >= 4) throw err;
+      await sleep(50 * (attempt + 1));
+    }
+  }
+}
+
 function createHttpClient({ userAgent = DEFAULT_USER_AGENT } = {}) {
+  let tmpCounter = 0;
+
   function get(url, { headers = {}, timeoutMs = 45000 } = {}, redirects = 0) {
     return new Promise((resolve, reject) => {
       let absoluteUrl;
@@ -119,25 +141,57 @@ function createHttpClient({ userAgent = DEFAULT_USER_AGENT } = {}) {
     await fs.promises.mkdir(path.dirname(destPath), { recursive: true });
     const res = await get(url);
     const status = res.statusCode || 0;
-    if (status >= 400) {
+    // Sadece 200 kabul edilir. 204/205/300/304 gibi gövdesiz yanıtlar eskiden
+    // "başarılı" sayılıp 0 baytlık dosya bırakıyordu; çağıranlar önbelleği
+    // sadece "dosya var mı" ile denetlediği için o bozuk dosya kalıcı oluyordu.
+    if (status !== 200) {
       res.resume();
       throw new LauncherError(Codes.HTTP, `Download ${status}: ${url}`);
     }
+
+    // Önce geçici dosyaya yaz, tamamlanınca atomik olarak taşı. Yarım kalan
+    // indirme asla nihai yola düşmez; mevcut kod her yerde nihai dosyanın
+    // varlığını önbellek anahtarı olarak kullanıyor. Geçici ada pid+sayaç
+    // eklenir: aynı hedefe eşzamanlı iki indirme birbirinin .part'ını bozamaz.
+    tmpCounter += 1;
+    const tmpPath = `${destPath}.${process.pid}.${tmpCounter}.part`;
+    // Content-Length verildiyse temiz biten ama kısa gövdeyi yakalamak için ikincil
+    // güvence; kesilmelerin çoğu zaten aşağıdaki res 'error' (abort) yolunda düşer.
+    const expectedLen = Number(res.headers['content-length']);
+    let received = 0;
+
     await new Promise((resolve, reject) => {
-      const file = fs.createWriteStream(destPath);
+      const file = fs.createWriteStream(tmpPath);
+      const fail = (code, err) => {
+        file.destroy();
+        fs.unlink(tmpPath, () => {});
+        reject(err instanceof LauncherError ? err : new LauncherError(code, err.message, err));
+      };
+      res.on('data', (c) => {
+        received += c.length;
+      });
       res.pipe(file);
-      file.on('finish', () => file.close(resolve));
-      file.on('error', (err) => {
-        file.close();
-        fs.unlink(destPath, () => {});
-        reject(new LauncherError(Codes.FILESYSTEM, err.message, err));
+      file.on('finish', () => {
+        // Content-Length verildiyse eksik gövdeyi yakala (sessiz kesilme).
+        if (Number.isFinite(expectedLen) && received !== expectedLen) {
+          fail(Codes.NETWORK, new LauncherError(
+            Codes.NETWORK,
+            `İndirme eksik: ${received}/${expectedLen} bayt — ${url}`
+          ));
+          return;
+        }
+        file.close((err) => (err ? fail(Codes.FILESYSTEM, err) : resolve()));
       });
-      res.on('error', (err) => {
-        file.close();
-        fs.unlink(destPath, () => {});
-        reject(new LauncherError(Codes.NETWORK, err.message, err));
-      });
+      file.on('error', (err) => fail(Codes.FILESYSTEM, err));
+      res.on('error', (err) => fail(Codes.NETWORK, err));
     });
+
+    try {
+      await renameWithRetry(tmpPath, destPath);
+    } catch (err) {
+      await fs.promises.unlink(tmpPath).catch(() => {});
+      throw new LauncherError(Codes.FILESYSTEM, `Dosya taşınamadı: ${destPath}`, err);
+    }
   }
 
   return { fetchJson, fetchText, download };

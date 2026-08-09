@@ -10,6 +10,7 @@ const {
   ornitheBlockedVersionMessage,
 } = require('../../shared/ornitheCompatibility');
 const { LauncherError, Codes } = require('../infra/errors');
+const { assertInside } = require('../infra/safeZip');
 const marsanaClientModService = require('../mods/marsanaClientModService');
 const schematicFarmModService = require('../mods/schematicFarmModService');
 const hudDepsService = require('../mods/hudDepsService');
@@ -671,7 +672,12 @@ function createLaunchService({
     if (!assetIndex || !assetIndex.id || !assetIndex.url) return;
     const indexesDir = path.join(paths.gameRoot, 'assets', 'indexes');
     await fs.promises.mkdir(indexesDir, { recursive: true });
-    const target = path.join(indexesDir, `${assetIndex.id}.json`);
+    // assetIndex.id uzak Mojang JSON'undan geliyor; dosya adına doğrudan gömülüyor.
+    const target = assertInside(
+      indexesDir,
+      `${assetIndex.id}.json`,
+      `Asset index adı güvenli değil: "${assetIndex.id}".`
+    );
     if (fs.existsSync(target)) return;
     await httpClient.download(assetIndex.url, target);
   }

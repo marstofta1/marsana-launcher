@@ -6,6 +6,7 @@ const { execFile } = require('child_process');
 const { promisify } = require('util');
 
 const { LauncherError, Codes } = require('../infra/errors');
+const { assertInside } = require('../infra/safeZip');
 const { fetchFirstJson } = require('./versionService');
 
 const execFileAsync = promisify(execFile);
@@ -92,7 +93,14 @@ async function downloadRuntimeFiles({ files, runtimeRoot, httpClient, emit }) {
     const chunk = tasks.slice(i, i + DOWNLOAD_CONCURRENCY);
     await Promise.all(
       chunk.map(async ([relPath, spec]) => {
-        const dest = path.join(runtimeRoot, relPath);
+        // relPath uzak Mojang manifest'inin anahtarı; doğrulanmadan birleştirilirse
+        // "../" içeren bir anahtar runtime klasörünün dışına yazar (ve aşağıda
+        // çalıştırma izni alır).
+        const dest = assertInside(
+          runtimeRoot,
+          relPath,
+          `Java çalıştırıcısı güvenli değil: "${relPath}" kurulum klasörünün dışına yazmaya çalışıyor.`
+        );
         await fs.promises.mkdir(path.dirname(dest), { recursive: true });
         await httpClient.download(spec.downloads.raw.url, dest);
         if (spec.executable && process.platform !== 'win32') {
