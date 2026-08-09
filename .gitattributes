@@ -1,0 +1,7 @@
+# Gradle wrapper: the POSIX launcher MUST stay LF, or Linux CI ("./gradlew")
+# fails with "bad interpreter: /bin/sh^M" or "Permission denied". Windows/OneDrive
+# edits must never reintroduce CRLF here. gradlew.bat stays CRLF (Windows).
+gradlew         text eol=lf
+*.sh            text eol=lf
+gradlew.bat     text eol=crlf
+*.bat           text eol=crlf
