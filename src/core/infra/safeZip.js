@@ -24,8 +24,17 @@ function resolveInside(rootDir, relativePath) {
   // NUL, yolun geri kalanını kırpan katman farklarına yol açabilir.
   if (raw.includes('\0')) return null;
 
+  // Platform BAĞIMSIZ kaçış tespiti. Aynı launcher hem Windows hem Linux/mac'te
+  // çalışır; Windows'ta path ters bölüyü ayraç, "C:" yi sürücü sayıp kaçışları
+  // reddeder ama posix (Linux/mac) "..\..\evil" i zararsız bir dosya adı,
+  // "C:/x" i normal bir alt klasör sanıp İÇERİ ALIRDI. Meşru bir zip/manifest
+  // girdisi ne ters bölü ne sürücü harfi içerir — ikisini de her yerde düşman say.
+  // (Bu, K4 verify testlerinin Linux CI'da patlamasının da nedeniydi.)
+  const unified = raw.replace(/\\/g, '/');
+  if (/^[a-zA-Z]:/.test(unified)) return null; // "C:...", "C:/...", sürücü-göreli
+
   const root = path.resolve(rootDir);
-  const dest = path.resolve(root, raw);
+  const dest = path.resolve(root, unified);
 
   // Aynı sürücü/kök zorunlu. `\\C:\kok\x` gibi UNC'ye çevrilen girdilerde
   // path.relative baştaki ters eğik çizgileri kırpıp "içeride" sonucu üretebiliyor.
@@ -35,7 +44,8 @@ function resolveInside(rootDir, relativePath) {
   if (!rel) return null;
   if (path.isAbsolute(rel)) return null;
   // Tam bileşen karşılaştırması: "..foo" adlı meşru bir dosya reddedilmemeli,
-  // ".." ve "../" ile başlayan gerçek kaçışlar reddedilmeli.
+  // ".." ve "../" ile başlayan gerçek kaçışlar reddedilmeli. unified sayesinde
+  // "..\x" posix'te de "../x" olarak yakalanır.
   if (rel === '..' || rel.startsWith(`..${path.sep}`) || rel.startsWith('../')) return null;
 
   return dest;
