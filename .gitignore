@@ -11,5 +11,9 @@ userdata/
 # Claude Code kişisel ayarları (settings.json paylaşılır, .local takım dışı kalır)
 .claude/settings.local.json
 
+# Skill junction'ları — makineye özel mutlak yol içerir, gerçek dosyalar .agents/skills/ altında.
+# Yeni makinede yeniden oluşturmak için: npx skills experimental_install
+.claude/skills/
+
 # Analiz sunucusu toplanan veriler
 analytics-server/data/
