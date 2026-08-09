@@ -3,13 +3,17 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { createAnalyticsStore } = require('./store');
 
 const PORT = Number(process.env.PORT || process.env.MARSANA_ANALYTICS_PORT || 3847);
-const DEFAULT_SECRET = process.env.MARSANA_ANALYTICS_ADMIN_TOKEN
+const ENV_SECRET = process.env.MARSANA_ANALYTICS_ADMIN_TOKEN
   || process.env.MARSANALIZ_GATE_PASSWORD
-  || 'marsana-admin';
-const ADMIN_TOKEN = DEFAULT_SECRET;
+  || '';
+// Sabit varsayilan sifre yok: ortam degiskeni tanimsizsa her aciliste rastgele
+// token uretilir ve konsola yazilir. Boylece bilinen bir sifreyle asla acilmaz.
+const TOKEN_WAS_GENERATED = !ENV_SECRET;
+const ADMIN_TOKEN = ENV_SECRET || crypto.randomBytes(24).toString('base64url');
 const GATE_PASSWORD = process.env.MARSANALIZ_GATE_PASSWORD || ADMIN_TOKEN;
 const DATA_DIR = process.env.MARSANA_ANALYTICS_DATA_DIR
   || path.join(__dirname, 'data');
@@ -103,6 +107,12 @@ function startAnalyticsServer(options = {}) {
         const localUrl = `http://127.0.0.1:${port}`;
         console.log(`Marsana Analytics: ${localUrl} (dinleniyor: ${HOST}:${port})`);
         console.log(`Veri klasoru: ${ctx.dataDir}`);
+        if (TOKEN_WAS_GENERATED) {
+          console.warn(
+            '[marsana-analytics] MARSANA_ANALYTICS_ADMIN_TOKEN tanimli degil. '
+              + `Bu oturum icin uretilen gecici admin token: ${ctx.adminToken}`
+          );
+        }
         resolve({ ...ctx, server, url: localUrl, port, host: HOST });
       });
       server.on('error', (err) => {

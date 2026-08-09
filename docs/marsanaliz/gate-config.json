@@ -1,5 +1,5 @@
 {
-  "passwordSha256": "25726685b523ad6495551ad8ab2b0c3c9ee17c1a658187a6a1b88e2120b7e5a2",
+  "passwordSha256": "9db9731ab7057350ccab823e77038125d49c8fe889a825c67c422ca0b5f52a74",
   "apiBase": null,
-  "note": "Varsayilan sifre: marsana-admin — MARSANA_ANALYTICS_ADMIN_TOKEN ile degistirin."
+  "note": "Sifre burada saklanmaz. Degistirmek icin yeni sifrenin SHA-256 ozetini passwordSha256 alanina yazin ve ayni sifreyi Render'da MARSANA_ANALYTICS_ADMIN_TOKEN olarak tanimlayin."
 }

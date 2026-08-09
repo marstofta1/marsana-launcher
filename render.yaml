@@ -7,7 +7,9 @@ services:
     startCommand: node index.js
     plan: free
     envVars:
+      # Gizli degerler repoya yazilmaz. Render panelinden (Environment sekmesi) girilir.
+      # sync: false => Render bu degeri blueprint'ten okumaz, dashboard'da tanimli olani kullanir.
       - key: MARSANALIZ_GATE_PASSWORD
-        value: marsana-admin
+        sync: false
       - key: MARSANA_ANALYTICS_ADMIN_TOKEN
-        value: marsana-admin
+        sync: false
