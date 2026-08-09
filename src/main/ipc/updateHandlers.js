@@ -46,7 +46,8 @@ function registerUpdateHandlers({ ipcMain, getWindow, logger }) {
   // Bu satır açılamaz: build imzasız (package.json -> win.signAndEditExecutable: false,
   // sertifika yapılandırması yok), doğrulama açılırsa güncelleme tamamen bloklanır.
   // Gerçek çözüm Windows kod imzalama sertifikası + imzalı CI build'idir (denetim maddesi Y4).
-  // O yapılana kadar tek güven noktası configureFeedUrl'deki sabitlenmiş besleme adresidir.
+  // O yapılana kadar configureFeedUrl'deki sabitlenmiş besleme adresi zorunlu ama yeterli
+  // değil: latest.yml'e yazabilen biri hâlâ mutlak bir indirme adresi verebilir.
   if (isWin) autoUpdater.verifyUpdateCodeSignature = false;
 
   let pendingUpdateVersion = null;
