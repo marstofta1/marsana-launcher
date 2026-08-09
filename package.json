@@ -46,7 +46,9 @@
       {
         "from": "bundled-mods",
         "to": "bundled-mods",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "analytics-config.json",
@@ -66,7 +68,9 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["universal"]
+          "arch": [
+            "universal"
+          ]
         }
       ],
       "category": "public.app-category.games",
@@ -103,7 +107,7 @@
     "adm-zip": "^0.5.18"
   },
   "devDependencies": {
-    "electron": "^33.0.0",
+    "electron": "^43.3.0",
     "electron-builder": "^25.1.8"
   }
 }
