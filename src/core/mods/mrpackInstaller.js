@@ -91,7 +91,7 @@ function createMrpackInstaller({ httpClient, modrinthClient }) {
       for (const spec of files) {
         const rel = spec.path;
         if (!rel || !spec.downloads || !spec.downloads[0]) continue;
-        const dest = path.join(gameRoot, rel);
+        const dest = assertInside(gameRoot, rel);
         await fs.promises.mkdir(path.dirname(dest), { recursive: true });
         await httpClient.download(spec.downloads[0], dest);
         installedPaths.push(rel);
