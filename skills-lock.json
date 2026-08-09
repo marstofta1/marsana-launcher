@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "minecraft-datapack": {
+      "source": "jahrome907/minecraft-agent-skills",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/minecraft-datapack/SKILL.md",
+      "computedHash": "b76daa2f1fa6dfbc35086e3d429a22f5d3d8ab0be4c17bc7595b428245351540"
+    },
+    "minecraft-modding": {
+      "source": "jahrome907/minecraft-codex-skills",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/minecraft-modding/SKILL.md",
+      "computedHash": "26481193c02c1dc8c74f4efea2404ea6635ad2086cf5460c65dde285fef2a454"
+    },
+    "minecraft-plugin-development": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/minecraft-plugin-development/SKILL.md",
+      "computedHash": "0dd6605a2f0b6729e8b2d18f2ce5faca1a93275b0b1e575a2c7987bfa0c2f1f1"
+    },
+    "minecraft-testing": {
+      "source": "jahrome907/minecraft-agent-skills",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/minecraft-testing/SKILL.md",
+      "computedHash": "5687a4b8d291960914fc6e5e82ba8c5d9ab4f778b8f607df7a72628547dd23a7"
+    }
+  }
+}

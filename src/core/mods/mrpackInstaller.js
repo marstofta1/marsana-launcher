@@ -7,6 +7,28 @@ const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
 
+// Paket içindeki hedef yollar uzak kaynaktan gelir (modrinth.index.json ve zip
+// girdileri). Yazmadan önce çözülmüş hedefin gameRoot altında kaldığı doğrulanır;
+// "../" ya da mutlak yol içeren girdiler oyun klasörünün dışına çıkabilirdi.
+function resolveInside(rootDir, relativePath) {
+  const root = path.resolve(rootDir);
+  const dest = path.resolve(root, String(relativePath));
+  const rel = path.relative(root, dest);
+  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
+  return dest;
+}
+
+function assertInside(rootDir, relativePath) {
+  const dest = resolveInside(rootDir, relativePath);
+  if (!dest) {
+    throw new LauncherError(
+      Codes.FILESYSTEM,
+      `Mod paketi güvenli değil: "${relativePath}" oyun klasörünün dışına yazmaya çalışıyor.`
+    );
+  }
+  return dest;
+}
+
 function installOverrides(zip, gameRoot) {
   const entries = zip.getEntries();
   for (const entry of entries) {
@@ -15,7 +37,7 @@ function installOverrides(zip, gameRoot) {
     if (!name.startsWith('overrides/')) continue;
     const rel = name.slice('overrides/'.length);
     if (!rel) continue;
-    const dest = path.join(gameRoot, rel);
+    const dest = assertInside(gameRoot, rel);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.writeFileSync(dest, entry.getData());
   }
