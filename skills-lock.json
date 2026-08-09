@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "electron-builder": {
+      "source": "pedronauck/skills",
+      "sourceType": "github",
+      "skillPath": "skills/community/electron-builder/SKILL.md",
+      "computedHash": "ecc23906ac23271fd9b20020b4d29bb6d5440abfa9d474787ae79c595ef18caa"
+    },
     "minecraft-datapack": {
       "source": "jahrome907/minecraft-agent-skills",
       "sourceType": "github",
@@ -13,6 +19,12 @@
       "skillPath": ".agents/skills/minecraft-modding/SKILL.md",
       "computedHash": "26481193c02c1dc8c74f4efea2404ea6635ad2086cf5460c65dde285fef2a454"
     },
+    "minecraft-modpack-authoring": {
+      "source": "siredvin/minecraft-modding-skills",
+      "sourceType": "github",
+      "skillPath": "skills/minecraft-modpack-authoring/SKILL.md",
+      "computedHash": "7dcc3901f2c28403ce5044ef3c5e164745f2e4f592d3342958e93f41b315537f"
+    },
     "minecraft-plugin-development": {
       "source": "github/awesome-copilot",
       "sourceType": "github",
@@ -24,6 +36,12 @@
       "sourceType": "github",
       "skillPath": ".agents/skills/minecraft-testing/SKILL.md",
       "computedHash": "5687a4b8d291960914fc6e5e82ba8c5d9ab4f778b8f607df7a72628547dd23a7"
+    },
+    "modrinth-api": {
+      "source": "siredvin/minecraft-modding-skills",
+      "sourceType": "github",
+      "skillPath": "skills/modrinth-api/SKILL.md",
+      "computedHash": "2709f12846a5bfc9ad603bedc01eef09056cbcaef0371c7493ea9742c646a571"
     }
   }
 }

@@ -7,9 +7,8 @@
       "PowerShell($git*)",
       "PowerShell(git *)",
       "PowerShell(npm install --omit=dev --no-audit --no-fund 2>&1)",
-      "Read(//c/Users/alper/OneDrive/Masa�st�/Desktop/marsana-launcher-main/**)",
-      "PowerShell($b=\"c:\\\\Users\\\\alper\\\\OneDrive\\\\Masaüstü\\\\Desktop\\\\marsana-launcher-main\"; Get-ChildItem \"$b\\\\.claude\\\\skills\" -Force | ForEach-Object { \"{0} | LinkType={1} | Target={2}\" -f $_.Name, $_.LinkType, \\($_.Target -join ','\\) }; Write-Output \"--- .agents boyut ---\"; \"{0:N0} KB / {1} dosya\" -f \\(\\(Get-ChildItem \"$b\\\\.agents\" -Recurse -File | Measure-Object Length -Sum\\).Sum/1KB\\), \\(Get-ChildItem \"$b\\\\.agents\" -Recurse -File\\).Count; Write-Output \"--- gitignore var mi ---\"; if \\(Test-Path \"$b\\\\.gitignore\"\\) { Get-Content \"$b\\\\.gitignore\" } else { \"yok\" })",
-      "PowerShell(foreach \\($q in @\\('electron','fabric','modrinth','java gradle'\\)\\) { Write-Output \"########## $q ##########\"; npx --yes skills find $q 2>&1 | Select-String -NotMatch 'npm warn|Install with' })"
+      "PowerShell(node \"C:\\\\Users\\\\alper\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-alper-OneDrive-Masa-st--Desktop-marsana-launcher-main\\\\066ac35e-ab23-414b-83ea-4579b12c0c8a\\\\scratchpad\\\\k2test.js\")",
+      "PowerShell(git fetch origin --quiet)"
     ]
   },
   "hooks": {
