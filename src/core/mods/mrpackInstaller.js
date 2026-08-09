@@ -6,41 +6,26 @@ const os = require('os');
 const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
+const { assertInside, extractZipInside } = require('../infra/safeZip');
 
 // Paket içindeki hedef yollar uzak kaynaktan gelir (modrinth.index.json ve zip
 // girdileri). Yazmadan önce çözülmüş hedefin gameRoot altında kaldığı doğrulanır;
 // "../" ya da mutlak yol içeren girdiler oyun klasörünün dışına çıkabilirdi.
-function resolveInside(rootDir, relativePath) {
-  const root = path.resolve(rootDir);
-  const dest = path.resolve(root, String(relativePath));
-  const rel = path.relative(root, dest);
-  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
-  return dest;
-}
-
-function assertInside(rootDir, relativePath) {
-  const dest = resolveInside(rootDir, relativePath);
-  if (!dest) {
-    throw new LauncherError(
-      Codes.FILESYSTEM,
-      `Mod paketi güvenli değil: "${relativePath}" oyun klasörünün dışına yazmaya çalışıyor.`
-    );
-  }
-  return dest;
+// Kontrolün kendisi infra/safeZip.js içinde, tek noktada tutulur.
+function assertInsideGameRoot(gameRoot, relativePath) {
+  return assertInside(
+    gameRoot,
+    relativePath,
+    `Mod paketi güvenli değil: "${relativePath}" oyun klasörünün dışına yazmaya çalışıyor.`
+  );
 }
 
 function installOverrides(zip, gameRoot) {
-  const entries = zip.getEntries();
-  for (const entry of entries) {
-    if (entry.isDirectory) continue;
-    const name = entry.entryName.replace(/\\/g, '/');
-    if (!name.startsWith('overrides/')) continue;
-    const rel = name.slice('overrides/'.length);
-    if (!rel) continue;
-    const dest = assertInside(gameRoot, rel);
-    fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.writeFileSync(dest, entry.getData());
-  }
+  extractZipInside(zip, gameRoot, {
+    stripPrefix: 'overrides/',
+    unsafeMessage: (rel) =>
+      `Mod paketi güvenli değil: "${rel}" oyun klasörünün dışına yazmaya çalışıyor.`,
+  });
 }
 
 function createMrpackInstaller({ httpClient, modrinthClient }) {
@@ -91,7 +76,7 @@ function createMrpackInstaller({ httpClient, modrinthClient }) {
       for (const spec of files) {
         const rel = spec.path;
         if (!rel || !spec.downloads || !spec.downloads[0]) continue;
-        const dest = assertInside(gameRoot, rel);
+        const dest = assertInsideGameRoot(gameRoot, rel);
         await fs.promises.mkdir(path.dirname(dest), { recursive: true });
         await httpClient.download(spec.downloads[0], dest);
         installedPaths.push(rel);

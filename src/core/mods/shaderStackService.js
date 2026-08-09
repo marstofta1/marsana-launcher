@@ -6,6 +6,7 @@ const os = require('os');
 const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
+const { extractZipInside } = require('../infra/safeZip');
 const marsanaClientModService = require('./marsanaClientModService');
 const schematicFarmModService = require('./schematicFarmModService');
 const modIsolationService = require('./modIsolationService');
@@ -309,7 +310,11 @@ function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'marsana-rp-'));
   const tmpOut = `${zipPath}.marsana-patch.tmp`;
   try {
-    zip.extractAllTo(tmpRoot, true);
+    // Kaynak paketi Modrinth'ten indirilmiş uzak bir zip; girdi adları güvenilmez.
+    // adm-zip'in extractAllTo'su yerine kendi kapsama kontrolümüz kullanılır.
+    // Güvensiz bir girdi çıkarsa hata fırlar, aşağıdaki catch paketi olduğu gibi
+    // bırakır (yama uygulanmaz) — bozuk paket yerine yamasız paket tercih edilir.
+    extractZipInside(zip, tmpRoot);
     fs.writeFileSync(path.join(tmpRoot, 'pack.mcmeta'), `${JSON.stringify(meta, null, 3)}\n`, 'utf8');
     const newZip = new AdmZip();
     newZip.addLocalFolder(tmpRoot);

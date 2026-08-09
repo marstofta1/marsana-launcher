@@ -6,7 +6,7 @@
   "main": "src/main/index.js",
   "scripts": {
     "start": "node ../scripts/sync-marsanaliz-server.js && electron .",
-    "pack:win": "node ../scripts/sync-marsanaliz-server.js && electron-builder --win && node ../scripts/prepare-marsanaliz-downloads.js"
+    "pack:win": "node ../scripts/verify-marsanaliz-feed-url.js && node ../scripts/sync-marsanaliz-server.js && electron-builder --win && node ../scripts/prepare-marsanaliz-downloads.js"
   },
   "build": {
     "appId": "com.marsana.analiz",

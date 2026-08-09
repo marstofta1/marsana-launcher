@@ -2,8 +2,7 @@
 
 const { app } = require('electron');
 
-const DEFAULT_UPDATES_BASE_URL =
-  'https://marstofta1.github.io/marsana-launcher/marsanaliz/downloads';
+const { resolveFeedUrl, isAllowedFeedUrl } = require('../shared/updateFeedUrl');
 
 function parseVersionParts(version) {
   return String(version)
@@ -23,13 +22,25 @@ function isRemoteVersionNewer(remoteVersion, currentVersion) {
   return false;
 }
 
-function registerUpdateHandlers({ ipcMain, getWindow }) {
+function registerUpdateHandlers({ ipcMain, getWindow, logger }) {
+  const log = logger || console;
   const { autoUpdater } = require('electron-updater');
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = false;
+  // MarsAnaliz derlemesi imzasız; bu doğrulama açılırsa güncelleme tamamen
+  // bloklanır. Kalıcı çözüm imzalı CI derlemesi (Y4). O zamana kadar tek güven
+  // noktası aşağıdaki sabitlenmiş besleme adresidir.
   if (process.platform === 'win32') autoUpdater.verifyUpdateCodeSignature = false;
 
-  const base = (process.env.MARSANALIZ_UPDATES_BASE_URL || DEFAULT_UPDATES_BASE_URL).replace(/\/$/, '');
+  const rawBase =
+    typeof process.env.MARSANALIZ_UPDATES_BASE_URL === 'string'
+      ? process.env.MARSANALIZ_UPDATES_BASE_URL.trim()
+      : '';
+  const base = resolveFeedUrl(rawBase);
+  // Reddedilen değerin kendisi loglanmaz: kimlik bilgisi veya kaçış dizisi taşıyabilir.
+  if (rawBase && !isAllowedFeedUrl(rawBase)) {
+    log.warn('MARSANALIZ_UPDATES_BASE_URL izinli bir adres değil, yoksayıldı.');
+  }
   autoUpdater.setFeedURL({ provider: 'generic', url: base });
 
   const MANUAL_HINT =
