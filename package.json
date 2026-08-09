@@ -6,6 +6,7 @@
   "main": "src/main/index.js",
   "scripts": {
     "start": "node scripts/embed-version-manifest.js && electron .",
+    "test": "node --test test/unit.test.js && node scripts/verify-update-feed-url.js && node scripts/verify-zip-containment.js && node scripts/verify-download-safety.js",
     "pack": "electron-builder",
     "pack:mac": "node scripts/verify-update-feed-url.js && node scripts/verify-zip-containment.js && node scripts/verify-download-safety.js && electron-builder --mac && node scripts/prepare-macos-downloads.js",
     "pack:win": "node scripts/verify-update-feed-url.js && node scripts/verify-zip-containment.js && node scripts/verify-download-safety.js && node scripts/embed-logo.js && node scripts/embed-version-manifest.js && node scripts/ensure-client-mod.js && node scripts/ensure-schematic-farm-mod.js && node scripts/ensure-bundled-deps.js && node scripts/sync-analytics-config.js && electron-builder --win && node scripts/prepare-windows-downloads.js",

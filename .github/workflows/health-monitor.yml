@@ -16,6 +16,8 @@ on:
       - 'scripts/verify-update-feed-url.js'
       - 'scripts/verify-zip-containment.js'
       - 'scripts/verify-download-safety.js'
+      - 'test/**'
+      - 'package.json'
       - '.github/workflows/health-monitor.yml'
 
 permissions:
@@ -42,11 +44,8 @@ jobs:
       - name: Bagimliliklar (verify scriptleri adm-zip kullanir; electron'a gerek yok)
         run: npm ci --omit=dev
 
-      - name: Guvenlik verify suite
-        run: |
-          node scripts/verify-update-feed-url.js
-          node scripts/verify-zip-containment.js
-          node scripts/verify-download-safety.js
+      - name: Birim testleri + guvenlik verify suite (npm test)
+        run: npm test
 
       - name: Site + release saglik denetimi
         run: node scripts/health-check.js
