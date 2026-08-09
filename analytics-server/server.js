@@ -18,15 +18,47 @@ const GATE_PASSWORD = process.env.MARSANALIZ_GATE_PASSWORD || ADMIN_TOKEN;
 const DATA_DIR = process.env.MARSANA_ANALYTICS_DATA_DIR
   || path.join(__dirname, 'data');
 
-function requireAdmin(adminToken) {
+// Sabit-zamanli string karsilastirma: token/sifre dogrulamasinda erken cikan
+// `!==` zamanlama sizintisi verir. Uzunluk farkinda dogrudan false (yine sabit).
+function timingSafeEqualStr(a, b) {
+  const ab = Buffer.from(String(a));
+  const bb = Buffer.from(String(b));
+  if (ab.length !== bb.length) return false;
+  return crypto.timingSafeEqual(ab, bb);
+}
+
+// Basit bellek-ici hiz siniri (bagimlilik yok). Pencere basina IP'nin istek
+// sayisini sinirlar; asilirsa 429. Undeployed/dusuk-trafik sunucu icin yeterli.
+function createRateLimiter({ windowMs, max }) {
+  const hits = new Map();
   return (req, res, next) => {
-    const auth = req.headers.authorization || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-    if (!token || token !== adminToken) {
-      res.status(401).json({ error: 'Yetkisiz' });
+    const now = Date.now();
+    if (hits.size > 20000) hits.clear(); // sinirsiz buyumeyi engelle
+    const ip = req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
+    const recent = (hits.get(ip) || []).filter((t) => now - t < windowMs);
+    recent.push(now);
+    hits.set(ip, recent);
+    if (recent.length > max) {
+      res.status(429).json({ error: 'Cok fazla istek, sonra tekrar deneyin' });
       return;
     }
     next();
+  };
+}
+
+// Yetki: Bearer token gecerli tokenlardan biriyle SABIT-ZAMANLI esitse gecer.
+// /stats hem admin token'i hem gate sifresini kabul eder (aksi halde gate
+// sifresiyle giren panel /stats'ta 401 alirdi).
+function requireAuth(validTokens) {
+  const valid = validTokens.filter(Boolean);
+  return (req, res, next) => {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    if (token && valid.some((v) => timingSafeEqualStr(token, v))) {
+      next();
+      return;
+    }
+    res.status(401).json({ error: 'Yetkisiz' });
   };
 }
 
@@ -39,10 +71,35 @@ function createAnalyticsApp(options = {}) {
   const store = createAnalyticsStore({ dataDir });
   const app = express();
 
+  app.set('trust proxy', 1);
   app.use(express.json({ limit: '32kb' }));
 
+  // Hiz sinirlayicilar: ingest yuksek, gate/stats brute-force'a karsi dusuk.
+  const ingestLimiter = createRateLimiter({ windowMs: 60000, max: 120 });
+  const authLimiter = createRateLimiter({ windowMs: 60000, max: 15 });
+
+  // CORS: MARSANA_ANALYTICS_ALLOWED_ORIGINS (virgullu) ayarliysa yalnizca o
+  // origin'lere izin verilir; bos ise geriye donuk uyumluluk icin '*' ama bir
+  // kez uyarilir (panel ayni sunucudan servis edildiginde CORS gerekmez).
+  const allowedOrigins = String(process.env.MARSANA_ANALYTICS_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  let warnedCors = false;
   app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const origin = req.headers.origin;
+    if (allowedOrigins.length) {
+      if (origin && allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      }
+      res.setHeader('Vary', 'Origin');
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      if (!warnedCors) {
+        warnedCors = true;
+        console.warn('[marsana-analytics] CORS acik (*). Kisitlamak icin MARSANA_ANALYTICS_ALLOWED_ORIGINS ayarlayin.');
+      }
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') {
@@ -56,16 +113,16 @@ function createAnalyticsApp(options = {}) {
     res.json({ ok: true, service: 'marsana-analytics' });
   });
 
-  app.post('/api/v1/gate', (req, res) => {
+  app.post('/api/v1/gate', authLimiter, (req, res) => {
     const password = String(req.body.password || '').trim();
-    if (!password || (password !== gatePassword && password !== adminToken)) {
-      res.status(401).json({ error: 'Gecersiz admin sifresi' });
+    if (password && (timingSafeEqualStr(password, gatePassword) || timingSafeEqualStr(password, adminToken))) {
+      res.json({ ok: true });
       return;
     }
-    res.json({ ok: true });
+    res.status(401).json({ error: 'Gecersiz admin sifresi' });
   });
 
-  app.post('/api/v1/event', (req, res) => {
+  app.post('/api/v1/event', ingestLimiter, (req, res) => {
     try {
       store.ingestEvent(req.body || {});
       res.json({ ok: true });
@@ -74,7 +131,7 @@ function createAnalyticsApp(options = {}) {
     }
   });
 
-  app.post('/api/v1/download', (req, res) => {
+  app.post('/api/v1/download', ingestLimiter, (req, res) => {
     try {
       store.ingestDownload(req.body || {});
       res.json({ ok: true });
@@ -83,7 +140,7 @@ function createAnalyticsApp(options = {}) {
     }
   });
 
-  app.get('/api/v1/stats', requireAdmin(adminToken), (_req, res) => {
+  app.get('/api/v1/stats', authLimiter, requireAuth([adminToken, gatePassword]), (_req, res) => {
     res.json(store.getStats());
   });
 
