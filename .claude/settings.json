@@ -14,7 +14,12 @@
       "PowerShell(git -C $b add .gitignore .agents skills-lock.json)",
       "PowerShell(git -C $b diff --cached --name-only)",
       "PowerShell(git -C $b status --short -- . ':!.agents' ':!skills-lock.json' ':!.gitignore')",
-      "PowerShell($b=\"c:\\\\Users\\\\alper\\\\OneDrive\\\\Masa�st�\\\\Desktop\\\\marsana-launcher-main\")"
+      "PowerShell($b=\"c:\\\\Users\\\\alper\\\\OneDrive\\\\Masa�st�\\\\Desktop\\\\marsana-launcher-main\")",
+      "PowerShell(git -C $b status)",
+      "PowerShell(git -C $b check-ignore -v .agents/skills/modrinth-api/SKILL.md skills-lock.json .gitignore 2>&1)",
+      "PowerShell(git -C $b log --oneline -3)",
+      "PowerShell(git -C $b diff 802e745..HEAD -- .claude/settings.json)",
+      "PowerShell(git -C $b diff -- .claude/settings.json)"
     ]
   }
 }
