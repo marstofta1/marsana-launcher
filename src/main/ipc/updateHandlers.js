@@ -5,18 +5,23 @@ const { app } = require('electron');
 const { isWin } = require('../../shared/platform');
 const { UPDATE } = require('../../shared/ipcChannels');
 const { isRemoteVersionNewer } = require('../../shared/appVersion');
+const { resolveFeedUrl, isAllowedFeedUrl } = require('../../shared/updateFeedUrl');
 const { recordPendingUpdateInstall } = require('../launcherInstall');
 
-const DEFAULT_UPDATES_BASE_URL =
-  'https://marstofta1.github.io/marsana-launcher/downloads';
-
-function configureFeedUrl(autoUpdater) {
-  const envBase = process.env.MARSANA_UPDATES_BASE_URL;
-  const base =
-    envBase && String(envBase).trim() ? String(envBase).trim() : DEFAULT_UPDATES_BASE_URL;
+function configureFeedUrl(autoUpdater, logger) {
+  const raw =
+    typeof process.env.MARSANA_UPDATES_BASE_URL === 'string'
+      ? process.env.MARSANA_UPDATES_BASE_URL.trim()
+      : '';
+  const url = resolveFeedUrl(raw);
+  // Reddedilen değerin kendisi loglanmaz: kimlik bilgisi veya kaçış dizisi taşıyabilir.
+  if (raw && !isAllowedFeedUrl(raw)) {
+    logger.warn('MARSANA_UPDATES_BASE_URL izinli bir adres değil, yoksayıldı.');
+  }
+  logger.info(`Güncelleme adresi: ${url}`);
   autoUpdater.setFeedURL({
     provider: 'generic',
-    url: base.replace(/\/$/, ''),
+    url,
   });
 }
 
@@ -31,12 +36,17 @@ function sleep(ms) {
   });
 }
 
-function registerUpdateHandlers({ ipcMain, getWindow }) {
+function registerUpdateHandlers({ ipcMain, getWindow, logger }) {
+  const log = logger || console;
   const { autoUpdater } = require('electron-updater');
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.disableDifferentialDownload = true;
   // İmzasız NSIS/generic güncellemeleri Windows'ta varsayılan doğrulamada bloklanabilir.
+  // Bu satır açılamaz: build imzasız (package.json -> win.signAndEditExecutable: false,
+  // sertifika yapılandırması yok), doğrulama açılırsa güncelleme tamamen bloklanır.
+  // Gerçek çözüm Windows kod imzalama sertifikası + imzalı CI build'idir (denetim maddesi Y4).
+  // O yapılana kadar tek güven noktası configureFeedUrl'deki sabitlenmiş besleme adresidir.
   if (isWin) autoUpdater.verifyUpdateCodeSignature = false;
 
   let pendingUpdateVersion = null;
@@ -52,7 +62,7 @@ function registerUpdateHandlers({ ipcMain, getWindow }) {
     'Güncelleme sunucusuna ulaşılamadı. GitHub Pages etkin olmalı ve repo herkese açık olmalıdır. ' +
     'Manuel indirme: https://github.com/marstofta1/marsana-launcher (docs/downloads).';
 
-  configureFeedUrl(autoUpdater);
+  configureFeedUrl(autoUpdater, log);
 
   async function probeUpdateAvailability() {
     if (!app.isPackaged) {

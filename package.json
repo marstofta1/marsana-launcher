@@ -12,6 +12,7 @@
     "pack:linux": "electron-builder --linux && node scripts/prepare-linux-downloads.js",
     "pack:desktop": "electron-builder --mac --win",
     "verify:release": "node scripts/verify-release-docs.js",
+    "verify:update-feed": "node scripts/verify-update-feed-url.js",
     "prepare:win-downloads": "node scripts/prepare-windows-downloads.js",
     "prepare:mac-downloads": "node scripts/prepare-macos-downloads.js",
     "prepare:linux-downloads": "node scripts/prepare-linux-downloads.js",

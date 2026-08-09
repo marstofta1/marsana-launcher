@@ -30,7 +30,7 @@ function registerAllHandlers({ ipcMain, shell, container, getWindow }) {
     recommendedServersService: container.recommendedServersService,
   });
   registerSystemHandlers({ ipcMain, shell, paths: container.paths });
-  registerUpdateHandlers({ ipcMain, getWindow });
+  registerUpdateHandlers({ ipcMain, getWindow, logger: container.logger.child('update') });
   registerRobloxHandlers({
     ipcMain,
     robloxAccountStore: container.robloxAccountStore,

@@ -19,7 +19,25 @@
       "PowerShell(git -C $b check-ignore -v .agents/skills/modrinth-api/SKILL.md skills-lock.json .gitignore 2>&1)",
       "PowerShell(git -C $b log --oneline -3)",
       "PowerShell(git -C $b diff 802e745..HEAD -- .claude/settings.json)",
-      "PowerShell(git -C $b diff -- .claude/settings.json)"
+      "PowerShell(git -C $b diff -- .claude/settings.json)",
+      "Bash(echo \"=== EXIT $? ===\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\)\")",
+      "Bash(ls -la \"/c/Users/alper/.claude/skills\" 2>/dev/null | head -50; echo \"---PROJECT---\"; ls -la \"/c/Users/alper/OneDrive/Masaüstü/Desktop/marsana-launcher-main/.claude/\" 2>/dev/null)",
+      "Read(//c/Users/alper/.claude/**)",
+      "Bash(ls -la \"/c/Users/alper/OneDrive/Masaüstü/Desktop/marsana-launcher-main/.claude/skills\" 2>/dev/null; echo \"---COMMANDS---\"; ls -la \"/c/Users/alper/OneDrive/Masaüstü/Desktop/marsana-launcher-main/.claude/commands\" 2>/dev/null; ls -la \"/c/Users/alper/.claude/commands\" 2>/dev/null)",
+      "Bash(node scripts/verify-update-feed-url.js)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(node --check src/main/ipc/updateHandlers.js)",
+      "Bash(node --check src/shared/updateFeedUrl.js)",
+      "Bash(node --check scripts/verify-update-feed-url.js)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('package.json','utf8'\\)\\); console.log\\('package.json VALID JSON'\\)\")",
+      "Bash(npm run *)",
+      "Bash(git --no-pager diff)",
+      "Bash(node --check src/main/ipc/index.js)",
+      "Bash(cat \"/c/Users/alper/.claude/projects/c--Users-alper-OneDrive-Masa-st--Desktop-marsana-launcher-main/memory/audit-progress.md\")",
+      "Read(//c/Users/alper/.claude/projects/c--Users-alper-OneDrive-Masa-st--Desktop-marsana-launcher-main/memory/**)",
+      "Bash(node \"C:/Users/alper/AppData/Local/Temp/claude/c--Users-alper-OneDrive-Masa-st--Desktop-marsana-launcher-main/47260165-02fc-4263-8fff-81d7c8cdb0e1/scratchpad/integration-feed-url.js\")",
+      "Bash(cat \"/c/Users/alper/.claude/projects/c--Users-alper-OneDrive-Masa-st--Desktop-marsana-launcher-main/memory/commit-directly-to-main.md\")"
     ]
   }
 }
