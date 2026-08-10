@@ -413,7 +413,10 @@ const OPTIFINE_EMBOSSED_MOD_PREFIXES = Object.freeze(['continuity']);
 const OPTIFINE_RECONCILE_SLUGS = Object.freeze([
   'krypton',
   'lithium',
-  'ferritecore',
+  // Modrinth slug'i 'ferrite-core' (tireli); 'ferritecore' 404 verir. Zorunlu
+  // bagimlilik degil, ama yanlis slug reconcile'in bundled jar'i silip geri
+  // koyamamasina -> pack'in bellek optimizasyonu modunu kaybetmesine yol acar.
+  'ferrite-core',
   'immediatelyfast',
   'modmenu',
   'dynamic-fps',
@@ -427,7 +430,8 @@ const OPTIFINE_RECONCILE_SLUGS = Object.freeze([
 const OPTIFINE_RECONCILE_JAR_TESTS = Object.freeze({
   krypton: /^krypton-/i,
   lithium: /^lithium-fabric-/i,
-  ferritecore: /^ferritecore-/i,
+  // Anahtar Modrinth slug'i; regex indirilen dosya adini test eder (ferritecore-8.1.0-fabric.jar).
+  'ferrite-core': /^ferritecore-/i,
   immediatelyfast: /^immediatelyfast/i,
   modmenu: /^modmenu-/i,
   'dynamic-fps': /^dynamic[-_]?fps/i,

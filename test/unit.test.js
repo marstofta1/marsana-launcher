@@ -129,22 +129,29 @@ test('shader OptiFine reconcile: slug listesi ile jar-test anahtarlari birebir e
   }
 });
 
-// Regresyon: forge-config-api-port slug'i Modrinth'te gecerli olmali. Onceki hatali
-// 'forgeconfigapiport' slug'i 404 verip rrls'in bagimliligini kaybettirip oyunu
-// cokertiyordu ("requires forgeconfigapiport, which is missing"). jar-test ise
-// INDIRILEN dosya adini (ForgeConfigAPIPort-...) yakalamali, rrls'i degil.
-test('shader OptiFine reconcile: forge-config-api-port slug + jar-test dogru', () => {
-  assert.ok(
-    shader.OPTIFINE_RECONCILE_SLUGS.includes('forge-config-api-port'),
-    'gecerli Modrinth slug forge-config-api-port olmali'
-  );
-  assert.ok(
-    !shader.OPTIFINE_RECONCILE_SLUGS.includes('forgeconfigapiport'),
-    'gecersiz (404) forgeconfigapiport slug\'i kullanilmamali'
-  );
-  const test = shader.OPTIFINE_RECONCILE_JAR_TESTS['forge-config-api-port'];
-  assert.ok(test.test('ForgeConfigAPIPort-v21.9.8+mc1.21.9-Fabric.jar'), 'gercek dosya adini yakalamali');
-  assert.ok(!test.test('rrls-5.1.11+mc1.21.9-fabric.jar'), 'rrls jar\'ini yakalamamali');
+// Regresyon: reconcile slug'lari gercek Modrinth proje slug'lari olmali. Onceki
+// hatali 'forgeconfigapiport' (rrls bagimliligi -> crash) ve 'ferritecore'
+// (perf modu sessizce kaybolur) slug'lari 404 veriyordu. Bilinen-gecersiz
+// slug'lar tabloya geri sizmamali.
+test('shader OptiFine reconcile: bilinen-gecersiz (404) slug\'lar kullanilmaz', () => {
+  const invalid = ['forgeconfigapiport', 'ferritecore'];
+  for (const bad of invalid) {
+    assert.ok(
+      !shader.OPTIFINE_RECONCILE_SLUGS.includes(bad),
+      `gecersiz (404) slug tabloda olmamali: ${bad}`
+    );
+  }
+  assert.ok(shader.OPTIFINE_RECONCILE_SLUGS.includes('forge-config-api-port'), 'forge-config-api-port bulunmali');
+  assert.ok(shader.OPTIFINE_RECONCILE_SLUGS.includes('ferrite-core'), 'ferrite-core bulunmali');
+});
+
+// jar-test'ler INDIRILEN dosya adini yakalamali (slug'la dosya adi farkli olabilir).
+test('shader OptiFine reconcile: jar-test\'ler gercek dosya adlarini yakalar', () => {
+  const fcap = shader.OPTIFINE_RECONCILE_JAR_TESTS['forge-config-api-port'];
+  assert.ok(fcap.test('ForgeConfigAPIPort-v21.9.8+mc1.21.9-Fabric.jar'), 'fcap dosya adini yakalamali');
+  assert.ok(!fcap.test('rrls-5.1.11+mc1.21.9-fabric.jar'), 'fcap testi rrls\'i yakalamamali');
+  const ferrite = shader.OPTIFINE_RECONCILE_JAR_TESTS['ferrite-core'];
+  assert.ok(ferrite.test('ferritecore-8.1.0-fabric.jar'), 'ferrite dosya adini yakalamali');
 });
 
 // ----------------------------------------------- modrinthVersionSelect (O4)
