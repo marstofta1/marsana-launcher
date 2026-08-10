@@ -371,3 +371,21 @@ test('marsanaClient: eski forge-optifine seçimi sade forge’a düşer', async 
     'forge'
   );
 });
+
+test('marsanaClient: client modu shader’ı zorla açmaz (preset kapalı, kullanıcı açsa da kapanır)', async () => {
+  const mc = await import('../src/shared/marsanaClient.js');
+  // Preset artık shader'ı kapalı tutar.
+  assert.strictEqual(mc.CLIENT_MOD_PRESET.modShaderFps, false);
+  // Kullanıcı state'inde açık olsa bile client preset üzerine yazıp kapatır.
+  assert.strictEqual(mc.applyClientPreset({ modShaderFps: true }).modShaderFps, false);
+  // Client modu sanitize'ı da shader'ı kapalıya zorlar.
+  assert.strictEqual(
+    mc.sanitizeSelectionForPlayMode({ playMode: 'client', modShaderFps: true }).modShaderFps,
+    false
+  );
+  // Shader artık client özellik özetinde (kartlarda) görünmez.
+  assert.strictEqual(mc.CLIENT_FEATURES.some((f) => f.id === 'shaderFps'), false);
+  // Fullbright + voice chat kasıtlı olarak açık kaldı ("bunlar normal").
+  assert.strictEqual(mc.applyClientPreset({}).modFullbrightUb, true);
+  assert.strictEqual(mc.applyClientPreset({}).modVoiceChat, true);
+});

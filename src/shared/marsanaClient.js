@@ -11,7 +11,11 @@ export const DEFAULT_PLAY_MODE = PLAY_MODES.CLIENT;
 export const CLIENT_MOD_PRESET = Object.freeze({
   selectedLoader: 'fabric',
   selectedShader: 'complementary-reimagined',
-  modShaderFps: true,
+  // Client modu shader'i ARTIK zorla acmaz. Kullanici "secmememe ragmen shader
+  // aciliyor" dedi; client preset'i her acilista uzerine yaziyordu. Kapali olunca
+  // shaderStackService.ensure -> deactivateShaderConfig, eski acik kurulumlari da
+  // kapatir. Fullbright + voice chat kasitli olarak acik kaldi ("bunlar normal").
+  modShaderFps: false,
   modFullbrightUb: true,
   modVoiceChat: true,
   modOptifine: false,
@@ -37,11 +41,6 @@ export const CLIENT_FEATURES = Object.freeze([
     id: 'clientMenu',
     title: 'Marsana Client Menüsü',
     description: 'Oyunda H tuşu — mod aç/kapa ve ücretsiz kozmetik.',
-  },
-  {
-    id: 'shaderFps',
-    title: 'Shader + FPS',
-    description: 'Iris ile shader desteği; Sodium ayrı mod olarak kurulur. Complementary Reimagined shader paketi.',
   },
   {
     id: 'fullbrightUb',
