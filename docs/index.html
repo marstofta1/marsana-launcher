@@ -257,8 +257,16 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v1.0.41 — Client modunda shader artık zorla açılmıyor</span>
+            <span class="release-version">v1.0.42 — Client HUD (CPS, keystrokes, zoom) artık görünüyor</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li><strong>Marsana Client HUD düzeltildi.</strong> Client modunda ekran üstü göstergeler — <strong>CPS sayacı, keystrokes (WASD + sağ/sol tık), C ile zoom, FPS, koordinat</strong> — bazı oyuncularda hiç görünmüyordu. Nedeni: bu göstergeler Marsana Client mod'unun içinde ve o mod yalnızca Minecraft 26.1.2'de çalışıyor; oysa client modu farklı bir sürümde (ör. 1.21.10) başlatılabiliyordu ve mod sessizce devre dışı kalıyordu. Artık <strong>Client modu her zaman 26.1.2'de başlatılır</strong>, böylece HUD, oyun içi H menüsü ve F8 Sematik Farm güvenilir biçimde çalışır. Sürüm seçici, client modunda 26.1.2'ye sabittir. (Gelişmiş/Launcher modu serbest sürüm seçimiyle etkilenmez.)</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v1.0.41 — Client modunda shader artık zorla açılmıyor</span>
           </div>
           <ul class="release-changes">
             <li><strong>Marsana Client: shader artık otomatik açılmıyor.</strong> Client modunda, sen seçmesen bile her açılışta shader zorla etkinleşiyordu; artık açılmıyor ve seçenek olarak da görünmüyor. Daha önce shader'ı açık kalmış oyuncularda bir sonraki başlatmada shader kendiliğinden kapanır. <strong>Fullbright</strong> ve <strong>voice chat</strong> eskisi gibi açık kalır.</li>
