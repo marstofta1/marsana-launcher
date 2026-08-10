@@ -414,7 +414,10 @@ const OPTIFINE_RECONCILE_SLUGS = Object.freeze([
   'modmenu',
   'dynamic-fps',
   'fabric-language-kotlin',
-  'forgeconfigapiport',
+  // Modrinth slug'i 'forge-config-api-port'; 'forgeconfigapiport' 404 verir. Yanlis
+  // slugla reconcile bundled jar'i siler ama yeniden indiremez -> rrls bagimliligini
+  // kaybeder ve oyun "requires forgeconfigapiport, which is missing" ile coker.
+  'forge-config-api-port',
 ]);
 
 const OPTIFINE_RECONCILE_JAR_TESTS = Object.freeze({
@@ -425,7 +428,9 @@ const OPTIFINE_RECONCILE_JAR_TESTS = Object.freeze({
   modmenu: /^modmenu-/i,
   'dynamic-fps': /^dynamic[-_]?fps/i,
   'fabric-language-kotlin': /^fabric-language-kotlin/i,
-  forgeconfigapiport: /^forgeconfigapiport/i,
+  // Anahtar Modrinth slug'i; regex ise indirilen dosya adini test eder
+  // (ForgeConfigAPIPort-v21.9.8+mc1.21.9-Fabric.jar -> forgeconfigapiport...).
+  'forge-config-api-port': /^forgeconfigapiport/i,
 });
 
 /** OptiFine paketinde rrls vb. ile cakisan modlar — kaldirilir, yeniden indirilmez. */
@@ -2183,4 +2188,9 @@ module.exports = {
   modrinthCandidateRank,
   pickNewestModrinthVersion,
   glowingOresVariantLabel,
+  // OptiFine reconcile slug/jar-test tablolari — regresyon testi icin. Slug'lar
+  // gercek Modrinth proje slug'lari olmali; yanlis slug (404) reconcile'in bundled
+  // bagimliligi silip geri koyamamasina ve oyun cokmesine yol acar.
+  OPTIFINE_RECONCILE_SLUGS,
+  OPTIFINE_RECONCILE_JAR_TESTS,
 };

@@ -117,6 +117,36 @@ test('shader.glowingOresVariantLabel', () => {
   assert.strictEqual(shader.glowingOresVariantLabel({ name: 'plain' }), 'unknown');
 });
 
+// OptiFine reconcile — her slug'in bir jar-test'i olmali, aksi halde reconcile
+// bundled jar'i silip yeniden indiremeyip crash'e yol acar. Yapisal degismezlik:
+// slug listesi ve jar-test anahtarlari birebir ayni kume olmali.
+test('shader OptiFine reconcile: slug listesi ile jar-test anahtarlari birebir eslesir', () => {
+  const slugs = [...shader.OPTIFINE_RECONCILE_SLUGS];
+  const keys = Object.keys(shader.OPTIFINE_RECONCILE_JAR_TESTS);
+  assert.deepStrictEqual(new Set(slugs), new Set(keys), 'her slug bir jar-test anahtarina sahip olmali');
+  for (const slug of slugs) {
+    assert.ok(shader.OPTIFINE_RECONCILE_JAR_TESTS[slug] instanceof RegExp, `${slug} icin regex yok`);
+  }
+});
+
+// Regresyon: forge-config-api-port slug'i Modrinth'te gecerli olmali. Onceki hatali
+// 'forgeconfigapiport' slug'i 404 verip rrls'in bagimliligini kaybettirip oyunu
+// cokertiyordu ("requires forgeconfigapiport, which is missing"). jar-test ise
+// INDIRILEN dosya adini (ForgeConfigAPIPort-...) yakalamali, rrls'i degil.
+test('shader OptiFine reconcile: forge-config-api-port slug + jar-test dogru', () => {
+  assert.ok(
+    shader.OPTIFINE_RECONCILE_SLUGS.includes('forge-config-api-port'),
+    'gecerli Modrinth slug forge-config-api-port olmali'
+  );
+  assert.ok(
+    !shader.OPTIFINE_RECONCILE_SLUGS.includes('forgeconfigapiport'),
+    'gecersiz (404) forgeconfigapiport slug\'i kullanilmamali'
+  );
+  const test = shader.OPTIFINE_RECONCILE_JAR_TESTS['forge-config-api-port'];
+  assert.ok(test.test('ForgeConfigAPIPort-v21.9.8+mc1.21.9-Fabric.jar'), 'gercek dosya adini yakalamali');
+  assert.ok(!test.test('rrls-5.1.11+mc1.21.9-fabric.jar'), 'rrls jar\'ini yakalamamali');
+});
+
 // ----------------------------------------------- modrinthVersionSelect (O4)
 // Sürüm-seçim mantığı shaderStackService'ten ayrı modüle çıkarıldı. Bu bloğun iki
 // işi var: (1) modülü doğrudan test etmek, (2) shaderStackService'in AYNI fonksiyonu
