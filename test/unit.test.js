@@ -404,3 +404,57 @@ test('marsanaClient: sabit client sürümü 26.1.2 ve bu sürümde HUD + F8 farm
   // Aynı sürümde Sematik Farm (F8) bundled jar'ı da mevcut.
   assert.strictEqual(vc.schematicFarmBundledAvailable(mc.MARSANA_CLIENT_VERSION), true);
 });
+
+// ---------------------------------------------------------- modCompatibilityService
+// Client modu 26.1.2'ye sabitlenince paylaşılan mods klasöründe kalan 26.2-özel
+// modlar (krypton >=26.2, modernfix ~26.2) oyunu çökertiyordu; dosya adlarında MC
+// etiketi yok, sadece jar içindeki fabric.mod.json > depends.minecraft'tan yakalanır.
+// Ayrıca cloth-config'in mod sürümü "26.1.154" MC etiketi sanılıp yanlış eleniyordu.
+const modCompat = require('../src/core/mods/modCompatibilityService');
+
+test('modCompat: 26.2-özel bağımlılık 26.1.2 için incompatible, 26.2 için compatible', () => {
+  // krypton-0.3.1 -> ">=26.2", modernfix-5.27.18 -> "~26.2-"
+  assert.strictEqual(modCompat.evaluateMcDependency('>=26.2', '26.1.2'), 'incompatible');
+  assert.strictEqual(modCompat.evaluateMcDependency('~26.2-', '26.1.2'), 'incompatible');
+  assert.strictEqual(modCompat.evaluateMcDependency('>=26.2', '26.2'), 'compatible');
+  assert.strictEqual(modCompat.evaluateMcDependency('~26.2-', '26.2'), 'compatible');
+});
+
+test('modCompat: 26.1 bağımlılıkları 26.1.2 için compatible (cloth/ferrite/modmenu gerçek dizeleri)', () => {
+  assert.strictEqual(modCompat.evaluateMcDependency('>=26.1-', '26.1.2'), 'compatible'); // cloth-config
+  assert.strictEqual(modCompat.evaluateMcDependency('>=26.1 <27', '26.1.2'), 'compatible'); // ferritecore
+  assert.strictEqual(modCompat.evaluateMcDependency('>1.26-', '26.1.2'), 'compatible'); // modmenu
+  assert.strictEqual(modCompat.evaluateMcDependency('26.1.x', '26.1.2'), 'compatible');
+  assert.strictEqual(modCompat.evaluateMcDependency(['26.1.x', '1.21.x'], '26.1.2'), 'compatible');
+});
+
+test('modCompat: 26.1-özel bağımlılık 26.2 oyunda incompatible', () => {
+  assert.strictEqual(modCompat.evaluateMcDependency('>=26.1 <26.2', '26.2'), 'incompatible');
+  assert.strictEqual(modCompat.evaluateMcDependency('26.1.x', '26.2'), 'incompatible');
+});
+
+test('modCompat: çözülemeyen/eksik bağımlılık unknown (geçerli mod yanlış silinmez)', () => {
+  assert.strictEqual(modCompat.evaluateMcDependency('*', '26.1.2'), 'compatible');
+  assert.strictEqual(modCompat.evaluateMcDependency(undefined, '26.1.2'), 'unknown');
+  assert.strictEqual(modCompat.evaluateMcDependency('>=çöp', '26.1.2'), 'unknown');
+  // AND'de bir terim çözülemezse ve hiçbir terim kesin başarısız değilse => unknown
+  assert.strictEqual(modCompat.evaluateMcDependency('>=26.1 çöp', '26.1.2'), 'unknown');
+});
+
+test('modCompat: mc26VersionsCompatible aynı minör içinde patch farkından bağımsız uyumlu', () => {
+  // cloth-config mod sürümü 26.1.154 MC gibi görünse de 26.1.2 ile uyumlu sayılmalı
+  assert.strictEqual(modCompat.mc26VersionsCompatible('26.1.154', '26.1.2'), true);
+  assert.strictEqual(modCompat.mc26VersionsCompatible('26.1', '26.1.2'), true);
+  // farklı minör => uyumsuz
+  assert.strictEqual(modCompat.mc26VersionsCompatible('26.2', '26.1.2'), false);
+  assert.strictEqual(modCompat.mc26VersionsCompatible('26.1.2', '26.2'), false);
+});
+
+test('modCompat: jarManifestMcVerdict gerçek bundled cloth-config jar (depends >=26.1-)', () => {
+  const nfs = require('node:fs');
+  const jar = path.join(__dirname, '..', 'bundled-mods', 'deps', 'cloth-config-26.1.154.jar');
+  if (!nfs.existsSync(jar)) return; // dev makinesinde her zaman var; CI'da yoksa atla
+  assert.strictEqual(modCompat.readJarMcDependency(jar), '>=26.1-');
+  assert.strictEqual(modCompat.jarManifestMcVerdict(jar, '26.1.2'), 'compatible');
+  assert.strictEqual(modCompat.jarManifestMcVerdict(jar, '1.21.10'), 'incompatible');
+});

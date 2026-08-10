@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const AdmZip = require('adm-zip');
 
 const PROTECTED_JAR_PREFIXES = Object.freeze([]);
 
@@ -103,12 +104,11 @@ function mc26VersionsCompatible(tag, gameVersion) {
   if (!/^26\./.test(gv) || !/^26\./.test(tv)) return false;
   const gvMinor = mc26MinorOf(gv);
   const tvMinor = mc26MinorOf(tv);
-  if (gvMinor == null || tvMinor == null || gvMinor !== tvMinor) return false;
-  const gvPatch = gv.match(/^26\.\d+\.(\d+)$/)?.[1];
-  const tvPatch = tv.match(/^26\.\d+\.(\d+)$/)?.[1];
-  if (!gvPatch) return true;
-  if (!tvPatch) return true;
-  return compareSemver(tv, gv) <= 0;
+  if (gvMinor == null || tvMinor == null) return false;
+  // Ayni 26.x minor => uyumlu. Patch farkina (ya da mod surumunun MC etiketine
+  // benzemesine — cloth-config'in mod surumu "26.1.154" gibi) bakma; yoksa 26.1.154
+  // etiketi "26.1.2'den yeni" sanilip cloth-config yanlislikla eleniyordu.
+  return gvMinor === tvMinor;
 }
 
 /** OptiFine / yeni MC paketinden kalan, dosya adinda MC etiketi olmayan modlar. */
@@ -337,6 +337,157 @@ function isJarFilenameIncompatibleWithGame(filename, gameVersion) {
   return !jarVersionMatchesGame(filename, gv);
 }
 
+// ---------------------------------------------------------------------------
+// Manifest tabanli uyumluluk: jar'in fabric.mod.json > depends.minecraft alanini
+// okuyup oyun surumune gore degerlendirir. Dosya adinda MC etiketi olmayan modlar
+// (krypton, modernfix vb.) yalnizca buradan yakalanabilir — Fabric loader'in
+// kendi kararini launch oncesi taklit ederiz.
+//
+// Kural TEMKINLI: yalnizca EMIN oldugumuzda 'incompatible' doneriz. Herhangi bir
+// terim ayrıştırılamazsa 'unknown' doneriz ve cagiran taraf dosya-adi sezgisine
+// duser — boylece gecerli bir mod asla yanlislikla silinmez.
+
+/** Surum dizesini sayisal release parcalarina ayir. On-surum/build ('-','+') atilir. */
+function parseVersionParts(str) {
+  let s = String(str == null ? '' : str).trim();
+  if (!s) return { parts: [], wildcard: false, ok: false };
+  s = s.split('+')[0].split('-')[0].replace(/^v/i, '');
+  if (!s) return { parts: [], wildcard: false, ok: false };
+  const parts = [];
+  let wildcard = false;
+  for (const token of s.split('.')) {
+    if (token === 'x' || token === 'X' || token === '*') {
+      wildcard = true;
+      break;
+    }
+    if (!/^\d+$/.test(token)) return { parts, wildcard, ok: false };
+    parts.push(parseInt(token, 10));
+  }
+  return { parts, wildcard, ok: true };
+}
+
+function comparePartsNum(a, b) {
+  for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
+    const da = a[i] || 0;
+    const db = b[i] || 0;
+    if (da !== db) return da < db ? -1 : 1;
+  }
+  return 0;
+}
+
+/** Tek bir Fabric surum-sarti terimini degerlendir: 'match' | 'nomatch' | 'unknown'. */
+function evalPredicateTerm(term, gameParts) {
+  const t = String(term || '').trim();
+  if (!t || t === '*') return 'match';
+  const m = t.match(/^(>=|<=|>|<|=|\^|~)?\s*(.*)$/);
+  const op = (m && m[1]) || '=';
+  const verStr = (m && m[2] ? m[2] : '').trim();
+  if (!verStr) return 'unknown';
+  const v = parseVersionParts(verStr);
+  if (!v.ok && !v.wildcard) return 'unknown';
+
+  if (op === '>=' || op === '>' || op === '<=' || op === '<') {
+    if (v.wildcard || v.parts.length === 0) return 'unknown';
+    const cmp = comparePartsNum(gameParts, v.parts);
+    if (op === '>=') return cmp >= 0 ? 'match' : 'nomatch';
+    if (op === '>') return cmp > 0 ? 'match' : 'nomatch';
+    if (op === '<=') return cmp <= 0 ? 'match' : 'nomatch';
+    return cmp < 0 ? 'match' : 'nomatch';
+  }
+
+  if (op === '~' || op === '^') {
+    if (v.parts.length === 0) return 'unknown';
+    const lower = v.parts.slice();
+    let upper;
+    if (op === '~') {
+      // ~a.b(.c) => < a.(b+1).0 ; ~a => < (a+1).0.0
+      upper = v.parts.length >= 2 ? [v.parts[0], v.parts[1] + 1, 0] : [v.parts[0] + 1, 0, 0];
+    } else {
+      // ^a.b.c => < (a+1).0.0
+      upper = [v.parts[0] + 1, 0, 0];
+    }
+    return comparePartsNum(gameParts, lower) >= 0 && comparePartsNum(gameParts, upper) < 0
+      ? 'match'
+      : 'nomatch';
+  }
+
+  // op '=' veya operatorsuz.
+  if (v.wildcard) {
+    // 26.1.x => parts=[26,1] => >= [26,1,0] < [26,2,0]
+    if (v.parts.length === 0) return 'match';
+    const lower = v.parts.slice();
+    const upper = v.parts.slice();
+    upper[upper.length - 1] += 1;
+    return comparePartsNum(gameParts, lower) >= 0 && comparePartsNum(gameParts, upper) < 0
+      ? 'match'
+      : 'nomatch';
+  }
+  // Cıplak surum: belirtilen parca sayisinca prefix esitligi (26.1 => tum 26.1.x eslesir).
+  for (let i = 0; i < v.parts.length; i += 1) {
+    if ((gameParts[i] || 0) !== v.parts[i]) return 'nomatch';
+  }
+  return 'match';
+}
+
+/** Bosluklu terimler VE'lenir (Fabric semantigi): "26.1 <27" => >=26.1 VE <27. */
+function evalPredicateString(str, gameParts) {
+  const terms = String(str || '').trim().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return 'match';
+  let sawUnknown = false;
+  for (const term of terms) {
+    const r = evalPredicateTerm(term, gameParts);
+    if (r === 'nomatch') return 'nomatch';
+    if (r === 'unknown') sawUnknown = true;
+  }
+  return sawUnknown ? 'unknown' : 'match';
+}
+
+/**
+ * depends.minecraft (string ya da dizi) oyun surumunu karsiliyor mu?
+ * Dizi => VEYA (herhangi biri eslesirse yeter). Donus: 'compatible' | 'incompatible' | 'unknown'.
+ */
+function evaluateMcDependency(dep, gameVersion) {
+  const gameParts = parseVersionParts(gameVersion).parts;
+  if (!gameParts.length) return 'unknown';
+  const branches = (Array.isArray(dep) ? dep : [dep]).filter(
+    (b) => typeof b === 'string' && b.trim()
+  );
+  if (branches.length === 0) return 'unknown';
+  let sawUnknown = false;
+  let sawNoMatch = false;
+  for (const branch of branches) {
+    const r = evalPredicateString(branch, gameParts);
+    if (r === 'match') return 'compatible';
+    if (r === 'unknown') sawUnknown = true;
+    if (r === 'nomatch') sawNoMatch = true;
+  }
+  if (sawNoMatch && !sawUnknown) return 'incompatible';
+  return 'unknown';
+}
+
+/** Jar icindeki fabric.mod.json > depends.minecraft degerini oku (yoksa/okunamazsa undefined). */
+function readJarMcDependency(jarPath) {
+  try {
+    const buf = fs.readFileSync(jarPath);
+    const zip = new AdmZip(buf);
+    const entry = zip.getEntry('fabric.mod.json');
+    if (!entry) return undefined;
+    const json = JSON.parse(zip.readAsText(entry));
+    if (!json || typeof json !== 'object' || !json.depends) return undefined;
+    const dep = json.depends.minecraft;
+    return dep == null ? undefined : dep;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Jar'in bildirdigi MC bagimliligina gore karar: 'compatible' | 'incompatible' | 'unknown'. */
+function jarManifestMcVerdict(jarPath, gameVersion) {
+  const dep = readJarMcDependency(jarPath);
+  if (dep === undefined) return 'unknown';
+  return evaluateMcDependency(dep, gameVersion);
+}
+
 function removeIfExists(filePath) {
   try {
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
@@ -486,9 +637,19 @@ function purgeIncompatibleModJars(modsDir, gameVersion) {
     const isJar = entry.endsWith('.jar') || entry.endsWith('.jar.disabled');
     const isStash = entry.includes('.marsana-stashed-');
     if (!isJar && !isStash) continue;
+    const fullPath = path.join(modsDir, entry);
     const jarName = entry.split('.marsana-stashed-')[0];
-    if (!isJarFilenameIncompatibleWithGame(jarName, gameVersion)) continue;
-    removeIfExists(path.join(modsDir, entry));
+    // Manifest (fabric.mod.json > depends.minecraft) otoriterdir: dosya adinda MC
+    // etiketi olmayan 26.2-ozel jar'lari (krypton >=26.2, modernfix ~26.2) yakalar;
+    // ayrica dosya-adi sezgisinin yanlis eledigi jar'i (cloth-config-26.1.154 => >=26.1)
+    // korur. Karar veremezse ('unknown') mevcut dosya-adi sezgisine duseriz.
+    const verdict = jarManifestMcVerdict(fullPath, gameVersion);
+    let incompatible;
+    if (verdict === 'incompatible') incompatible = true;
+    else if (verdict === 'compatible') incompatible = false;
+    else incompatible = isJarFilenameIncompatibleWithGame(jarName, gameVersion);
+    if (!incompatible) continue;
+    removeIfExists(fullPath);
     removed += 1;
   }
 
@@ -515,4 +676,7 @@ module.exports = {
   sodiumExtraJarPresent,
   kryptonJarPresent,
   isManagedModFamilyJar,
+  evaluateMcDependency,
+  readJarMcDependency,
+  jarManifestMcVerdict,
 };
