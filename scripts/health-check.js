@@ -44,20 +44,40 @@ const bad = (n) => {
 (async () => {
   console.log(`Marsana sağlık denetimi — beklenen sürüm v${version}\n`);
 
-  // 1) Canlı site: erişilebilir + güncel
+  // 1) Canlı site: erişilebilir + güncel.
+  // Yeni sürüm push'unda bu denetim deploy-pages ile aynı anda koşabilir; GitHub
+  // Pages yayını birkaç dakika gecikebilir. Bayat/erişilemez durumda hemen
+  // başarısız sayma — birkaç kez yeniden dene (yayılma penceresi). Gerçekten
+  // bayatsa yine de yakalanır.
   console.log('1) Canlı site');
-  try {
-    const r = await fetch(SITE);
-    if (r.status !== 200) {
-      bad(`Site ${r.status} döndü (200 bekleniyordu)`);
-    } else {
-      ok('Site 200 (erişilebilir)');
-      if (r.body.includes(`v${version}`)) ok(`Site güncel — v${version} sayfada mevcut`);
-      else bad(`Site BAYAT — v${version} sayfada yok (changelog/#guncellemeler güncellenmemiş)`);
+  const SITE_RETRIES = 6;
+  const SITE_WAIT_MS = 15000;
+  let siteOk = false;
+  let lastMsg = '';
+  for (let attempt = 1; attempt <= SITE_RETRIES; attempt++) {
+    try {
+      const r = await fetch(SITE);
+      if (r.status === 200 && r.body.includes(`v${version}`)) {
+        ok('Site 200 (erişilebilir)');
+        ok(`Site güncel — v${version} sayfada mevcut`);
+        siteOk = true;
+        break;
+      }
+      lastMsg =
+        r.status !== 200
+          ? `Site ${r.status} döndü (200 bekleniyordu)`
+          : `Site BAYAT — v${version} sayfada yok (changelog/#guncellemeler güncellenmemiş)`;
+    } catch (e) {
+      lastMsg = `Site erişilemedi: ${e.message}`;
     }
-  } catch (e) {
-    bad(`Site erişilemedi: ${e.message}`);
+    if (attempt < SITE_RETRIES) {
+      console.log(
+        `  … deneme ${attempt}/${SITE_RETRIES}: ${lastMsg} — ${SITE_WAIT_MS / 1000}s bekle, yeniden dene (yayın yayılıyor olabilir)`
+      );
+      await new Promise((res) => setTimeout(res, SITE_WAIT_MS));
+    }
   }
+  if (!siteOk) bad(lastMsg);
 
   // 2) En son release
   console.log('2) GitHub Release');
