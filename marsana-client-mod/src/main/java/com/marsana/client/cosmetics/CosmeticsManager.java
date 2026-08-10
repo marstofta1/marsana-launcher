@@ -62,13 +62,18 @@ public final class CosmeticsManager {
             for (int x = 0; x < 64; x++) {
                 boolean border = x == 0 || y == 0 || x == 63 || y == 31;
                 int shade = border ? darken(rgb, 0.75f) : rgb;
-                image.setPixelABGR(x, y, 0xFF000000 | shade);
+                // setPixel ARGB (0xAARRGGBB) alir ve iceride ARGB.toABGR uygular.
+                // Dogrudan setPixelABGR'a ARGB vermek R<->B kanallarini takas eder.
+                image.setPixel(x, y, 0xFF000000 | shade);
             }
         }
         Identifier texId = Identifier.fromNamespaceAndPath(MarsanaClientMod.MOD_ID, "cosmetic/" + option.id());
         DynamicTexture texture = new DynamicTexture(() -> "marsana-cosmetic-" + option.id(), image);
         Minecraft.getInstance().getTextureManager().register(texId, texture);
-        CAPE_TEXTURES.put(option.id(), new ClientAsset.ResourceTexture(texId));
+        // 2-argumanli yapici: texturePath() == texId olur. Tek-argumanli yapici
+        // yolu "textures/<path>.png"e cevirir; renderer texturePath() ile baglar,
+        // o yola kayit olmadigi icin PNG aranir -> mor-siyah missing-texture.
+        CAPE_TEXTURES.put(option.id(), new ClientAsset.ResourceTexture(texId, texId));
     }
 
     private static int darken(int rgb, float factor) {
