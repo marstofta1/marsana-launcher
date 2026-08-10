@@ -34,7 +34,11 @@ const {
 
 const BUNDLE_FILE = '.marsana-mod-bundle.json';
 const READY_FILE = '.marsana-shader-ready.json';
-const SHADER_BUNDLE_VERSION = 48;
+// 49: forge-config-api-port slug duzeltmesi. Onceki buggy reconcile, zaten
+// cokmus kullanicilarda forgeconfigapiport'suz "hazir" bir bundle birakiyordu;
+// bump olmadan cachedReady o onbellegi gecerli sayip reconcile'i atlar ve crash
+// surerdi. Bump, sonraki acilista yeniden cozumleme + reconcile'i zorlar.
+const SHADER_BUNDLE_VERSION = 49;
 
 // Anchor mod'ları önce yazıyoruz; dependency çözümlemesi onlardan başlar,
 // böylece Iris/Continuity istedikleri Sodium sürümünü kilitler.
