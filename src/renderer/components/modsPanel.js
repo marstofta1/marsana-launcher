@@ -20,7 +20,6 @@ import {
 const LOADER_OPTIONS = [
   { value: 'vanilla' },
   { value: 'bedrock' },
-  { value: 'roblox' },
   { value: 'fabric' },
   { value: 'fabric-beta' },
   { value: 'forge' },
@@ -604,12 +603,6 @@ export function createModsPanel({ root, store, i18n }) {
       shaderLabelKey: null,
       embossedLabelKey: null,
     },
-    roblox: {
-      rows: [],
-      titleKey: 'titles.roblox',
-      shaderLabelKey: null,
-      embossedLabelKey: null,
-    },
   };
 
   const LOADER_WARNING_KEYS = {
@@ -623,7 +616,6 @@ export function createModsPanel({ root, store, i18n }) {
     rift: 'loaderWarnings.rift',
     vanilla: 'loaderWarnings.vanilla',
     bedrock: 'loaderWarnings.bedrock',
-    roblox: 'loaderWarnings.roblox',
   };
 
   function applyLoaderState() {

@@ -256,15 +256,12 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
 
   function updateExternalLoaderUi(state) {
     const loader = state.selectedLoader || '';
-    const hideVersion = loader === 'bedrock' || loader === 'roblox';
+    const hideVersion = loader === 'bedrock';
     if (versionField) versionField.style.display = hideVersion ? 'none' : '';
     if (bedrockVersionHint) {
       if (loader === 'bedrock') {
         bedrockVersionHint.style.display = '';
         bedrockVersionHint.textContent = i18n.t('version.bedrockHint');
-      } else if (loader === 'roblox') {
-        bedrockVersionHint.style.display = '';
-        bedrockVersionHint.textContent = i18n.t('version.robloxHint');
       } else {
         bedrockVersionHint.style.display = 'none';
       }
@@ -285,7 +282,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     clearVersionLoadError();
     const state = store.getState();
     updateExternalLoaderUi(state);
-    if ((state.selectedLoader || '') === 'bedrock' || (state.selectedLoader || '') === 'roblox') {
+    if ((state.selectedLoader || '') === 'bedrock') {
       if (state.selectedVersion !== null) {
         store.setState({ selectedVersion: null, selectedVersionType: 'release' });
       }
@@ -388,8 +385,8 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     const unsubs = [
       store.subscribe((state) => {
         const loader = state.selectedLoader || '';
-        const extLoader = loader === 'bedrock' || loader === 'roblox';
-        const wasExtLoader = lastSelectedLoader === 'bedrock' || lastSelectedLoader === 'roblox';
+        const extLoader = loader === 'bedrock';
+        const wasExtLoader = lastSelectedLoader === 'bedrock';
 
         updateExternalLoaderUi(state);
         const nextKey = filterKey(state);

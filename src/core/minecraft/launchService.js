@@ -137,7 +137,6 @@ function createLaunchService({
   authService,
   shaderStackService,
   bedrockLaunchService,
-  robloxLaunchService,
   fabricInstaller,
   forgeInstaller,
   neoforgeInstaller,
@@ -1107,12 +1106,6 @@ function createLaunchService({
 
     if (loaderId === 'bedrock') {
       return bedrockLaunchService.launch(emit);
-    }
-
-    if (loaderId === 'roblox') {
-      return robloxLaunchService.launch(emit, {
-        username: opts && opts.robloxUsername,
-      });
     }
 
     if (!opts || !opts.version) {

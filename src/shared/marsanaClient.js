@@ -76,13 +76,13 @@ export function isClientMode(playMode) {
   return playMode === PLAY_MODES.CLIENT;
 }
 
-export const EXTERNAL_LOADERS = Object.freeze(['bedrock', 'roblox']);
+export const EXTERNAL_LOADERS = Object.freeze(['bedrock']);
 
 export function isExternalLoader(loader) {
   return EXTERNAL_LOADERS.includes(loader);
 }
 
-/** Client modunda Roblox/Bedrock gibi harici loader seçimleri geçersiz — preset zorunlu. */
+/** Client modunda Bedrock gibi harici loader seçimleri geçersiz — preset zorunlu. */
 export function sanitizeSelectionForPlayMode(snapshot) {
   if (!snapshot || typeof snapshot !== 'object') return snapshot;
   if (isClientMode(snapshot.playMode)) {
@@ -102,6 +102,11 @@ export function normalizePersistedSelection(snapshot) {
   // secili kalmis kullanicilar bos/kirik secim yerine sade forge'a dussun.
   if (migrated.selectedLoader === 'forge-optifine') {
     migrated = { ...migrated, selectedLoader: 'forge' };
+  }
+  // 'roblox' loader'i kaldirildi (bu bir Minecraft baslaticisidir). Eski kayitlarda
+  // secili kalmis kullanicilar oyun baslatamayan bos secim yerine vanilla'ya dussun.
+  if (migrated.selectedLoader === 'roblox') {
+    migrated = { ...migrated, selectedLoader: 'vanilla' };
   }
   const sanitized = sanitizeSelectionForPlayMode(migrated);
   if (!isClientMode(sanitized.playMode)) {

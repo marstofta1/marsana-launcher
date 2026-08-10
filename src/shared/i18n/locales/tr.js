@@ -80,10 +80,6 @@ export default {
     rememberSelectionHint: 'Mod yükleyici, shader paketi ve mod seçenekleri bir sonraki açılışta aynı kalır. Kapalıyken her açılışta Fabric + Shader + FPS seçili gelir.',
     language: 'Dil',
     languageHint: 'Launcher arayüz dili. Değişiklik hemen uygulanır.',
-    robloxUsername: 'Roblox kullanıcı adı',
-    robloxUsernamePlaceholder: 'OrnekKullanici',
-    robloxUsernameHint: 'Hesap yoksa kayıt ol butonuna bas; oluşturduktan sonra kullanıcı adını buraya yaz ve kaydet. Bölge: Amerika (en-US).',
-    robloxSignup: 'Roblox hesabı oluştur',
   },
   auth: {
     loginIntro: 'Java Edition için hesabınla giriş yap:',
@@ -114,8 +110,6 @@ export default {
     selectVersion: 'Lütfen bir Minecraft sürümü seçin.',
     bedrockOnlyBlocked: 'Bu hesapta Java Edition yok. Mod yükleyici olarak Bedrock seçin.',
     bedrockOnlyTitle: 'Yalnızca Bedrock — Java lisansı yok.',
-    robloxTitle: 'Roblox Player başlatılır. Hesap yoksa Ayarlar → Roblox bölümünden kayıt ol.',
-    robloxButton: 'ROBLOX AÇ',
   },
   version: {
     label: 'Sürüm',
@@ -126,7 +120,6 @@ export default {
     loadFailedShort: 'Sürüm listesi yüklenemedi',
     retry: 'Yeniden dene',
     bedrockHint: 'Bedrock sürümü Microsoft Store / Xbox uygulaması üzerinden otomatik güncellenir; sürüm seçimi gerekmez.',
-    robloxHint: 'Roblox için sürüm seçimi gerekmez. Ayarlardan Roblox kullanıcı adını kaydedin.',
   },
   versionFilters: {
     legacyFabric: 'Legacy Fabric destekli sürümler',
@@ -207,7 +200,6 @@ export default {
       rift: "Rift",
       vanilla: "Vanilla Modları",
       bedrock: "Minecraft Bedrock",
-      roblox: "Roblox",
     },
     shaderLabels: {
       fabric: "Shader + FPS (Iris + seçilen shader paketi)",
@@ -246,7 +238,6 @@ export default {
       rift: "Rift otomatik kurulacak. Kayıtlar ve ayarlar profiles/rift-<sürüm>/ altında tutulur. Yalnızca 1.13 ve 1.13.2 desteklenir.",
       vanilla: "Vanilla seçili — Minecraft resmi profille başlar. Kaynak paketi modları (Fullbright, Better Leaves, Glowing Ores, Round Trees, 3D crops) seçiliyse otomatik indirilir; parıltı için Fabric+Continuity veya OptiFine gerekir.",
       bedrock: "Bedrock (Minecraft for Windows) Microsoft Store uygulaması olarak başlatılır. Sürüm seçimi gerekmez; güncellemeler Store/Xbox üzerinden gelir. Yalnızca Windows desteklenir.",
-      roblox: "Roblox Player başlatılır (Windows). Hesap yoksa kayıt sayfası açılır; kullanıcı adını Ayarlar → Roblox bölümüne kaydedin. Varsayılan bölge: Amerika (en-US).",
       forgeOptifineOk: "Forge + klasik OptiFine.jar otomatik indirilecek. OptiFine kendi shader ve CTM sistemini içerir; Shader + FPS ile aynı anda kullanılamaz.",
       forgeOptifineUnsupported: "⚠ OptiFine \"{version}\" sürümünü desteklemiyor. OptiFine en son 1.21.9'a kadar yayınlandı — daha eski bir sürüm seçin veya \"Forge\" (OptiFine'sız) profilini kullanın.",
     },
@@ -274,10 +265,6 @@ export default {
     bedrock: {
       label: 'Bedrock (Windows)',
       hint: 'Minecraft for Windows (Microsoft Store). Marsana hesabı gerekmez; oyun açıldıktan sonra Microsoft/Xbox ile giriş yaparsınız. Java modları uygulanmaz.',
-    },
-    roblox: {
-      label: 'Roblox (Windows)',
-      hint: 'Roblox Player başlatılır. İlk kullanımda hesap oluşturma sayfası açılır; kullanıcı adını Ayarlardan kaydedin.',
     },
     fabric: {
       label: 'Fabric',

@@ -6,7 +6,6 @@ const { registerLaunchHandlers } = require('./launchHandlers');
 const { registerServerHandlers } = require('./serverHandlers');
 const { registerSystemHandlers } = require('./systemHandlers');
 const { registerUpdateHandlers } = require('./updateHandlers');
-const { registerRobloxHandlers } = require('./robloxHandlers');
 
 function registerAllHandlers({ ipcMain, shell, container, getWindow }) {
   registerAuthHandlers({
@@ -31,11 +30,6 @@ function registerAllHandlers({ ipcMain, shell, container, getWindow }) {
   });
   registerSystemHandlers({ ipcMain, shell, paths: container.paths });
   registerUpdateHandlers({ ipcMain, getWindow, logger: container.logger.child('update') });
-  registerRobloxHandlers({
-    ipcMain,
-    robloxAccountStore: container.robloxAccountStore,
-    robloxLaunchService: container.robloxLaunchService,
-  });
 }
 
 module.exports = { registerAllHandlers };

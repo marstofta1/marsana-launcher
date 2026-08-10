@@ -170,7 +170,7 @@ async function bootstrap() {
     { name: 'account', mount: createAccountCard({ root: $('account-slot'), store, auth: api.auth, openExternal: api.openExternal, i18n }).mount },
     { name: 'version', mount: createVersionSelector({ root: $('version-slot'), store, versionsApi: api.versions, i18n }).mount },
     { name: 'memory', mount: createMemorySlider({ root: $('memory-slot'), store, i18n }).mount },
-    { name: 'play', mount: createPlayButton({ root: $('play-slot'), store, launchApi: api.launch, i18n, robloxApi: api.roblox }).mount },
+    { name: 'play', mount: createPlayButton({ root: $('play-slot'), store, launchApi: api.launch, i18n }).mount },
     { name: 'mods', mount: createModsPanel({ root: $('mods-slot'), store, i18n }).mount },
     { name: 'launchOptions', mount: createLaunchOptions({ root: $('launch-options-slot'), store, i18n }).mount },
     { name: 'status', mount: createStatusPanel({ root: $('status-slot'), store, events: api.events }).mount },
@@ -224,8 +224,6 @@ async function bootstrap() {
       modalRoot: $('settings-modal-slot'),
       store,
       i18n,
-      robloxApi: api.roblox,
-      openExternal: api.openExternal,
     });
     startAutoThemeWatcher(store);
   } catch (err) {

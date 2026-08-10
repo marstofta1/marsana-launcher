@@ -16,7 +16,7 @@ function launchErrorMessage(err) {
   return err.message || err.error || String(err);
 }
 
-export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
+export function createPlayButton({ root, store, launchApi, i18n }) {
   root.innerHTML = `<button class="btn play" disabled data-role="play"></button>`;
   const btn = root.querySelector('[data-role="play"]');
 
@@ -31,8 +31,6 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
     const loader = resolveLoader(state);
     if (loader === 'bedrock') {
       btn.textContent = i18n.t('play.bedrockButton');
-    } else if (loader === 'roblox') {
-      btn.textContent = i18n.t('play.robloxButton');
     } else {
       btn.textContent = i18n.t('play.button');
     }
@@ -85,8 +83,7 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
     });
     try {
       const s = state.settings || {};
-      const version =
-        loader === 'bedrock' ? 'bedrock' : loader === 'roblox' ? 'roblox' : state.selectedVersion;
+      const version = loader === 'bedrock' ? 'bedrock' : state.selectedVersion;
       const clientMenuOk = marsanaBundledClientModsAvailable(version);
       const schematicOk = schematicFarmBundledAvailable(version);
       const schematicFarmEnabled =
@@ -111,16 +108,6 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
         state.playMode
       );
 
-      let robloxUsername = s.robloxUsername || '';
-      if (loader === 'roblox' && robloxApi && typeof robloxApi.getAccount === 'function') {
-        try {
-          const saved = await robloxApi.getAccount();
-          if (saved?.username) robloxUsername = saved.username;
-        } catch {
-          /* ignore */
-        }
-      }
-
       await launchApi({
         version,
         memoryMb: state.memoryMb,
@@ -129,7 +116,6 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
         selectedLoader: loader,
         shaderSlug: state.selectedShader,
         modPresets,
-        robloxUsername,
         audioSettings:
           typeof s.masterVolume === 'number' || typeof s.musicVolume === 'number'
             ? {
@@ -141,7 +127,7 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
           state.playMode === PLAY_MODES.LAUNCHER ? PLAY_MODES.LAUNCHER : PLAY_MODES.CLIENT,
         selectedCosmetic: state.selectedCosmetic || 'none',
       });
-      if (loader !== 'bedrock' && loader !== 'roblox') {
+      if (loader !== 'bedrock') {
         store.setState({ statusText: i18n.t('launch.started', { version }) });
       }
     } catch (err) {
@@ -162,11 +148,6 @@ export function createPlayButton({ root, store, launchApi, i18n, robloxApi }) {
     if (loader === 'bedrock') {
       btn.disabled = false;
       btn.title = i18n.t('play.bedrockTitle');
-      return;
-    }
-    if (loader === 'roblox') {
-      btn.disabled = false;
-      btn.title = i18n.t('play.robloxTitle');
       return;
     }
     if (state.user?.bedrockOnly) {

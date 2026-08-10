@@ -33,8 +33,7 @@ export function createLaunchOptions({ root, store, i18n }) {
     });
     offlineNameInput.addEventListener('input', publish);
 
-    wrap.style.display =
-      (state.selectedLoader || '') === 'bedrock' || (state.selectedLoader || '') === 'roblox' ? 'none' : '';
+    wrap.style.display = (state.selectedLoader || '') === 'bedrock' ? 'none' : '';
   }
 
   function mount() {
@@ -43,8 +42,7 @@ export function createLaunchOptions({ root, store, i18n }) {
       store.subscribe((state) => {
         const wrap = root.querySelector('[data-role="launch-options-wrap"]');
         if (wrap) {
-          const hide =
-            (state.selectedLoader || '') === 'bedrock' || (state.selectedLoader || '') === 'roblox';
+          const hide = (state.selectedLoader || '') === 'bedrock';
           wrap.style.display = hide ? 'none' : '';
         }
       }),

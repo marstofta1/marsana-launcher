@@ -49,13 +49,6 @@ const RENDERER_EVENT_CHANNELS = Object.freeze([
   UPDATE.PHASE,
 ]);
 
-const ROBLOX = Object.freeze({
-  GET_ACCOUNT: 'roblox:getAccount',
-  SAVE_ACCOUNT: 'roblox:saveAccount',
-  CLEAR_ACCOUNT: 'roblox:clearAccount',
-  SIGNUP_URL: 'roblox:signupUrl',
-});
-
 module.exports = Object.freeze({
   AUTH,
   VERSIONS,
@@ -64,6 +57,5 @@ module.exports = Object.freeze({
   EVENTS,
   SYSTEM,
   UPDATE,
-  ROBLOX,
   RENDERER_EVENT_CHANNELS,
 });

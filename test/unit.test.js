@@ -337,3 +337,37 @@ test('versionListsGame + expandResourcePackGameVersions: 26.1.x klasik fallback'
   assert.strictEqual(vsel.versionListsGame(['1.20'], '26.1.2'), false);
   assert.ok(vsel.expandResourcePackGameVersions('26.1.2').includes('1.21.11'));
 });
+
+// ---------------------------------------------------- marsanaClient (ESM shared)
+// Kaldırılan loader'lar (roblox / forge-optifine) eski kalıcı seçimlerde kırık/boş
+// seçim bırakmamalı — migration onları geçerli bir loader'a düşürmeli. marsanaClient
+// bir ESM modülü olduğundan dinamik import ile yüklenir.
+test('marsanaClient: roblox kaldırıldı — external değil, eski seçim vanilla’ya düşer', async () => {
+  const mc = await import('../src/shared/marsanaClient.js');
+  assert.strictEqual(mc.EXTERNAL_LOADERS.includes('roblox'), false);
+  assert.strictEqual(mc.EXTERNAL_LOADERS.includes('bedrock'), true); // bedrock korunur
+  assert.strictEqual(mc.isExternalLoader('roblox'), false);
+  const migrated = mc.normalizePersistedSelection({ playMode: 'launcher', selectedLoader: 'roblox' });
+  assert.strictEqual(migrated.selectedLoader, 'vanilla');
+});
+
+test('marsanaClient: bedrock/fabric seçimleri migration’dan etkilenmez', async () => {
+  const mc = await import('../src/shared/marsanaClient.js');
+  assert.strictEqual(
+    mc.normalizePersistedSelection({ playMode: 'launcher', selectedLoader: 'bedrock' }).selectedLoader,
+    'bedrock'
+  );
+  assert.strictEqual(
+    mc.normalizePersistedSelection({ playMode: 'launcher', selectedLoader: 'fabric' }).selectedLoader,
+    'fabric'
+  );
+});
+
+test('marsanaClient: eski forge-optifine seçimi sade forge’a düşer', async () => {
+  const mc = await import('../src/shared/marsanaClient.js');
+  assert.strictEqual(
+    mc.normalizePersistedSelection({ playMode: 'launcher', selectedLoader: 'forge-optifine' })
+      .selectedLoader,
+    'forge'
+  );
+});

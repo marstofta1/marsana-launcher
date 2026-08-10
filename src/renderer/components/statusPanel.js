@@ -111,9 +111,7 @@ export function createStatusPanel({ root, store, events }) {
         code === 4294967295 || code === -1 || (typeof code === 'number' && code >= 0xc0000000);
       let statusText = loader === 'bedrock'
         ? 'Minecraft Bedrock başlatıldı.'
-        : loader === 'roblox'
-          ? 'Roblox Player başlatıldı.'
-          : `Oyun kapandı (kod: ${code}).`;
+        : `Oyun kapandı (kod: ${code}).`;
       const hint = code === 1 || crashed ? launchFailureHint(logLines) : '';
       if (hint) statusText = `${statusText} ${hint}`;
       if (crashed && loader === 'ornithe') {
