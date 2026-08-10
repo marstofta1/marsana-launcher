@@ -98,6 +98,11 @@ export function normalizePersistedSelection(snapshot) {
   if (typeof migrated.modSodium !== 'boolean' && migrated.modShaderFps) {
     migrated = { ...migrated, modSodium: true };
   }
+  // 'forge-optifine' loader'i kaldirildi (sade 'forge' zaten var). Eski kayitlarda
+  // secili kalmis kullanicilar bos/kirik secim yerine sade forge'a dussun.
+  if (migrated.selectedLoader === 'forge-optifine') {
+    migrated = { ...migrated, selectedLoader: 'forge' };
+  }
   const sanitized = sanitizeSelectionForPlayMode(migrated);
   if (!isClientMode(sanitized.playMode)) {
     return {

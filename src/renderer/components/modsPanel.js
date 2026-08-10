@@ -24,7 +24,6 @@ const LOADER_OPTIONS = [
   { value: 'fabric' },
   { value: 'fabric-beta' },
   { value: 'forge' },
-  { value: 'forge-optifine' },
   { value: 'neoforge' },
   { value: 'quilt' },
   { value: 'legacy-fabric' },
