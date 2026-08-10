@@ -276,8 +276,19 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v1.0.37 — Sematik havaya blok yerleştirme + güvenlik sertleştirmesi</span>
+            <span class="release-version">v1.0.38 — Electron 43 yükseltmesi + güvenlik sertleştirmesi (yayınlanan sürümde)</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li>Uygulama motoru <strong>Electron 33'ten (destek dışı) Electron 43'e</strong> yükseltildi — güncel Chromium güvenlik yamaları ve daha iyi kararlılık.</li>
+            <li>v1.0.37'de duyurulan güvenlik sertleştirmeleri artık <strong>indirilen kurulumda fiilen etkin</strong>: tüm indirmelerde (mod, shader, kaynak paketi, Java, Forge/NeoForge) <strong>sha512/sha1 parmak izi + boyut doğrulaması</strong>, arşiv açmada <strong>klasör dışına yazma (path traversal) koruması</strong>, güncelleme adresinin <strong>resmi kaynağa sabitlenmesi</strong> ve indirmelerde <strong>atomik yazma</strong>.</li>
+            <li>Analiz verisi kalıcılığı çökme-güvenli hâle getirildi (atomik yazma; yarım kalan yazımdan dosya bozulması olmaz).</li>
+            <li>Arka planda kapsamlı otomatik test paketi ve günlük sağlık denetimi eklendi; iç modüller davranış değişmeden sadeleştirildi — daha düşük regresyon riski.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v1.0.37 — Sematik havaya blok yerleştirme + güvenlik sertleştirmesi</span>
           </div>
           <ul class="release-changes">
             <li><strong>Yaratıcı modda</strong> holograma bakıp sağ tıklayınca eksik blok havaya yerleştirilir (spawner, duvar vb.).</li>

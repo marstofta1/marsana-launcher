@@ -1,6 +1,6 @@
 {
   "name": "marsana-launcher",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "description": "Marsana Minecraft Launcher",
   "private": true,
   "main": "src/main/index.js",
@@ -37,6 +37,11 @@
   "build": {
     "appId": "com.marsana.launcher",
     "productName": "Marsana Launcher",
+    "compression": "maximum",
+    "electronLanguages": [
+      "en-US",
+      "tr"
+    ],
     "files": [
       "src/**/*",
       "package.json",
