@@ -13,6 +13,7 @@ const safeZip = require('../src/core/infra/safeZip');
 const { createModrinthClient } = require('../src/core/mods/modrinthClient');
 const shader = require('../src/core/mods/shaderStackService');
 const vsel = require('../src/core/mods/modrinthVersionSelect');
+const { computeAudioOptionUpdates } = require('../src/core/minecraft/audioOptions');
 
 // ---------------------------------------------------------------- updateFeedUrl
 test('updateFeedUrl: izinli host + https kabul edilir', () => {
@@ -152,6 +153,58 @@ test('shader OptiFine reconcile: jar-test\'ler gercek dosya adlarini yakalar', (
   assert.ok(!fcap.test('rrls-5.1.11+mc1.21.9-fabric.jar'), 'fcap testi rrls\'i yakalamamali');
   const ferrite = shader.OPTIFINE_RECONCILE_JAR_TESTS['ferrite-core'];
   assert.ok(ferrite.test('ferritecore-8.1.0-fabric.jar'), 'ferrite dosya adini yakalamali');
+});
+
+// ------------------------------------------------- audioOptions (ses kaliciligi)
+// Launcher, oyun-ici ses degisikliklerini EZMEMELI. Muzigi oyun icinde kapatinca
+// bir sonraki acilista geri acilma hatasinin cozumu bu saf karar fonksiyonunda.
+test('audio: yeni kurulum — anahtar yoksa launcher degeri tohumlanir', () => {
+  const { updates, nextLastApplied } = computeAudioOptionUpdates({
+    audio: { masterVolume: 1.0, musicVolume: 0.5 },
+    currentOptionsText: '',
+    lastApplied: {},
+  });
+  assert.strictEqual(updates.soundCategory_master, '1.000');
+  assert.strictEqual(updates.soundCategory_music, '0.500');
+  assert.strictEqual(nextLastApplied.soundCategory_music, '0.500');
+});
+
+test('audio: oyun-ici kapatma korunur — slider oynatilmadiysa yazilmaz (lastApplied var)', () => {
+  const { updates, nextLastApplied } = computeAudioOptionUpdates({
+    audio: { musicVolume: 0.5 },                       // launcher hala %50
+    currentOptionsText: 'soundCategory_music:0.0\n',   // kullanici oyun icinde kapatti
+    lastApplied: { soundCategory_music: '0.500' },     // launcher son kez %50 uygulamis
+  });
+  assert.strictEqual(updates.soundCategory_music, undefined, 'muzik yazilmamali (0 kalmali)');
+  assert.deepStrictEqual(Object.keys(updates), []);
+  assert.strictEqual(nextLastApplied.soundCategory_music, '0.500');
+});
+
+test('audio: ilk duzeltilmis acilis — anahtar var ama lastApplied yok -> yazilmaz', () => {
+  const { updates } = computeAudioOptionUpdates({
+    audio: { musicVolume: 0.5 },
+    currentOptionsText: 'soundCategory_music:0.0\n',
+    lastApplied: {},
+  });
+  assert.strictEqual(updates.soundCategory_music, undefined, 'mevcut oyun-ici deger korunmali');
+});
+
+test('audio: launcher override — slider oynatildi (desired != lastApplied) -> yazilir', () => {
+  const { updates, nextLastApplied } = computeAudioOptionUpdates({
+    audio: { musicVolume: 0.2 },                       // kullanici launcher slider'ini %20 yapti
+    currentOptionsText: 'soundCategory_music:0.8\n',
+    lastApplied: { soundCategory_music: '0.500' },
+  });
+  assert.strictEqual(updates.soundCategory_music, '0.200', 'launcher override yazilmali');
+  assert.strictEqual(nextLastApplied.soundCategory_music, '0.200');
+});
+
+test('audio: null/gecersiz audio -> guncelleme yok', () => {
+  assert.deepStrictEqual(computeAudioOptionUpdates({ audio: null }).updates, {});
+  assert.deepStrictEqual(
+    computeAudioOptionUpdates({ audio: { musicVolume: 'x' }, currentOptionsText: '', lastApplied: {} }).updates,
+    {}
+  );
 });
 
 // ----------------------------------------------- modrinthVersionSelect (O4)

@@ -16,6 +16,7 @@ const schematicFarmModService = require('../mods/schematicFarmModService');
 const hudDepsService = require('../mods/hudDepsService');
 const modCompatibilityService = require('../mods/modCompatibilityService');
 const modIsolationService = require('../mods/modIsolationService');
+const { computeAudioOptionUpdates } = require('./audioOptions');
 
 const MIN_MEM_MB = 1024;
 const DEFAULT_MEM_MB = 2048;
@@ -413,40 +414,70 @@ function createLaunchService({
     );
   }
 
-  // Launcher ayarlarında verilen ses seviyelerini Minecraft `options.txt`'e
-  // yansıt. Minecraft format: `soundCategory_master:0.75` (0.0-1.0).
-  // Dosya yoksa oluşturulur; var olan diğer satırlar korunur.
+  const AUDIO_STATE_FILE = '.marsana-audio-applied.json';
+
+  function readAudioState(gameDir) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(path.join(gameDir, AUDIO_STATE_FILE), 'utf8'));
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function writeAudioState(gameDir, state) {
+    try {
+      fs.writeFileSync(
+        path.join(gameDir, AUDIO_STATE_FILE),
+        JSON.stringify(state, null, 2),
+        'utf8'
+      );
+    } catch {
+      /* best effort — durum dosyasi yazilamazsa yalnizca override algilama gecikir */
+    }
+  }
+
+  // Launcher ses slider'larini Minecraft `options.txt`'e yansit — ama oyun-ici
+  // degisiklikleri EZMEDEN. Yalnizca anahtar options.txt'te yoksa (yeni kurulum)
+  // veya kullanici launcher slider'ini oynattiysa (son uygulanandan farkli) yazilir;
+  // aksi halde oyun-ici deger (or. muzik = 0) korunur. Karar mantigi saf
+  // audioOptions.computeAudioOptionUpdates icinde ve birim testli.
   function applyAudioSettingsToOptionsTxt(audio, gameDir = paths.gameRoot) {
     if (!audio) return;
     const optionsPath = path.join(gameDir, 'options.txt');
-    const updates = new Map();
-    if (typeof audio.masterVolume === 'number') {
-      updates.set('soundCategory_master', audio.masterVolume.toFixed(3));
-    }
-    if (typeof audio.musicVolume === 'number') {
-      updates.set('soundCategory_music', audio.musicVolume.toFixed(3));
-    }
-    if (updates.size === 0) return;
+    const currentOptionsText = fs.existsSync(optionsPath)
+      ? fs.readFileSync(optionsPath, 'utf8')
+      : '';
+    const lastApplied = readAudioState(gameDir);
+    const { updates, nextLastApplied } = computeAudioOptionUpdates({
+      audio,
+      currentOptionsText,
+      lastApplied,
+    });
 
-    let body = '';
-    if (fs.existsSync(optionsPath)) {
-      body = fs.readFileSync(optionsPath, 'utf8');
-    }
-    const lines = body ? body.split(/\r?\n/) : [];
-    const seen = new Set();
-    for (let i = 0; i < lines.length; i++) {
-      const m = lines[i].match(/^([^:]+):/);
-      if (!m) continue;
-      const key = m[1];
-      if (updates.has(key)) {
-        lines[i] = `${key}:${updates.get(key)}`;
-        seen.add(key);
+    const updateEntries = Object.entries(updates);
+    if (updateEntries.length > 0) {
+      const lines = currentOptionsText ? currentOptionsText.split(/\r?\n/) : [];
+      const seen = new Set();
+      for (let i = 0; i < lines.length; i++) {
+        const m = lines[i].match(/^([^:]+):/);
+        if (!m) continue;
+        const key = m[1];
+        if (Object.prototype.hasOwnProperty.call(updates, key)) {
+          lines[i] = `${key}:${updates[key]}`;
+          seen.add(key);
+        }
       }
+      for (const [key, value] of updateEntries) {
+        if (!seen.has(key)) lines.push(`${key}:${value}`);
+      }
+      fs.writeFileSync(optionsPath, lines.join('\n'), 'utf8');
     }
-    for (const [key, value] of updates) {
-      if (!seen.has(key)) lines.push(`${key}:${value}`);
+
+    // Slider konumunu kaydet (yazim olmasa bile) — gelecekteki launcher degisikligi algilansin.
+    if (JSON.stringify(nextLastApplied) !== JSON.stringify(lastApplied)) {
+      writeAudioState(gameDir, nextLastApplied);
     }
-    fs.writeFileSync(optionsPath, lines.join('\n'), 'utf8');
   }
 
   function purgeManagedOptifineJars(dir) {
