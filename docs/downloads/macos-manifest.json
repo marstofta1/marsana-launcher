@@ -1,59 +1,59 @@
 {
-  "version": "1.0.38",
-  "releaseVersion": "1.0.38",
+  "version": "1.0.39",
+  "releaseVersion": "1.0.39",
   "note": "Intel ve Apple Silicon (M1/M2/M3) için universal .dmg paketi. Gatekeeper uyarısı ilk açılışta normaldir.",
-  "source": "Marsana.Launcher-1.0.38-mac.dmg",
-  "sourceUrl": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.38/Marsana.Launcher-1.0.38-mac.dmg",
+  "source": "Marsana.Launcher-1.0.39-mac.dmg",
+  "sourceUrl": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.39/Marsana.Launcher-1.0.39-mac.dmg",
   "sourceType": "remote",
   "platforms": [
     {
       "id": "mac15",
       "title": "macOS 15 Sequoia",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.38/Marsana.Launcher-1.0.38-mac.dmg",
-      "downloadName": "Marsana-Launcher-1.0.38-mac15.dmg",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.39/Marsana.Launcher-1.0.39-mac.dmg",
+      "downloadName": "Marsana-Launcher-1.0.39-mac15.dmg",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": ".dmg · Universal · v1.0.38",
+      "note": ".dmg · Universal · v1.0.39",
       "minOs": "macOS 15"
     },
     {
       "id": "mac14",
       "title": "macOS 14 Sonoma",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.38/Marsana.Launcher-1.0.38-mac.dmg",
-      "downloadName": "Marsana-Launcher-1.0.38-mac14.dmg",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.39/Marsana.Launcher-1.0.39-mac.dmg",
+      "downloadName": "Marsana-Launcher-1.0.39-mac14.dmg",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": ".dmg · Universal · v1.0.38",
+      "note": ".dmg · Universal · v1.0.39",
       "minOs": "macOS 14"
     },
     {
       "id": "mac13",
       "title": "macOS 13 Ventura",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.38/Marsana.Launcher-1.0.38-mac.dmg",
-      "downloadName": "Marsana-Launcher-1.0.38-mac13.dmg",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.39/Marsana.Launcher-1.0.39-mac.dmg",
+      "downloadName": "Marsana-Launcher-1.0.39-mac13.dmg",
       "badge": "Desteklenir",
       "badgeClass": "ready",
-      "note": ".dmg · Universal · v1.0.38",
+      "note": ".dmg · Universal · v1.0.39",
       "minOs": "macOS 13"
     },
     {
       "id": "mac12",
       "title": "macOS 12 Monterey",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.38/Marsana.Launcher-1.0.38-mac.dmg",
-      "downloadName": "Marsana-Launcher-1.0.38-mac12.dmg",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.39/Marsana.Launcher-1.0.39-mac.dmg",
+      "downloadName": "Marsana-Launcher-1.0.39-mac12.dmg",
       "badge": "Desteklenir",
       "badgeClass": "legacy",
-      "note": ".dmg · Universal · v1.0.38",
+      "note": ".dmg · Universal · v1.0.39",
       "minOs": "macOS 12"
     },
     {
       "id": "mac11",
       "title": "macOS 11 Big Sur",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.38/Marsana.Launcher-1.0.38-mac.dmg",
-      "downloadName": "Marsana-Launcher-1.0.38-mac11.dmg",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.39/Marsana.Launcher-1.0.39-mac.dmg",
+      "downloadName": "Marsana-Launcher-1.0.39-mac11.dmg",
       "badge": "Desteklenir",
       "badgeClass": "legacy",
-      "note": ".dmg · Universal · v1.0.38",
+      "note": ".dmg · Universal · v1.0.39",
       "minOs": "macOS 11"
     }
   ]

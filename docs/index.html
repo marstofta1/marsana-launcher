@@ -257,8 +257,19 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v1.0.38 — Electron 43 yükseltmesi + güvenlik sertleştirmesi (yayınlanan sürümde)</span>
+            <span class="release-version">v1.0.39 — OptiFine, eski sürümler ve ses düzeltmeleri</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li><strong>OptiFine (Fabric) çökmesi giderildi.</strong> Eksik bir bağımlılık (Forge Config API Port) yüzünden oyun <em>"Incompatible mods found"</em> hatasıyla açılmıyordu; launcher artık doğru sürümü kuruyor. Zaten etkilenmiş kurulumlar bir sonraki açılışta kendiliğinden onarılır.</li>
+            <li><strong>Eski sürümler (ör. 1.8.3) artık düzgün çalışıyor.</strong> Bu sürümler gerekli <strong>Java 8</strong> ile başlatılıyor; chunk oluşmaması, donma, çok geç yükleme ve beklenmedik çökme sorunları giderildi.</li>
+            <li><strong>Müzik/ses ayarı artık kalıcı.</strong> Oyun içinde müziği kapatınca launcher bir sonraki açılışta üzerine yazıp geri açmıyor; launcher ses kaydırıcıları yalnızca siz değiştirdiğinizde uygulanıyor.</li>
+            <li><strong>"Forge OptiFine" profili kaldırıldı</strong> — sade <strong>Forge</strong> zaten mevcut. Bu profili seçmiş kullanıcılar otomatik olarak Forge'a geçirilir.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v1.0.38 — Electron 43 yükseltmesi + güvenlik sertleştirmesi (yayınlanan sürümde)</span>
           </div>
           <ul class="release-changes">
             <li>Uygulama motoru <strong>Electron 33'ten (destek dışı) Electron 43'e</strong> yükseltildi — güncel Chromium güvenlik yamaları ve daha iyi kararlılık.</li>
