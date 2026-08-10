@@ -12,6 +12,7 @@ const feed = require('../src/shared/updateFeedUrl');
 const safeZip = require('../src/core/infra/safeZip');
 const { createModrinthClient } = require('../src/core/mods/modrinthClient');
 const shader = require('../src/core/mods/shaderStackService');
+const vsel = require('../src/core/mods/modrinthVersionSelect');
 
 // ---------------------------------------------------------------- updateFeedUrl
 test('updateFeedUrl: izinli host + https kabul edilir', () => {
@@ -114,4 +115,95 @@ test('shader.glowingOresVariantLabel', () => {
   assert.strictEqual(shader.glowingOresVariantLabel({ name: 'Glowing Ores Border' }), 'border');
   assert.strictEqual(shader.glowingOresVariantLabel({ name: 'Default Pack' }), 'default');
   assert.strictEqual(shader.glowingOresVariantLabel({ name: 'plain' }), 'unknown');
+});
+
+// ----------------------------------------------- modrinthVersionSelect (O4)
+// Sürüm-seçim mantığı shaderStackService'ten ayrı modüle çıkarıldı. Bu bloğun iki
+// işi var: (1) modülü doğrudan test etmek, (2) shaderStackService'in AYNI fonksiyonu
+// yeniden dışa aktardığını (re-export bağlantısının doğru olduğunu) kanıtlamak.
+test('modrinthVersionSelect: shaderStackService ile aynı fonksiyon kimliği (re-export kanıtı)', () => {
+  for (const name of [
+    'extractMcVersionFromModMeta',
+    'modrinthLoaderModGameVersionCandidates',
+    'modrinthClassicFallbacksForGameVersion',
+    'modrinthGameVersionCandidates',
+    'versionListsAnyGame',
+    'modrinthCandidateRank',
+    'pickNewestModrinthVersion',
+    'glowingOresVariantLabel',
+  ]) {
+    assert.strictEqual(shader[name], vsel[name], `${name} aynı referans olmalı`);
+  }
+});
+
+// Kurulum-akışı çekirdeği: 26.1.2 için yanlış patch'i (26.1.1 jar) SERT reddet.
+// Bu tam olarak dünya yüklenirken NoSuchMethodError crash'ini önleyen kural.
+test('versionMatchesGamePatch: 26.1.2 için 26.1.1-only sürüm reddedilir', () => {
+  assert.strictEqual(
+    vsel.versionMatchesGamePatch({ game_versions: ['26.1.1'] }, '26.1.2'),
+    false
+  );
+  // 26.1.2 listeleyen, MC etiketi olmayan sürüm kabul edilir.
+  assert.strictEqual(
+    vsel.versionMatchesGamePatch({ game_versions: ['26.1.2', '26.1'] }, '26.1.2'),
+    true
+  );
+  // 26.1.2 listeleyip mc26.1.1 etiketli sürüm uyumlu (geriye dönük) -> kabul.
+  assert.strictEqual(
+    vsel.versionMatchesGamePatch(
+      { game_versions: ['26.1.2', '26.1'], files: [{ filename: 'sodium-mc26.1.1.jar' }] },
+      '26.1.2'
+    ),
+    true
+  );
+  // Klasik 3-parçalı sürümde yanlış MC etiketi reddedilir.
+  assert.strictEqual(
+    vsel.versionMatchesGamePatch({ game_versions: ['1.21.1'], name: 'x mc1.21.2' }, '1.21.1'),
+    false
+  );
+});
+
+test('versionMatchesGameForFetch: strict patch vs gevşek eşleşme', () => {
+  const v = { game_versions: ['26.1.1'] };
+  assert.strictEqual(vsel.versionMatchesGameForFetch(v, '26.1.2', { strictPatch: true }), false);
+  // gevşek modda 26.1 adayı üzerinden eşleşir (kaynak paketleri için).
+  assert.strictEqual(vsel.versionMatchesGameForFetch({ game_versions: ['26.1'] }, '26.1.2'), true);
+});
+
+test('pickNewestModrinthVersion: strictPatch yanlış patch\'i eler', () => {
+  const versions = [
+    { id: 'wrong', game_versions: ['26.1.1'], version_type: 'release', date_published: '2026-02-01' },
+    { id: 'right', game_versions: ['26.1.2'], version_type: 'release', date_published: '2026-01-01' },
+  ];
+  const picked = vsel.pickNewestModrinthVersion(versions, {
+    gameVersion: '26.1.2', strictPatch: true, anchorTs: Date.parse('2026-03-01'),
+  });
+  assert.strictEqual(picked && picked.id, 'right');
+});
+
+test('pickNewestModrinthVersion: anchorTs sonrası yayınları eler', () => {
+  const versions = [
+    { id: 'future', game_versions: ['26.1.2'], version_type: 'release', date_published: '2026-06-01' },
+    { id: 'past', game_versions: ['26.1.2'], version_type: 'release', date_published: '2026-01-01' },
+  ];
+  const picked = vsel.pickNewestModrinthVersion(versions, {
+    gameVersion: '26.1.2', anchorTs: Date.parse('2026-03-01'),
+  });
+  assert.strictEqual(picked && picked.id, 'past'); // future, çapadan sonra -> elenir
+});
+
+test('pickGlowingOresVersion: border/default varyant seçimi', () => {
+  const versions = [
+    { id: 'b', game_versions: ['26.1.2'], name: 'Glowing Ores Border', date_published: '2026-02-01' },
+    { id: 'd', game_versions: ['26.1.2'], name: 'Glowing Ores Default', date_published: '2026-01-01' },
+  ];
+  assert.strictEqual(vsel.pickGlowingOresVersion(versions, { gameVersion: '26.1.2', wantBorder: true }).id, 'b');
+  assert.strictEqual(vsel.pickGlowingOresVersion(versions, { gameVersion: '26.1.2', wantBorder: false }).id, 'd');
+  assert.strictEqual(vsel.pickGlowingOresVersion([], { gameVersion: '26.1.2', wantBorder: true }), null);
+});
+
+test('versionListsGame + expandResourcePackGameVersions: 26.1.x klasik fallback', () => {
+  assert.strictEqual(vsel.versionListsGame(['1.21.11'], '26.1.2'), true); // classic fallback eşleşir
+  assert.strictEqual(vsel.versionListsGame(['1.20'], '26.1.2'), false);
+  assert.ok(vsel.expandResourcePackGameVersions('26.1.2').includes('1.21.11'));
 });
