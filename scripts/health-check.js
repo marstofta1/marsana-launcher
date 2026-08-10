@@ -83,23 +83,45 @@ const bad = (n) => {
   }
   if (!siteOk) bad(lastMsg);
 
-  // 2) En son release
+  // 2) En son release. build-desktop.yml bu monitor'le AYNI push'ta paralel
+  // koşar; yeni sürümün GitHub release'ini (mac/linux kurulumlarıyla) oluşturması
+  // birkaç dakika sürebilir. O pencerede release henüz taslak/dosyasız olabilir ->
+  // sahte kırmızı (bkz. koşu #15). Site adımı gibi burada da birkaç kez yeniden
+  // dene; gerçekten bozuksa denemeler bitince yine yakalanır.
   console.log('2) GitHub Release');
-  try {
-    const r = await fetch(RELEASES_API, { Accept: 'application/vnd.github+json' });
-    const rel = JSON.parse(r.body || '{}');
-    if (r.status !== 200 || !rel.tag_name) {
-      bad(`Release API ${r.status} (tag okunamadı)`);
-    } else {
-      ok(`En son release: ${rel.tag_name}`);
-      if (rel.draft) bad('Release TASLAK (yayınlanmamış)');
-      const installers = (rel.assets || []).filter((a) => /\.(exe|dmg|AppImage)$/i.test(a.name));
-      if (installers.length) ok(`${installers.length} kurulum dosyası (${installers.map((a) => a.name.split('.').pop()).join(', ')})`);
-      else bad('Release\'de kurulum dosyası (.exe/.dmg/.AppImage) yok');
+  const REL_RETRIES = 4;
+  const REL_WAIT_MS = 20000;
+  let relOk = false;
+  let relMsg = '';
+  for (let attempt = 1; attempt <= REL_RETRIES; attempt++) {
+    try {
+      const r = await fetch(RELEASES_API, { Accept: 'application/vnd.github+json' });
+      const rel = JSON.parse(r.body || '{}');
+      if (r.status !== 200 || !rel.tag_name) {
+        relMsg = `Release API ${r.status} (tag okunamadı)`;
+      } else if (rel.draft) {
+        relMsg = 'Release TASLAK (yayınlanmamış)';
+      } else {
+        const installers = (rel.assets || []).filter((a) => /\.(exe|dmg|AppImage)$/i.test(a.name));
+        if (installers.length) {
+          ok(`En son release: ${rel.tag_name}`);
+          ok(`${installers.length} kurulum dosyası (${installers.map((a) => a.name.split('.').pop()).join(', ')})`);
+          relOk = true;
+          break;
+        }
+        relMsg = "Release'de kurulum dosyası (.exe/.dmg/.AppImage) yok";
+      }
+    } catch (e) {
+      relMsg = `Release kontrolü hata: ${e.message}`;
     }
-  } catch (e) {
-    bad(`Release kontrolü hata: ${e.message}`);
+    if (attempt < REL_RETRIES) {
+      console.log(
+        `  … deneme ${attempt}/${REL_RETRIES}: ${relMsg} — ${REL_WAIT_MS / 1000}s bekle, yeniden dene (release yayılıyor olabilir)`
+      );
+      await new Promise((res) => setTimeout(res, REL_WAIT_MS));
+    }
   }
+  if (!relOk) bad(relMsg);
 
   // 3) Güncelleme beslemesi (best-effort: yayın henüz yüklenmemiş olabilir)
   console.log('3) Güncelleme beslemesi (latest.yml)');
