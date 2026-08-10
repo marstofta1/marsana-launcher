@@ -29,9 +29,13 @@ function fetch(url, headers = {}) {
   });
 }
 
-const version = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
-).version;
+const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+const version = pkg.version;
+// Canlı sitede GÖRÜNEN etiket `displayVersion`'dır (küçük güncellemede sabit
+// kalır, feed sürümü artsa bile). Site denetimi bu görünür etikete bakmalı;
+// yoksa her küçük güncelleme sahte "BAYAT" kırmızısı üretir. Normal/isimli
+// sürümde version === displayVersion olduğundan iki durumda da doğru çalışır.
+const displayVersion = pkg.displayVersion || version;
 
 const problems = [];
 const ok = (n) => console.log(`  ✓ ${n}`);
@@ -42,7 +46,7 @@ const bad = (n) => {
 };
 
 (async () => {
-  console.log(`Marsana sağlık denetimi — beklenen sürüm v${version}\n`);
+  console.log(`Marsana sağlık denetimi — beklenen site etiketi v${displayVersion} (feed v${version})\n`);
 
   // 1) Canlı site: erişilebilir + güncel.
   // Yeni sürüm push'unda bu denetim deploy-pages ile aynı anda koşabilir; GitHub
@@ -57,16 +61,16 @@ const bad = (n) => {
   for (let attempt = 1; attempt <= SITE_RETRIES; attempt++) {
     try {
       const r = await fetch(SITE);
-      if (r.status === 200 && r.body.includes(`v${version}`)) {
+      if (r.status === 200 && r.body.includes(`v${displayVersion}`)) {
         ok('Site 200 (erişilebilir)');
-        ok(`Site güncel — v${version} sayfada mevcut`);
+        ok(`Site güncel — v${displayVersion} sayfada mevcut`);
         siteOk = true;
         break;
       }
       lastMsg =
         r.status !== 200
           ? `Site ${r.status} döndü (200 bekleniyordu)`
-          : `Site BAYAT — v${version} sayfada yok (changelog/#guncellemeler güncellenmemiş)`;
+          : `Site BAYAT — v${displayVersion} sayfada yok (changelog/#guncellemeler güncellenmemiş)`;
     } catch (e) {
       lastMsg = `Site erişilemedi: ${e.message}`;
     }
