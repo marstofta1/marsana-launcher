@@ -6,9 +6,12 @@ const path = require('path');
 const { assertPublishableVersion } = require('./resolve-release-version');
 
 const root = path.join(__dirname, '..');
-const version = assertPublishableVersion(
-  JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version
-);
+const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+// `version` = update-feed sürümü (latest.yml + manifest'ler bunu kullanır, her
+// küçük güncellemede artar). `displayVersion` = siteye/launcher'a görünen etiket
+// (yoksa version'a düşer). Küçük güncellemede site etiketi sabit kalır.
+const version = assertPublishableVersion(pkg.version);
+const displayVersion = pkg.displayVersion || version;
 const latestYmlPath = path.join(root, 'docs', 'downloads', 'latest.yml');
 const indexPath = path.join(root, 'docs', 'index.html');
 const windowsManifestPath = path.join(root, 'docs', 'downloads', 'windows-manifest.json');
@@ -102,8 +105,8 @@ if (fs.existsSync(indexPath)) {
   if (!html.includes('download-linux.js')) {
     errors.push('docs/index.html download-linux.js script\'i içermiyor.');
   }
-  if (!html.includes(`v${version}`)) {
-    errors.push(`docs/index.html sürüm etiketi v${version} içermiyor.`);
+  if (!html.includes(`v${displayVersion}`)) {
+    errors.push(`docs/index.html sürüm etiketi v${displayVersion} içermiyor.`);
   }
 }
 

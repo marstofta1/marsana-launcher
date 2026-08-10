@@ -12,8 +12,21 @@ const marsanaClientModService = require('../../core/mods/marsanaClientModService
 
 const ALLOWED_PROTOCOLS = new Set(['https:', 'http:']);
 
+function resolveDisplayVersion() {
+  // Kullanıcıya görünen sürüm etiketi `displayVersion`'dan gelir; yoksa gerçek
+  // app sürümüne düşer. Güncelleme mantığı app.getVersion()'ı DOĞRUDAN kullanır
+  // (updateHandlers/launcherInstall) — bu IPC yalnızca görünür etiket içindir,
+  // böylece küçük güncellemede etiket sabit kalır (iç sürüm artsa bile).
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(app.getAppPath(), 'package.json'), 'utf8'));
+    return pkg.displayVersion || app.getVersion();
+  } catch {
+    return app.getVersion();
+  }
+}
+
 function registerSystemHandlers({ ipcMain, shell, paths }) {
-  ipcMain.handle(SYSTEM.GET_VERSION, () => app.getVersion());
+  ipcMain.handle(SYSTEM.GET_VERSION, () => resolveDisplayVersion());
 
   ipcMain.handle(SYSTEM.GET_PLATFORM, () => platformInfo.platform);
 
