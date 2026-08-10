@@ -42,6 +42,21 @@ function javaMeetsGameRequirement(systemMajor, requiredMajor) {
   return systemMajor >= requiredMajor;
 }
 
+// Version JSON'dan gereken Java surumunu ve Mojang runtime bilesenini cikar.
+// 1.16.5 ve oncesi surumler version JSON'da `javaVersion` TASIMAZ (bu alan
+// ~1.17 ile eklendi); hepsi Java 8 (jre-legacy) ister. Alan yoksa sistem
+// Java'sina (genelde 17/21) dusmek yerine Java 8'e sabitle — aksi halde 1.8.x
+// modern Java'da chunk render etmez, donar ve native crash (0xCFFFFFFF) verir.
+function resolveJavaRequirement(versionJson) {
+  const jv = versionJson && versionJson.javaVersion;
+  if (jv && typeof jv.majorVersion === 'number') {
+    const requiredMajor = jv.majorVersion;
+    const component = jv.component || (requiredMajor <= 8 ? 'jre-legacy' : 'java-runtime-gamma');
+    return { requiredMajor, component };
+  }
+  return { requiredMajor: 8, component: 'jre-legacy' };
+}
+
 function mojangRuntimeOsKey() {
   const { platform, arch } = process;
   if (platform === 'win32') {
@@ -202,16 +217,9 @@ function createJavaRuntimeService({ httpClient, paths, logger }) {
       return resolveJavaHomePathOnly();
     }
 
-    const jv = versionJson.javaVersion;
-    if (!jv || typeof jv.majorVersion !== 'number') {
-      if (strict) {
-        throw new Error(`Version JSON Java sürüm bilgisini içermiyor: ${versionId}`);
-      }
-      return resolveJavaHomePathOnly();
-    }
-
-    const requiredMajor = jv.majorVersion;
-    const component = jv.component || (requiredMajor <= 8 ? 'jre-legacy' : 'java-runtime-gamma');
+    // javaVersion yoksa (1.16.5 ve oncesi) Java 8'e sabitlenir; sistem Java'sina
+    // dusulmez. Boylece 1.8.x modern Java 17/21 yerine gerekli Java 8 ile calisir.
+    const { requiredMajor, component } = resolveJavaRequirement(versionJson);
 
     if (!strict) {
       const homeJava = resolveJavaHomePathOnly();
@@ -240,5 +248,10 @@ function createJavaRuntimeService({ httpClient, paths, logger }) {
   return { resolveForLaunch };
 }
 
-module.exports = { createJavaRuntimeService };
+module.exports = {
+  createJavaRuntimeService,
+  // Saf yardimcilar — birim test icin disa aktarilir (davranis degismez).
+  resolveJavaRequirement,
+  javaMeetsGameRequirement,
+};
 

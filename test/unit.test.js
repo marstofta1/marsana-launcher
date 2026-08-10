@@ -14,6 +14,10 @@ const { createModrinthClient } = require('../src/core/mods/modrinthClient');
 const shader = require('../src/core/mods/shaderStackService');
 const vsel = require('../src/core/mods/modrinthVersionSelect');
 const { computeAudioOptionUpdates } = require('../src/core/minecraft/audioOptions');
+const {
+  resolveJavaRequirement,
+  javaMeetsGameRequirement,
+} = require('../src/core/minecraft/javaRuntimeService');
 
 // ---------------------------------------------------------------- updateFeedUrl
 test('updateFeedUrl: izinli host + https kabul edilir', () => {
@@ -205,6 +209,42 @@ test('audio: null/gecersiz audio -> guncelleme yok', () => {
     computeAudioOptionUpdates({ audio: { musicVolume: 'x' }, currentOptionsText: '', lastApplied: {} }).updates,
     {}
   );
+});
+
+// ------------------------------------------------- javaRuntimeService (eski surumler)
+// 1.16.5 ve oncesi version JSON'da javaVersion tasimaz -> Java 8 (jre-legacy)
+// zorunlu. Aksi halde 1.8.x modern Java 17/21 ile chunk render etmez, donar,
+// native crash (0xCFFFFFFF) verir.
+test('java: javaVersion yoksa (eski surum) Java 8 jre-legacy', () => {
+  assert.deepStrictEqual(resolveJavaRequirement({}), { requiredMajor: 8, component: 'jre-legacy' });
+  assert.deepStrictEqual(resolveJavaRequirement(null), { requiredMajor: 8, component: 'jre-legacy' });
+  assert.deepStrictEqual(
+    resolveJavaRequirement({ id: '1.8.3' }),
+    { requiredMajor: 8, component: 'jre-legacy' }
+  );
+});
+
+test('java: javaVersion varsa onu kullanir (component turetimi dahil)', () => {
+  assert.deepStrictEqual(
+    resolveJavaRequirement({ javaVersion: { majorVersion: 8 } }),
+    { requiredMajor: 8, component: 'jre-legacy' }
+  );
+  assert.deepStrictEqual(
+    resolveJavaRequirement({ javaVersion: { majorVersion: 17 } }),
+    { requiredMajor: 17, component: 'java-runtime-gamma' }
+  );
+  assert.deepStrictEqual(
+    resolveJavaRequirement({ javaVersion: { majorVersion: 21, component: 'java-runtime-delta' } }),
+    { requiredMajor: 21, component: 'java-runtime-delta' }
+  );
+});
+
+test('java: javaMeetsGameRequirement — <=8 tam eslesme, yenisi >=', () => {
+  assert.strictEqual(javaMeetsGameRequirement(8, 8), true);
+  assert.strictEqual(javaMeetsGameRequirement(17, 8), false, 'Java 17, Java 8 gereksinimini karsilamaz (tam 8 olmali)');
+  assert.strictEqual(javaMeetsGameRequirement(21, 17), true);
+  assert.strictEqual(javaMeetsGameRequirement(16, 17), false);
+  assert.strictEqual(javaMeetsGameRequirement(null, 8), false);
 });
 
 // ----------------------------------------------- modrinthVersionSelect (O4)

@@ -104,7 +104,11 @@ export function createStatusPanel({ root, store, events }) {
         store.getState();
       const loader = lastLaunchLoader || selectedLoader;
       const version = lastLaunchVersion || selectedVersion;
-      const crashed = code === 4294967295 || code === -1;
+      // Windows native crash'leri NTSTATUS hata araliginda (>= 0xC0000000) cikis
+      // kodu dondurur — or. 0xCFFFFFFF (3489660927), 0xC0000005 (erisim ihlali).
+      // Yalnizca 0xFFFFFFFF/-1'i degil bu araligi da crash say ki hint gosterilsin.
+      const crashed =
+        code === 4294967295 || code === -1 || (typeof code === 'number' && code >= 0xc0000000);
       let statusText = loader === 'bedrock'
         ? 'Minecraft Bedrock başlatıldı.'
         : loader === 'roblox'
