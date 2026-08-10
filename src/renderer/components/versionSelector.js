@@ -5,6 +5,7 @@ import {
   ORNITHE_SUGGESTED_VERSION,
   isOrnitheVersionBlocked,
 } from '../../shared/versionCompatibility.js';
+import { isClientMode, MARSANA_CLIENT_VERSION } from '../../shared/marsanaClient.js';
 import { recommendedShaderForVersion } from '../../shared/shaderVersionPresets.js';
 import { BUNDLED_VERSION_MANIFEST } from '../generated/versionManifest.js';
 
@@ -31,6 +32,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
       <p class="hint mods-hint" data-role="version-error" style="display:none;"></p>
     </label>
     <p class="hint mods-hint" data-role="bedrock-version-hint" style="display:none;"></p>
+    <p class="hint mods-hint" data-role="client-version-hint" style="display:none;"></p>
     <p class="hint mods-hint" data-role="filter-hint" style="display:none;"></p>
   `;
 
@@ -41,6 +43,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
   const versionField = root.querySelector('[data-role="version-field"]');
   const versionLabel = root.querySelector('[data-role="version-label"]');
   const bedrockVersionHint = root.querySelector('[data-role="bedrock-version-hint"]');
+  const clientVersionHint = root.querySelector('[data-role="client-version-hint"]');
   const filterHint = root.querySelector('[data-role="filter-hint"]');
 
   function applyStaticI18n() {
@@ -256,7 +259,9 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
 
   function updateExternalLoaderUi(state) {
     const loader = state.selectedLoader || '';
-    const hideVersion = loader === 'bedrock';
+    // Client modu tek sürüme (26.1.2) sabit — sürüm seçici gizlenir, tıpkı Bedrock gibi.
+    const clientMode = isClientMode(state.playMode);
+    const hideVersion = loader === 'bedrock' || clientMode;
     if (versionField) versionField.style.display = hideVersion ? 'none' : '';
     if (bedrockVersionHint) {
       if (loader === 'bedrock') {
@@ -264,6 +269,17 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
         bedrockVersionHint.textContent = i18n.t('version.bedrockHint');
       } else {
         bedrockVersionHint.style.display = 'none';
+      }
+    }
+    if (clientVersionHint) {
+      if (clientMode && loader !== 'bedrock') {
+        clientVersionHint.style.display = '';
+        clientVersionHint.textContent = i18n.t('version.clientPinned', {
+          version: MARSANA_CLIENT_VERSION,
+        });
+      } else {
+        clientVersionHint.style.display = 'none';
+        clientVersionHint.textContent = '';
       }
     }
     if (filterHint && hideVersion) {

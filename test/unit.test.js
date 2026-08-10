@@ -389,3 +389,18 @@ test('marsanaClient: client modu shader’ı zorla açmaz (preset kapalı, kulla
   assert.strictEqual(mc.applyClientPreset({}).modFullbrightUb, true);
   assert.strictEqual(mc.applyClientPreset({}).modVoiceChat, true);
 });
+
+// Marsana Client overlay (CPS/keystrokes/zoom) + H menüsü yalnızca 26.1.2'de yüklenir
+// (marsana-client mod `depends: minecraft ~26.1.2`). Client modu başlatmada bu sabit
+// sürümü kullanır; sabit yanlış bir sürüme kayarsa mod sessizce elenip HUD kaybolur.
+test('marsanaClient: sabit client sürümü 26.1.2 ve bu sürümde HUD + F8 farm mevcut', async () => {
+  const mc = await import('../src/shared/marsanaClient.js');
+  const vc = await import('../src/shared/versionCompatibility.js');
+  // Mod fabric.mod.json'da ~26.1.2 gerektirir → sabit tam olarak 26.1.2 olmalı.
+  assert.strictEqual(mc.MARSANA_CLIENT_VERSION, '26.1.2');
+  assert.match(mc.MARSANA_CLIENT_VERSION, /^26\.1\./);
+  // Sabit sürümde bundled marsana-client jar'ı (overlay + menü) mevcut.
+  assert.strictEqual(vc.marsanaBundledClientModsAvailable(mc.MARSANA_CLIENT_VERSION), true);
+  // Aynı sürümde Sematik Farm (F8) bundled jar'ı da mevcut.
+  assert.strictEqual(vc.schematicFarmBundledAvailable(mc.MARSANA_CLIENT_VERSION), true);
+});

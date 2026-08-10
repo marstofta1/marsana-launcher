@@ -7,6 +7,15 @@ export const PLAY_MODES = Object.freeze({
 
 export const DEFAULT_PLAY_MODE = PLAY_MODES.CLIENT;
 
+/**
+ * Marsana Client modunun sabit oyun sürümü. Bundled marsana-client mod'u
+ * `fabric.mod.json` içinde `minecraft ~26.1.2` gerektirir; bu yüzden HUD overlay
+ * (CPS/keystrokes/zoom) + H menüsü YALNIZCA 26.1.2'de yüklenir. Client modu artık
+ * kullanıcının seçtiği sürümü değil, her zaman bunu başlatır — aksi halde 1.21.x
+ * ya da 26.2 gibi sürümlerde mod sessizce elenip overlay hiç görünmüyordu.
+ */
+export const MARSANA_CLIENT_VERSION = '26.1.2';
+
 /** Client modunda otomatik uygulanan loader + mod preset'i */
 export const CLIENT_MOD_PRESET = Object.freeze({
   selectedLoader: 'fabric',

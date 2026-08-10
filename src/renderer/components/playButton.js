@@ -4,6 +4,7 @@ import {
   isExternalLoader,
   isClientMode,
   PLAY_MODES,
+  MARSANA_CLIENT_VERSION,
 } from '../../shared/marsanaClient.js';
 import {
   marsanaBundledClientModsAvailable,
@@ -57,6 +58,9 @@ export function createPlayButton({ root, store, launchApi, i18n }) {
     }
     const state = store.getState();
     const loader = resolveLoader(state);
+    // Client modu sabit sürüm (26.1.2) başlatır; seçili sürüm yok sayılır çünkü
+    // Marsana overlay/menü mod'u yalnızca o sürümde yüklenir.
+    const clientMode = isClientMode(state.playMode);
 
     if (state.user?.bedrockOnly && !isExternalLoader(loader)) {
       store.setState({ statusText: i18n.t('play.bedrockOnlyBlocked') });
@@ -67,7 +71,7 @@ export function createPlayButton({ root, store, launchApi, i18n }) {
       store.setState({ statusText: i18n.t('play.loginRequired') });
       return;
     }
-    if (!isExternalLoader(loader) && !state.selectedVersion) {
+    if (!isExternalLoader(loader) && !clientMode && !state.selectedVersion) {
       store.setState({ statusText: i18n.t('play.selectVersion') });
       return;
     }
@@ -79,11 +83,19 @@ export function createPlayButton({ root, store, launchApi, i18n }) {
       logLines: [],
       progressPercent: 0,
       lastLaunchLoader: loader,
-      lastLaunchVersion: isExternalLoader(loader) ? loader : state.selectedVersion,
+      lastLaunchVersion: isExternalLoader(loader)
+        ? loader
+        : clientMode
+          ? MARSANA_CLIENT_VERSION
+          : state.selectedVersion,
     });
     try {
       const s = state.settings || {};
-      const version = loader === 'bedrock' ? 'bedrock' : state.selectedVersion;
+      const version = loader === 'bedrock'
+        ? 'bedrock'
+        : clientMode
+          ? MARSANA_CLIENT_VERSION
+          : state.selectedVersion;
       const clientMenuOk = marsanaBundledClientModsAvailable(version);
       const schematicOk = schematicFarmBundledAvailable(version);
       const schematicFarmEnabled =

@@ -120,6 +120,7 @@ export default {
     loadFailedShort: 'Sürüm listesi yüklenemedi',
     retry: 'Yeniden dene',
     bedrockHint: 'Bedrock sürümü Microsoft Store / Xbox uygulaması üzerinden otomatik güncellenir; sürüm seçimi gerekmez.',
+    clientPinned: 'Marsana Client sürümü {version} olarak sabittir — CPS, keystrokes ve zoom yalnızca bu sürümde çalışır.',
   },
   versionFilters: {
     legacyFabric: 'Legacy Fabric destekli sürümler',

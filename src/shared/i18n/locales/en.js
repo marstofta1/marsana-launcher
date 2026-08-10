@@ -120,6 +120,7 @@ export default {
     loadFailedShort: 'Could not load version list',
     retry: 'Retry',
     bedrockHint: 'Bedrock is updated automatically via Microsoft Store / Xbox; no version selection needed.',
+    clientPinned: 'Marsana Client is locked to version {version} — CPS, keystrokes and zoom only work on this version.',
   },
   versionFilters: {
     legacyFabric: 'Legacy Fabric supported versions',
