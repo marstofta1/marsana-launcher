@@ -76,13 +76,17 @@ public final class HudOverlayRenderer {
             drawTopLeftStack(graphics, client, sw, stackRow++, directionLabel(player.getYRot()));
         }
 
+        // Sag-ust sutun: once CPS (en ust), sonra zirh onun ALTINDAN baslar. Eskiden
+        // ikisi de y=4'te ciziliyordu; zirh CPS'in uzerine binip sayaci gizliyordu.
+        int rightY = 4;
         if (HudFeatureRegistry.isEnabled(HudFeatureIds.CPS)) {
             String cps = "CPS: " + CpsTracker.leftCps() + " | " + CpsTracker.rightCps();
-            graphics.text(client.font, cps, sw - client.font.width(cps) - 4, 4, TEXT_WHITE);
+            graphics.text(client.font, cps, sw - client.font.width(cps) - 4, rightY, TEXT_WHITE);
+            rightY += 10;
         }
 
         if (HudFeatureRegistry.isEnabled(HudFeatureIds.ARMOR)) {
-            renderArmor(graphics, client, sw);
+            renderArmor(graphics, client, sw, rightY);
         }
 
         if (HudFeatureRegistry.isEnabled(HudFeatureIds.KEYSTROKES)) {
@@ -123,10 +127,10 @@ public final class HudOverlayRenderer {
         return "Yon: Dogu (+X)";
     }
 
-    private static void renderArmor(GuiGraphicsExtractor graphics, Minecraft client, int sw) {
+    private static void renderArmor(GuiGraphicsExtractor graphics, Minecraft client, int sw, int startY) {
         LocalPlayer player = client.player;
         if (player == null) return;
-        int y = 4;
+        int y = startY;
         EquipmentSlot[] slots = {
             EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
         };
