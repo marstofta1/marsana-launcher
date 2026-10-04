@@ -257,8 +257,18 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v1.0.42 — Client HUD (CPS, keystrokes, zoom) artık görünüyor</span>
+            <span class="release-version">v1.0.45 — Minecraft 26.3 çökmesi düzeltildi + Create modu</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li><strong>Minecraft 26.3 artık rastgele kapanmıyor.</strong> 26.3 açılırken, ana menüde bir tuşa basınca, kaynak paketi yüklerken veya dünyaya/sunucuya girerken oyun <strong>"Oyun kapandı (kod: 3221225477)"</strong> hatasıyla rastgele kapanıyordu. Nedeni: Mojang'ın 26.3 için zorunlu tuttuğu Java ayarları launcher tarafından oyuna aktarılmıyordu. Artık her sürümün kendi Java ayarları oyuna geçiriliyor; 26.2 de aynı düzeltmeden yararlanır.</li>
+            <li><strong>Yeni: Create modu.</strong> Gelişmiş Launcher'daki mod seçeneklerine <strong>Create</strong> eklendi (özellikle tek oyunculu önerilir). Seçtiğinde sürüm <strong>1.21.1</strong> ve yükleyici <strong>NeoForge</strong> otomatik ayarlanır; yalnızca Create indirilir, ek mod paketi kurulmaz.</li>
+            <li><strong>Erken sürüm uyarısı kaldırıldı.</strong> İlk açılışta çıkan "Erken Sürüm Uyarısı" penceresi artık gösterilmiyor.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v1.0.42 — Client HUD (CPS, keystrokes, zoom) artık görünüyor</span>
           </div>
           <ul class="release-changes">
             <li><strong>Marsana Client HUD düzeltildi.</strong> Client modunda ekran üstü göstergeler — <strong>CPS sayacı, keystrokes (WASD + sağ/sol tık), C ile zoom, FPS, koordinat</strong> — bazı oyuncularda hiç görünmüyordu. Nedeni: bu göstergeler Marsana Client mod'unun içinde ve o mod yalnızca Minecraft 26.1.2'de çalışıyor; oysa client modu farklı bir sürümde (ör. 1.21.10) başlatılabiliyordu ve mod sessizce devre dışı kalıyordu. Artık <strong>Client modu her zaman 26.1.2'de başlatılır</strong>, böylece HUD, oyun içi H menüsü ve F8 Sematik Farm güvenilir biçimde çalışır. Sürüm seçici, client modunda 26.1.2'ye sabittir. (Gelişmiş/Launcher modu serbest sürüm seçimiyle etkilenmez.)</li>
