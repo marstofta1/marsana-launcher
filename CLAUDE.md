@@ -36,6 +36,17 @@ yalnızca ne zaman yükleneceğini belirler.
   sürümle çelişiyorsa **depodaki mevcut koda ve `gradle.properties`'e uy**, skill metnine değil.
   Emin olamadığın bir API'yi uydurma — önce mevcut kaynakta doğrula.
 
+## Oturum sağlığı — kullanıcı istemeden öner
+
+Proje ve oturum sağlığı için, uygun anda `/compact`, `/clear` veya yeni oturum açmayı **kendin öner**:
+
+- Oturum uzadıysa ve aynı iş sürüyorsa → `/compact`.
+- Bir iş bitti ve ilgisiz yeni bir işe geçiliyorsa → `/clear` veya yeni oturum.
+- Bağlam eski/çelişkili bilgiyle dolduysa ya da ortam değişikliği (kurulum, PATH, MCP ayarı)
+  yeniden başlatma gerektiriyorsa → yeni oturum.
+
+Öneriyi tek satırla ve işin doğal bir durak noktasında yap; yarım kalmış işi bölme.
+
 ## Skill kurulumu (yeni makinede)
 
 Gerçek skill dosyaları `.agents/skills/` altında ve depoya dahildir. `.claude/skills/` ise
