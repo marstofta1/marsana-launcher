@@ -1,82 +1,82 @@
 {
-  "version": "1.0.45",
-  "releaseVersion": "1.0.45",
+  "version": "1.0.46",
+  "releaseVersion": "1.0.46",
   "note": "AppImage x86_64 — çoğu dağıtımda çalışır. İlk çalıştırmadan önce: chmod +x Marsana*.AppImage",
-  "source": "Marsana.Launcher-1.0.45-linux.AppImage",
-  "sourceUrl": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.45/Marsana.Launcher-1.0.45-linux.AppImage",
+  "source": "Marsana.Launcher-1.0.46-linux.AppImage",
+  "sourceUrl": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.46/Marsana.Launcher-1.0.46-linux.AppImage",
   "sourceType": "remote",
   "platforms": [
     {
       "id": "ubuntu",
       "title": "Ubuntu",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.45/Marsana.Launcher-1.0.45-linux.AppImage",
-      "downloadName": "Marsana-Launcher-1.0.45-ubuntu.AppImage",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.46/Marsana.Launcher-1.0.46-linux.AppImage",
+      "downloadName": "Marsana-Launcher-1.0.46-ubuntu.AppImage",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": ".AppImage · x86_64 · v1.0.45"
+      "note": ".AppImage · x86_64 · v1.0.46"
     },
     {
       "id": "mint",
       "title": "Linux Mint",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.45/Marsana.Launcher-1.0.45-linux.AppImage",
-      "downloadName": "Marsana-Launcher-1.0.45-mint.AppImage",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.46/Marsana.Launcher-1.0.46-linux.AppImage",
+      "downloadName": "Marsana-Launcher-1.0.46-mint.AppImage",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": ".AppImage · x86_64 · v1.0.45"
+      "note": ".AppImage · x86_64 · v1.0.46"
     },
     {
       "id": "debian",
       "title": "Debian",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.45/Marsana.Launcher-1.0.45-linux.AppImage",
-      "downloadName": "Marsana-Launcher-1.0.45-debian.AppImage",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.46/Marsana.Launcher-1.0.46-linux.AppImage",
+      "downloadName": "Marsana-Launcher-1.0.46-debian.AppImage",
       "badge": "Desteklenir",
       "badgeClass": "ready",
-      "note": ".AppImage · x86_64 · v1.0.45"
+      "note": ".AppImage · x86_64 · v1.0.46"
     },
     {
       "id": "fedora",
       "title": "Fedora",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.45/Marsana.Launcher-1.0.45-linux.AppImage",
-      "downloadName": "Marsana-Launcher-1.0.45-fedora.AppImage",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.46/Marsana.Launcher-1.0.46-linux.AppImage",
+      "downloadName": "Marsana-Launcher-1.0.46-fedora.AppImage",
       "badge": "Önerilen",
       "badgeClass": "ready",
-      "note": ".AppImage · x86_64 · v1.0.45"
+      "note": ".AppImage · x86_64 · v1.0.46"
     },
     {
       "id": "manjaro",
       "title": "Manjaro",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.45/Marsana.Launcher-1.0.45-linux.AppImage",
-      "downloadName": "Marsana-Launcher-1.0.45-manjaro.AppImage",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.46/Marsana.Launcher-1.0.46-linux.AppImage",
+      "downloadName": "Marsana-Launcher-1.0.46-manjaro.AppImage",
       "badge": "Desteklenir",
       "badgeClass": "ready",
-      "note": ".AppImage · x86_64 · v1.0.45"
+      "note": ".AppImage · x86_64 · v1.0.46"
     },
     {
       "id": "mxlinux",
       "title": "MX Linux",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.45/Marsana.Launcher-1.0.45-linux.AppImage",
-      "downloadName": "Marsana-Launcher-1.0.45-mxlinux.AppImage",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.46/Marsana.Launcher-1.0.46-linux.AppImage",
+      "downloadName": "Marsana-Launcher-1.0.46-mxlinux.AppImage",
       "badge": "Desteklenir",
       "badgeClass": "legacy",
-      "note": ".AppImage · x86_64 · v1.0.45"
+      "note": ".AppImage · x86_64 · v1.0.46"
     },
     {
       "id": "solus",
       "title": "Solus",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.45/Marsana.Launcher-1.0.45-linux.AppImage",
-      "downloadName": "Marsana-Launcher-1.0.45-solus.AppImage",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.46/Marsana.Launcher-1.0.46-linux.AppImage",
+      "downloadName": "Marsana-Launcher-1.0.46-solus.AppImage",
       "badge": "Desteklenir",
       "badgeClass": "legacy",
-      "note": ".AppImage · x86_64 · v1.0.45"
+      "note": ".AppImage · x86_64 · v1.0.46"
     },
     {
       "id": "elementary",
       "title": "Elementary OS",
-      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.45/Marsana.Launcher-1.0.45-linux.AppImage",
-      "downloadName": "Marsana-Launcher-1.0.45-elementary.AppImage",
+      "url": "https://github.com/marstofta1/marsana-launcher/releases/download/v1.0.46/Marsana.Launcher-1.0.46-linux.AppImage",
+      "downloadName": "Marsana-Launcher-1.0.46-elementary.AppImage",
       "badge": "Desteklenir",
       "badgeClass": "ready",
-      "note": ".AppImage · x86_64 · v1.0.45"
+      "note": ".AppImage · x86_64 · v1.0.46"
     }
   ]
 }

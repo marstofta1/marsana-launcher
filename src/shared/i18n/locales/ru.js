@@ -137,6 +137,9 @@ export default {
     offline: 'Запуск в офлайн-режиме (только если вы уже входили)',
     offlineName: 'Отображаемое имя офлайн (имя аккаунта, если пусто)',
     offlineNamePlaceholder: 'Steve',
+    offlineAccounts: 'Saved accounts',
+    offlineAccountsEmpty: 'No saved accounts yet',
+    offlineAccountDelete: 'Delete account',
   },
   mods: {
     loaderSection: 'Загрузчик модов',

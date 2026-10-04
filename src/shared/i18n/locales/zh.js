@@ -137,6 +137,9 @@ export default {
     offline: '离线模式启动（仅曾登录过账户时可用）',
     offlineName: '离线显示名称（留空则使用账户名）',
     offlineNamePlaceholder: 'Steve',
+    offlineAccounts: 'Saved accounts',
+    offlineAccountsEmpty: 'No saved accounts yet',
+    offlineAccountDelete: 'Delete account',
   },
   mods: {
     loaderSection: '模组加载器',

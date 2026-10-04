@@ -137,6 +137,9 @@ export default {
     offline: 'Lancer en mode hors ligne (uniquement si vous vous êtes déjà connecté)',
     offlineName: 'Nom affiché hors ligne (nom du compte si vide)',
     offlineNamePlaceholder: 'Steve',
+    offlineAccounts: 'Saved accounts',
+    offlineAccountsEmpty: 'No saved accounts yet',
+    offlineAccountDelete: 'Delete account',
   },
   mods: {
     loaderSection: 'Chargeur de mods',

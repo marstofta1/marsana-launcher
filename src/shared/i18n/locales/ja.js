@@ -137,6 +137,9 @@ export default {
     offline: 'オフラインモードで起動（以前にログイン済みの場合のみ）',
     offlineName: 'オフライン表示名（空欄ならアカウント名）',
     offlineNamePlaceholder: 'Steve',
+    offlineAccounts: 'Saved accounts',
+    offlineAccountsEmpty: 'No saved accounts yet',
+    offlineAccountDelete: 'Delete account',
   },
   mods: {
     loaderSection: 'MODローダー',

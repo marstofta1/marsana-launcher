@@ -137,6 +137,9 @@ export default {
     offline: '오프라인 모드로 실행(이전에 로그인한 경우만)',
     offlineName: '오프라인 표시 이름(비우면 계정 이름)',
     offlineNamePlaceholder: 'Steve',
+    offlineAccounts: 'Saved accounts',
+    offlineAccountsEmpty: 'No saved accounts yet',
+    offlineAccountDelete: 'Delete account',
   },
   mods: {
     loaderSection: '모드 로더',

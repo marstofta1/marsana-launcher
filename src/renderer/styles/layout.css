@@ -120,6 +120,17 @@
   flex-wrap: wrap;
 }
 
+.offline-accounts { margin: 8px 0 10px; }
+.offline-accounts-toggle { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); font-size: 13px; padding: 5px 10px; cursor: pointer; }
+.offline-accounts-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: 160px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+.offline-account { display: flex; align-items: center; }
+.offline-account.active { background: rgba(255, 255, 255, 0.08); }
+.offline-account-pick { flex: 1; text-align: left; background: none; border: 0; color: var(--text-secondary); font-size: 14px; padding: 6px 10px; cursor: pointer; }
+.offline-account-pick:hover { background: rgba(255, 255, 255, 0.06); }
+.offline-account-del { background: none; border: 0; color: var(--text-muted); font-size: 16px; padding: 4px 10px; cursor: pointer; }
+.offline-account-del:hover { color: #ff6b6b; }
+.offline-account-empty { padding: 8px 10px; font-size: 13px; color: var(--text-muted); }
+
 .mods-card-actions #launch-options-slot {
   flex: 1 1 320px;
 }

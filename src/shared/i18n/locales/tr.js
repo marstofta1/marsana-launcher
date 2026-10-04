@@ -156,6 +156,9 @@ export default {
     offline: 'Çevrimdışı modda başlat (sadece daha önce giriş yapılmışsa)',
     offlineName: 'Çevrimdışı görünen isim (boş bırakılırsa hesap ismi)',
     offlineNamePlaceholder: 'Steve',
+    offlineAccounts: 'Kayıtlı hesaplar',
+    offlineAccountsEmpty: 'Henüz kayıtlı hesap yok',
+    offlineAccountDelete: 'Hesabı sil',
   },
   mods: {
     loaderSection: 'Mod Yükleyici',

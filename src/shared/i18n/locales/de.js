@@ -137,6 +137,9 @@ export default {
     offline: 'Im Offline-Modus starten (nur wenn du dich zuvor angemeldet hast)',
     offlineName: 'Offline-Anzeigename (Kontoname wenn leer)',
     offlineNamePlaceholder: 'Steve',
+    offlineAccounts: 'Saved accounts',
+    offlineAccountsEmpty: 'No saved accounts yet',
+    offlineAccountDelete: 'Delete account',
   },
   mods: {
     loaderSection: 'Mod-Loader',
