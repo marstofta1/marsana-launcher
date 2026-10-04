@@ -115,6 +115,7 @@ export function createPlayButton({ root, store, launchApi, i18n }) {
           schematicFarm: schematicFarmEnabled,
           sodium: !!state.modSodium,
           sodiumExtra: !!state.modSodiumExtra,
+          create: !!state.modCreate && loader === 'neoforge',
           clientHudPack: state.playMode === 'client' && !!state.modClientHudPack && clientMenuOk,
         },
         state.playMode

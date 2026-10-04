@@ -149,6 +149,14 @@ export function schematicFarmSupported(versionId) {
   return parseInt(m[1], 10) >= 20;
 }
 
+/** Create — launcher yalnızca NeoForge 1.21.1 kurulumunu sunar. */
+export const CREATE_MOD_VERSION = '1.21.1';
+export const CREATE_MOD_LOADER = 'neoforge';
+
+export function createSupported(versionId) {
+  return String(versionId || '').trim() === CREATE_MOD_VERSION;
+}
+
 /** Launcher paketinde gömülü Marsana Client menüsü jar'ı yalnızca 26.x için mevcut. */
 export function marsanaBundledClientModsAvailable(versionId) {
   return /^26\./.test(String(versionId || '').trim());
@@ -173,9 +181,10 @@ export function selectionRequiresReleaseVersions({
   modSchematicFarm,
   modSodium,
   modSodiumExtra,
+  modCreate,
 }) {
   if (loader === 'forge-optifine') return true;
-  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat || modFullbrightUb || modBetterLeaves || modGlowingOres || modRoundTrees || modCrops3d || modSchematicFarm || modSodium || modSodiumExtra);
+  return !!(modOptifine || modShaderFps || modEmbossedBlocks || modVoiceChat || modFullbrightUb || modBetterLeaves || modGlowingOres || modRoundTrees || modCrops3d || modSchematicFarm || modSodium || modSodiumExtra || modCreate);
 }
 
 export function isVersionAllowedForSelection({
@@ -194,6 +203,7 @@ export function isVersionAllowedForSelection({
   modSchematicFarm,
   modSodium,
   modSodiumExtra,
+  modCreate,
   legacyFabricSupportedSet = null,
   loaderSupportedSet = null,
 }) {
@@ -224,6 +234,7 @@ export function isVersionAllowedForSelection({
       modSchematicFarm,
       modSodium,
       modSodiumExtra,
+      modCreate,
     }) &&
     versionType !== 'release'
   ) {
@@ -244,6 +255,7 @@ export function isVersionAllowedForSelection({
   if (modRoundTrees && !roundTreesSupported(id)) return false;
   if (modCrops3d && !crops3dSupported(id)) return false;
   if (modSchematicFarm && !schematicFarmSupported(id)) return false;
+  if (modCreate && !createSupported(id)) return false;
 
   if (modEmbossedBlocks) {
     if (loaderVal === 'forge') {
@@ -267,7 +279,7 @@ export function getVersionFilterEmptyMessage(state, { legacyFabric = false, load
     return LOADER_EMPTY_MESSAGES[loaderVal];
   }
 
-  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat, modFullbrightUb, modBetterLeaves, modGlowingOres, modRoundTrees, modCrops3d, modSchematicFarm, modSodium, modSodiumExtra } = state;
+  const { loader, modOptifine, modShaderFps, modEmbossedBlocks, modVoiceChat, modFullbrightUb, modBetterLeaves, modGlowingOres, modRoundTrees, modCrops3d, modSchematicFarm, modSodium, modSodiumExtra, modCreate } = state;
   const labels = [];
   if (loader === 'forge-optifine' || modOptifine) labels.push('OptiFine');
   if (modShaderFps) labels.push('Shader + FPS');
@@ -281,6 +293,7 @@ export function getVersionFilterEmptyMessage(state, { legacyFabric = false, load
   if (modRoundTrees) labels.push('Round Trees');
   if (modCrops3d) labels.push('3D crops Revamped');
   if (modSchematicFarm) labels.push('Sematik Farm');
+  if (modCreate) labels.push('Create');
 
   if (labels.length > 0) {
     return `${labels.join(' ve ')} ile uyumlu sürüm bulunamadı`;

@@ -45,6 +45,11 @@ const SHADER_BUNDLE_VERSION = 49;
 const SHADER_FPS_SLUGS = Object.freeze(['iris', 'fabric-api']);
 const EMBOSSED_SLUGS = Object.freeze(['continuity', 'fabric-api']);
 const VOICE_CHAT_SLUG = 'simple-voice-chat';
+const CREATE_SLUG = 'create';
+// Launcher'ın indirdiği Create jar'ının adı burada tutulur; seçim kaldırıldığında
+// yalnızca bu jar silinir, kullanıcının elle koyduğu Create'e dokunulmaz.
+const CREATE_MARKER_FILE = '.marsana-create.json';
+const STASH_SUFFIXES = ['.marsana-stashed-fabric', '.marsana-stashed-forge'];
 const FULLBRIGHT_UB_SLUG = 'fullbright-ub';
 const POLYTONE_SLUG = 'polytone';
 const FULLBRIGHT_PACK_LOCAL_NAME = 'fullbright-ub.zip';
@@ -1759,6 +1764,84 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { jars };
   }
 
+  function readManagedCreateJars(modsDir) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(path.join(modsDir, CREATE_MARKER_FILE), 'utf8'));
+      return Array.isArray(raw && raw.jars)
+        ? raw.jars.map((j) => path.basename(String(j || ''))).filter(Boolean)
+        : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Launcher'ın kurduğu Create jar'larını (loader geçişinde stash'lenmiş kopyaları
+  // dahil) siler. `keep` listesindeki adların etkin kopyası korunur.
+  function removeManagedCreateJars(gameRoot, { keep = [] } = {}) {
+    const modsDir = path.join(gameRoot, 'mods');
+    const managed = readManagedCreateJars(modsDir);
+    if (managed.length === 0) return;
+    for (const jar of managed) {
+      if (!keep.includes(jar)) removeIfExists(path.join(modsDir, jar));
+      for (const suffix of STASH_SUFFIXES) removeIfExists(path.join(modsDir, jar + suffix));
+    }
+    if (keep.length === 0) removeIfExists(path.join(modsDir, CREATE_MARKER_FILE));
+  }
+
+  // Create (sade — ek mod paketi yok). Arayüz bu seçeneği NeoForge 1.21.1'e sabitler.
+  // Jar güncelse yeniden indirilmez; Modrinth'e ulaşılamazsa kurulu jar ile devam edilir
+  // (tek oyunculu, çevrimdışı açılış).
+  async function installCreateForExternalLoader({ loader, gameRoot, gameVersion, emit }) {
+    const modsDir = path.join(gameRoot, 'mods');
+    const status = statusEmitter(emit);
+    const previous = readManagedCreateJars(modsDir);
+    const previousOnDisk =
+      previous.length > 0 && previous.every((j) => fs.existsSync(path.join(modsDir, j)));
+
+    let version = null;
+    try {
+      const candidates = expandLoaderModGameVersion(gameVersion);
+      const versions = await modrinthClient.listProjectVersions(CREATE_SLUG, {
+        loaders: [loader],
+        gameVersions: candidates,
+      });
+      version = pickNewestModrinthVersion(versions, {
+        gameVersion,
+        gameVersionCandidates: candidates,
+        strictPatch: usesStrictModrinthPatch(gameVersion),
+      });
+    } catch (err) {
+      if (previousOnDisk) {
+        status("Create: Modrinth'e ulaşılamadı — kurulu sürümle devam ediliyor.");
+        return { jars: previous };
+      }
+      throw err;
+    }
+
+    const file = version ? modrinthClient.primaryFileOf(version) : null;
+    const safeName = file ? path.basename(String(file.filename || '')) : '';
+    if (!safeName) {
+      throw new LauncherError(
+        Codes.MODRINTH_NOT_FOUND,
+        `Create modunun ${loader} ${gameVersion} uyumlu sürümü Modrinth'te bulunamadı.`
+      );
+    }
+
+    const dest = assertInside(modsDir, safeName);
+    if (!(previous.includes(safeName) && fs.existsSync(dest))) {
+      status(`Create indiriliyor (${safeName})...`);
+      await fs.promises.mkdir(modsDir, { recursive: true });
+      await httpClient.download(file.url, dest, modrinthClient.fileIntegrity(file));
+    }
+    removeManagedCreateJars(gameRoot, { keep: [safeName] });
+    fs.writeFileSync(
+      path.join(modsDir, CREATE_MARKER_FILE),
+      JSON.stringify({ jars: [safeName] }, null, 2),
+      'utf8'
+    );
+    return { jars: [safeName] };
+  }
+
   // Forge ailesi loader'lar için kabartmalı blok (CTM) modunu yükle.
   //   'forge'           → Continuity Forge (sadece 1.20.1; Modrinth'te tek sürüm)
   //   'neoforge'        → Continuity NeoForge (sadece 1.21.1; tek sürüm)
@@ -2179,7 +2262,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { customId, assetIndexId };
   }
 
-  return { ensure, applyModResourcePackPresets, installShadersForExternalLoader, installEmbossedForExternalLoader, installVoiceChatForExternalLoader, installFullbrightForExternalLoader, installBetterLeavesForExternalLoader, installGlowingOresForExternalLoader, installRoundTreesForExternalLoader, installCrops3dForExternalLoader };
+  return { ensure, applyModResourcePackPresets, installShadersForExternalLoader, installEmbossedForExternalLoader, installVoiceChatForExternalLoader, installCreateForExternalLoader, removeManagedCreateJars, installFullbrightForExternalLoader, installBetterLeavesForExternalLoader, installGlowingOresForExternalLoader, installRoundTreesForExternalLoader, installCrops3dForExternalLoader };
 }
 
 module.exports = {

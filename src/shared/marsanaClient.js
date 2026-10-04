@@ -36,6 +36,7 @@ export const CLIENT_MOD_PRESET = Object.freeze({
   modSchematicFarm: true,
   modSodium: true,
   modSodiumExtra: false,
+  modCreate: false,
   modClientHudPack: true,
 });
 
@@ -146,6 +147,7 @@ export const LAUNCHER_MODE_RESET = Object.freeze({
   modSchematicFarm: false,
   modSodium: false,
   modSodiumExtra: false,
+  modCreate: false,
   modClientHudPack: false,
 });
 

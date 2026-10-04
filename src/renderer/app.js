@@ -9,7 +9,6 @@ import { createModsPanel } from './components/modsPanel.js';
 import { createLaunchOptions } from './components/launchOptions.js';
 import { createPlayButton } from './components/playButton.js';
 import { createStatusPanel } from './components/statusPanel.js';
-import { createFirstRunNotice } from './components/firstRunNotice.js';
 import { createRecommendedServers } from './components/recommendedServers.js';
 import { createPlayerProfileCard } from './components/playerProfileCard.js';
 import { createBottomLinks } from './components/bottomLinks.js';
@@ -104,6 +103,7 @@ async function bootstrap() {
     modSchematicFarm: CLIENT_MOD_PRESET.modSchematicFarm,
     modSodium: false,
     modSodiumExtra: false,
+    modCreate: false,
     modClientHudPack: CLIENT_MOD_PRESET.modClientHudPack,
     statusText: '',
     progressPercent: 0,
@@ -195,7 +195,6 @@ async function bootstrap() {
       openExternal: api.openExternal,
       i18n,
     }).mount },
-    { name: 'firstRun', mount: createFirstRunNotice({ root: $('modal-slot'), i18n }).mount },
     { name: 'bottomLinks', mount: createBottomLinks({ root: $('bottom-links-slot'), openExternal: api.openExternal, i18n }).mount },
   ];
 

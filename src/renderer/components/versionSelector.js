@@ -175,6 +175,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
       modRoundTrees: !!state.modRoundTrees,
       modCrops3d: !!state.modCrops3d,
       modSchematicFarm: !!state.modSchematicFarm,
+      modCreate: !!state.modCreate,
     };
   }
 
@@ -248,6 +249,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     if (snap.modRoundTrees) parts.push(i18n.t('versionFilters.roundTrees'));
     if (snap.modCrops3d) parts.push(i18n.t('versionFilters.crops3d'));
     if (snap.modSchematicFarm) parts.push(i18n.t('versionFilters.schematicFarm'));
+    if (snap.modCreate) parts.push(i18n.t('versionFilters.create'));
     if (parts.length === 0) {
       filterHint.style.display = 'none';
       filterHint.textContent = '';
@@ -306,8 +308,10 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     }
     const loader = currentLoader();
     const filteredLoader = needsLoaderFilter(loader);
-    const filter = typeSelect.value;
     const snap = selectionSnapshot(state);
+    // Create yalnızca 1.21.1 release'inde sunulur; "sadece snapshot" filtresi listeyi boşaltmasın.
+    if (snap.modCreate && typeSelect.value === 'snapshot') typeSelect.value = 'release';
+    const filter = typeSelect.value;
     const prevSelected = versionSelect.value;
 
     let list = manifest.versions.filter((v) => {

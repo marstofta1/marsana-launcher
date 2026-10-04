@@ -15,6 +15,7 @@ import {
   schematicFarmBundledAvailable,
   forgeOptifineLikelySupported,
   fabricOptifinePackSupported,
+  CREATE_MOD_LOADER,
 } from '../../shared/versionCompatibility.js';
 
 const LOADER_OPTIONS = [
@@ -142,6 +143,16 @@ export function createModsPanel({ root, store, i18n }) {
             </p>
           </div>
 
+          <div data-role="row-create">
+            <label class="field checkbox">
+              <input type="checkbox" data-role="create" />
+              <span>Create</span>
+            </label>
+            <p class="hint mods-hint" data-role="hint-create">
+              Özellikle tek oyunculu önerilir. Seçildiğinde sürüm 1.21.1 ve NeoForge otomatik ayarlanır.
+            </p>
+          </div>
+
           <div data-role="row-sodium">
             <label class="field checkbox">
               <input type="checkbox" data-role="sodium" />
@@ -241,6 +252,8 @@ export function createModsPanel({ root, store, i18n }) {
   const roundTreesCb = root.querySelector('[data-role="roundTrees"]');
   const crops3dCb = root.querySelector('[data-role="crops3d"]');
   const schematicFarmCb = root.querySelector('[data-role="schematicFarm"]');
+  const createCb = root.querySelector('[data-role="create"]');
+  const createRow = root.querySelector('[data-role="row-create"]');
   const optifineRow = root.querySelector('[data-role="row-optifine"]');
   const shaderRow = root.querySelector('[data-role="row-shaderFps"]');
   const embossedRow = root.querySelector('[data-role="row-embossed"]');
@@ -291,6 +304,7 @@ export function createModsPanel({ root, store, i18n }) {
       modRoundTrees: roundTreesCb.checked,
       modCrops3d: crops3dCb.checked,
       modSchematicFarm: schematicFarmCb.checked,
+      modCreate: createCb.checked,
       selectedShader: shaderPicker.value || DEFAULT_SHADER_SLUG,
     });
   }
@@ -526,37 +540,37 @@ export function createModsPanel({ root, store, i18n }) {
 
   const ROWS_BY_LOADER = {
     fabric: {
-      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'sodium', 'sodiumExtra', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'schematicFarm', 'crops3d'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'sodium', 'sodiumExtra', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'schematicFarm', 'crops3d', 'create'],
       titleKey: 'titles.fabric',
       shaderLabelKey: 'shaderLabels.fabric',
       embossedLabelKey: 'embossedLabels.fabric',
     },
     'fabric-beta': {
-      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'sodium', 'sodiumExtra', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'schematicFarm', 'crops3d'],
+      rows: ['shaderFps', 'optifine', 'embossed', 'voiceChat', 'sodium', 'sodiumExtra', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'schematicFarm', 'crops3d', 'create'],
       titleKey: 'titles.fabric-beta',
       shaderLabelKey: 'shaderLabels.fabric-beta',
       embossedLabelKey: 'embossedLabels.fabric-beta',
     },
     quilt: {
-      rows: ['shaderFps', 'voiceChat', 'sodium', 'sodiumExtra', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
+      rows: ['shaderFps', 'voiceChat', 'sodium', 'sodiumExtra', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d', 'create'],
       titleKey: 'titles.quilt',
       shaderLabelKey: 'shaderLabels.quilt',
       embossedLabelKey: 'embossedLabels.quilt',
     },
     forge: {
-      rows: ['shaderFps', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
+      rows: ['shaderFps', 'embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d', 'create'],
       titleKey: 'titles.forge',
       shaderLabelKey: 'shaderLabels.forge',
       embossedLabelKey: 'embossedLabels.forge',
     },
     'forge-optifine': {
-      rows: ['embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
+      rows: ['embossed', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d', 'create'],
       titleKey: 'titles.forge-optifine',
       shaderLabelKey: null,
       embossedLabelKey: 'embossedLabels.forge-optifine',
     },
     neoforge: {
-      rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
+      rows: ['shaderFps', 'voiceChat', 'fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d', 'create'],
       titleKey: 'titles.neoforge',
       shaderLabelKey: 'shaderLabels.neoforge',
       embossedLabelKey: 'embossedLabels.neoforge',
@@ -592,7 +606,7 @@ export function createModsPanel({ root, store, i18n }) {
       embossedLabelKey: null,
     },
     vanilla: {
-      rows: ['fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d'],
+      rows: ['fullbrightUb', 'betterLeaves', 'glowingOres', 'roundTrees', 'crops3d', 'create'],
       titleKey: 'titles.vanilla',
       shaderLabelKey: null,
       embossedLabelKey: null,
@@ -636,6 +650,7 @@ export function createModsPanel({ root, store, i18n }) {
       roundTrees: roundTreesRow,
       crops3d: crops3dRow,
       schematicFarm: schematicFarmRow,
+      create: createRow,
     };
     for (const key of Object.keys(allRows)) {
       allRows[key].style.display = config.rows.includes(key) ? '' : 'none';
@@ -652,7 +667,8 @@ export function createModsPanel({ root, store, i18n }) {
       config.rows.includes('glowingOres') ||
       config.rows.includes('roundTrees') ||
       config.rows.includes('crops3d') ||
-      config.rows.includes('schematicFarm');
+      config.rows.includes('schematicFarm') ||
+      config.rows.includes('create');
     if (modsOptionsColRight) {
       modsOptionsColRight.style.display = rightColVisible ? '' : 'none';
     }
@@ -709,6 +725,11 @@ export function createModsPanel({ root, store, i18n }) {
       schematicFarmCb.checked = false;
       store.setState({ modSchematicFarm: false });
     }
+    // Create yalnızca NeoForge'da kurulur; başka yükleyicide seçili kalamaz.
+    if (loader !== CREATE_MOD_LOADER && createCb.checked) {
+      createCb.checked = false;
+      store.setState({ modCreate: false });
+    }
 
     modsTitle.textContent = modT(config.titleKey);
     if (config.shaderLabelKey) {
@@ -750,6 +771,7 @@ export function createModsPanel({ root, store, i18n }) {
       const optionWrap = el.closest('.loader-option');
       if (optionWrap) optionWrap.style.opacity = allowed ? '' : '0.45';
     }
+    createCb.disabled = bedrockOnly;
     updateShaderPickerVisibility();
   }
 
@@ -758,6 +780,14 @@ export function createModsPanel({ root, store, i18n }) {
     if (!el) continue;
     el.addEventListener('change', () => {
       if (syncing) return;
+      // Önce yeni yükleyiciyi store'a yaz: applyLoaderState içindeki setState çağrıları
+      // renderFromStore'u tetikler ve radyoları store'daki eski yükleyiciye geri çevirirdi.
+      const next = currentLoader();
+      store.setState(
+        next === CREATE_MOD_LOADER
+          ? { selectedLoader: next }
+          : { selectedLoader: next, modCreate: false }
+      );
       applyLoaderState();
       applyVersionGates();
       publish();
@@ -803,6 +833,16 @@ export function createModsPanel({ root, store, i18n }) {
   roundTreesCb.addEventListener('change', publish);
   crops3dCb.addEventListener('change', publish);
   schematicFarmCb.addEventListener('change', publish);
+  // Create seçilince NeoForge'a geçilir; sürümü versionSelector modCreate filtresiyle
+  // 1.21.1'e sabitler. Radyolar ve satırlar store aboneliği (renderFromStore) ile güncellenir.
+  createCb.addEventListener('change', () => {
+    if (syncing) return;
+    store.setState(
+      createCb.checked
+        ? { modCreate: true, selectedLoader: CREATE_MOD_LOADER }
+        : { modCreate: false }
+    );
+  });
   shaderPicker.addEventListener('change', () => {
     if (!shaderCb.checked && !shaderCb.disabled) {
       shaderCb.checked = true;
@@ -882,6 +922,10 @@ export function createModsPanel({ root, store, i18n }) {
     if (schematicSpan) schematicSpan.textContent = t('mods.schematicFarm');
     const hintSchematic = root.querySelector('[data-role="hint-schematicFarm"]');
     if (hintSchematic) hintSchematic.textContent = t('mods.schematicFarmHint');
+    const createSpan = root.querySelector('[data-role="row-create"] label span');
+    if (createSpan) createSpan.textContent = t('mods.create');
+    const hintCreate = root.querySelector('[data-role="hint-create"]');
+    if (hintCreate) hintCreate.textContent = t('mods.createHint');
     if (shaderLabel) {
       const loader = currentLoader();
       const config = ROWS_BY_LOADER[loader] || ROWS_BY_LOADER.fabric;
@@ -930,6 +974,7 @@ export function createModsPanel({ root, store, i18n }) {
     if (roundTreesCb.checked !== !!state.modRoundTrees) roundTreesCb.checked = !!state.modRoundTrees;
     if (crops3dCb.checked !== !!state.modCrops3d) crops3dCb.checked = !!state.modCrops3d;
     if (schematicFarmCb.checked !== !!state.modSchematicFarm) schematicFarmCb.checked = !!state.modSchematicFarm;
+    if (createCb.checked !== !!state.modCreate) createCb.checked = !!state.modCreate;
     const shader = state.selectedShader || DEFAULT_SHADER_SLUG;
     if (shaderPicker.value !== shader) shaderPicker.value = shader;
     applyLoaderState();
@@ -956,6 +1001,7 @@ export function createModsPanel({ root, store, i18n }) {
       state.modRoundTrees,
       state.modCrops3d,
       state.modSchematicFarm,
+      state.modCreate,
       state.selectedShader,
       state.user?.bedrockOnly ? '1' : '0',
     ].join('\0');

@@ -14,6 +14,7 @@ const { createModrinthClient } = require('../src/core/mods/modrinthClient');
 const shader = require('../src/core/mods/shaderStackService');
 const vsel = require('../src/core/mods/modrinthVersionSelect');
 const { computeAudioOptionUpdates } = require('../src/core/minecraft/audioOptions');
+const { extractPassthroughJvmArgs } = require('../src/core/minecraft/versionJvmArgs');
 const {
   resolveJavaRequirement,
   javaMeetsGameRequirement,
@@ -457,4 +458,93 @@ test('modCompat: jarManifestMcVerdict gerçek bundled cloth-config jar (depends 
   assert.strictEqual(modCompat.readJarMcDependency(jar), '>=26.1-');
   assert.strictEqual(modCompat.jarManifestMcVerdict(jar, '26.1.2'), 'compatible');
   assert.strictEqual(modCompat.jarManifestMcVerdict(jar, '1.21.10'), 'incompatible');
+});
+
+// ------------------------------------------------- versionJvmArgs (26.3 cokmesi)
+// MCLC version JSON'daki `arguments.jvm`'i aktarmiyor. 26.3'te StackShadowPages
+// eksik kalinca oyun rastgele 0xC0000005 (3221225477) ile kapaniyordu.
+const WINDOWS_HEAPDUMP_RULE = {
+  rules: [{ action: 'allow', os: { name: 'windows' } }],
+  value: '-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump',
+};
+const PLACEHOLDER_JVM_TAIL = [
+  '-Djava.library.path=${natives_directory}/java',
+  '-Djna.tmpdir=${natives_directory}/jna',
+  '-Dorg.lwjgl.system.SharedLibraryExtractPath=${natives_directory}/lwjgl',
+  '-Dio.netty.native.workdir=${natives_directory}/netty',
+  '-Dminecraft.launcher.brand=${launcher_name}',
+  '-Dminecraft.launcher.version=${launcher_version}',
+  '-cp',
+  '${classpath}',
+];
+
+test('versionJvmArgs: 26.3 — StackShadowPages ve add-exports cifti aktarilir', () => {
+  const args = extractPassthroughJvmArgs({
+    arguments: {
+      jvm: [
+        { rules: [{ action: 'allow', os: { name: 'osx' } }], value: ['-XstartOnFirstThread'] },
+        WINDOWS_HEAPDUMP_RULE,
+        { rules: [{ action: 'allow', os: { arch: 'x86' } }], value: '-Xss1M' },
+        '-XX:StackShadowPages=32',
+        '--enable-native-access=ALL-UNNAMED',
+        '--add-exports',
+        'java.base/jdk.internal.misc=ALL-UNNAMED',
+        ...PLACEHOLDER_JVM_TAIL,
+      ],
+    },
+  });
+  assert.deepStrictEqual(args, [
+    '-XX:StackShadowPages=32',
+    '--enable-native-access=ALL-UNNAMED',
+    '--add-exports',
+    'java.base/jdk.internal.misc=ALL-UNNAMED',
+  ]);
+});
+
+test('versionJvmArgs: 26.2 — unsafe/native-access bayraklari aktarilir', () => {
+  const args = extractPassthroughJvmArgs({
+    arguments: {
+      jvm: [
+        WINDOWS_HEAPDUMP_RULE,
+        '--sun-misc-unsafe-memory-access=allow',
+        '--enable-native-access=ALL-UNNAMED',
+        ...PLACEHOLDER_JVM_TAIL,
+      ],
+    },
+  });
+  assert.deepStrictEqual(args, [
+    '--sun-misc-unsafe-memory-access=allow',
+    '--enable-native-access=ALL-UNNAMED',
+  ]);
+});
+
+test('versionJvmArgs: yalnizca yer tutuculu surumlerde (1.20.1) hicbir sey eklenmez', () => {
+  const args = extractPassthroughJvmArgs({
+    arguments: { jvm: [WINDOWS_HEAPDUMP_RULE, ...PLACEHOLDER_JVM_TAIL] },
+  });
+  assert.deepStrictEqual(args, []);
+});
+
+// ------------------------------------------------- Create modu (NeoForge 1.21.1)
+// Create secilince surum listesi yalnizca 1.21.1'e daralmali; boylece surum
+// otomatik secilir ve uyumsuz surumde Create ile acilis denenmez.
+test('create: surum filtresi yalnizca 1.21.1 release birakir', async () => {
+  const vc = await import('../src/shared/versionCompatibility.js');
+  assert.strictEqual(vc.CREATE_MOD_VERSION, '1.21.1');
+  assert.strictEqual(vc.CREATE_MOD_LOADER, 'neoforge');
+  const allowed = (versionId, versionType = 'release', modCreate = true) =>
+    vc.isVersionAllowedForSelection({ versionId, versionType, loader: 'neoforge', modCreate });
+  assert.strictEqual(allowed('1.21.1'), true);
+  assert.strictEqual(allowed('1.21'), false);
+  assert.strictEqual(allowed('1.21.4'), false);
+  assert.strictEqual(allowed('26.3'), false);
+  assert.strictEqual(allowed('1.21.1', 'snapshot'), false);
+  // Create kapaliyken filtre devreye girmez
+  assert.strictEqual(allowed('26.3', 'release', false), true);
+});
+
+test('versionJvmArgs: arguments.jvm olmayan eski surum / bozuk girdi bos doner', () => {
+  assert.deepStrictEqual(extractPassthroughJvmArgs({ minecraftArguments: '--username x' }), []);
+  assert.deepStrictEqual(extractPassthroughJvmArgs(null), []);
+  assert.deepStrictEqual(extractPassthroughJvmArgs({ arguments: { jvm: 'x' } }), []);
 });

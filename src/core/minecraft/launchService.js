@@ -17,6 +17,7 @@ const hudDepsService = require('../mods/hudDepsService');
 const modCompatibilityService = require('../mods/modCompatibilityService');
 const modIsolationService = require('../mods/modIsolationService');
 const { computeAudioOptionUpdates } = require('./audioOptions');
+const { extractPassthroughJvmArgs } = require('./versionJvmArgs');
 
 const MIN_MEM_MB = 1024;
 const DEFAULT_MEM_MB = 2048;
@@ -848,7 +849,7 @@ function createLaunchService({
     };
   }
 
-  async function buildNeoForgeSpec({ version, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, javaPath, emit }) {
+  async function buildNeoForgeSpec({ version, includeCreate, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, javaPath, emit }) {
     const effectiveVersion =
       includeShader || includeEmbossed || includeVoiceChat || includeFullbright || includeBetterLeaves || includeGlowingOres ? effectiveModGameVersion(version) : version;
     if (effectiveVersion !== version && emit && emit.status) {
@@ -863,6 +864,15 @@ function createLaunchService({
       emit,
     });
     logger.info('NeoForge profile ready', { effectiveVersion, neoforgeVersion, customId });
+
+    if (includeCreate) {
+      await shaderStackService.installCreateForExternalLoader({
+        loader: 'neoforge',
+        gameRoot: paths.gameRoot,
+        gameVersion: effectiveVersion,
+        emit,
+      });
+    }
 
     if (includeShader) {
       await shaderStackService.installShadersForExternalLoader({
@@ -966,6 +976,12 @@ function createLaunchService({
     const includeGlowingOres = !!(modPresets && modPresets.glowingOres);
     const includeRoundTrees = !!(modPresets && modPresets.roundTrees);
     const includeCrops3d = !!(modPresets && modPresets.crops3d);
+    // Create yalnızca NeoForge'da kurulur. Seçili değilse launcher'ın daha önce
+    // indirdiği jar'ı kaldır — aksi halde başka sürüm/yükleyicide oyunu çökertir.
+    const includeCreate = loader === 'neoforge' && !!(modPresets && modPresets.create);
+    if (!includeCreate) {
+      shaderStackService.removeManagedCreateJars(paths.gameRoot);
+    }
 
     if (loader === 'forge' || loader === 'forge-optifine') {
       applyLoaderModsState('forge');
@@ -991,6 +1007,7 @@ function createLaunchService({
       applyLoaderModsState('forge');
       return buildNeoForgeSpec({
         version,
+        includeCreate,
         includeShader,
         includeEmbossed,
         includeVoiceChat,
@@ -1090,6 +1107,38 @@ function createLaunchService({
     applyLoaderModsState('fabric');
     finalizeFabricModsDir(effectiveModGameVersion(version));
     return fabricPlan;
+  }
+
+  // Mojang'ın base sürüm JSON'undaki sabit JVM bayrakları (örn. 26.3 için
+  // `-XX:StackShadowPages=32`). MCLC v3 bunları aktarmıyor; eksik kalınca 26.3
+  // jvm.dll içinde rastgele 0xC0000005 ile çöküyor. Önce diskteki JSON'a bak
+  // (MCLC ilk açılışta indirir), yoksa Mojang'tan çek. Başarısızlık açılışı
+  // engellemez — bayraksız devam edilir.
+  async function readBaseVersionJvmArgs(versionNumber) {
+    const id = String(versionNumber || '').trim();
+    if (!id) return [];
+    let json = null;
+    try {
+      const jsonPath = assertInside(
+        path.join(paths.gameRoot, 'versions'),
+        path.join(id, `${id}.json`)
+      );
+      json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    } catch {
+      json = null;
+    }
+    if (!json) {
+      try {
+        json = await versionService.getVersionJson(id);
+      } catch (e) {
+        logger.warn('Sürüm JVM argümanları okunamadı, varsayılanlarla devam', {
+          version: id,
+          err: e.message,
+        });
+        return [];
+      }
+    }
+    return extractPassthroughJvmArgs(json);
   }
 
   function resolveJavaPathSyncFallback() {
@@ -1257,6 +1306,7 @@ function createLaunchService({
       ? readForgeFamilyJvmArgs({ gameRoot: paths.gameRoot, customId: spec.custom })
       : [];
     const planJvmArgs = (extra && extra.jvmArgs) || [];
+    const baseVersionJvmArgs = await readBaseVersionJvmArgs(spec.number);
 
     const launchOpts = {
       authorization: profile,
@@ -1267,7 +1317,7 @@ function createLaunchService({
         min: `${Math.min(MIN_MEM_MB, memMb)}M`,
       },
       javaPath,
-      customArgs: [...platformJvmArgs(), ...extraJvmArgs, ...planJvmArgs],
+      customArgs: [...platformJvmArgs(), ...baseVersionJvmArgs, ...extraJvmArgs, ...planJvmArgs],
       overrides,
     };
 
