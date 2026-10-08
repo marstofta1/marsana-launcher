@@ -7,6 +7,18 @@ const { CLIENT_HUD_MOD_SLUGS } = require('../../shared/clientHudModRegistry');
 const marsanaClientModService = require('./marsanaClientModService');
 
 const CLIENT_PACK_STASH_SUFFIX = '.marsana-stashed-client-pack';
+// Create modunun kurduğu jar'ları (eklentiler + FPS modları) listeleyen işaret dosyası.
+const CREATE_MARKER_FILE = '.marsana-create.json';
+
+/** Create modu kendi kurduğu jar'ları yönetir; client paketi izolasyonu bunları gizlememeli. */
+function readCreateManagedJars(modsDir) {
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(modsDir, CREATE_MARKER_FILE), 'utf8'));
+    return new Set(Array.isArray(raw && raw.jars) ? raw.jars.map((j) => path.basename(String(j))) : []);
+  } catch {
+    return new Set();
+  }
+}
 
 /** Shader cekirdegi — client HUD paketinden ayri tutulur. */
 const CORE_LAUNCHER_JAR_HINTS = Object.freeze([
@@ -89,12 +101,15 @@ function applyClientPackVisibility(modsDir, modPresets, playMode) {
 
   let stashed = 0;
   let restored = 0;
+  const createManaged = readCreateManagedJars(modsDir);
 
   for (const entry of fs.readdirSync(modsDir)) {
     if (entry.endsWith(CLIENT_PACK_STASH_SUFFIX)) {
-      if (wantsClientPack && unstashFile(modsDir, entry)) restored += 1;
+      const base = entry.slice(0, -CLIENT_PACK_STASH_SUFFIX.length);
+      if ((wantsClientPack || createManaged.has(base)) && unstashFile(modsDir, entry)) restored += 1;
       continue;
     }
+    if (createManaged.has(entry)) continue;
     if (!entry.endsWith('.jar') || entry.endsWith('.jar.disabled')) continue;
     if (!isClientPackJar(entry, modPresets)) continue;
     if (!wantsClientPack && stashFile(modsDir, entry)) stashed += 1;
@@ -119,9 +134,11 @@ function enforceModIsolation(modsDir, modPresets, playMode) {
   if (playMode === 'client') return result;
 
   if (!modsDir || !fs.existsSync(modsDir)) return result;
+  const createManaged = readCreateManagedJars(modsDir);
 
   for (const entry of fs.readdirSync(modsDir)) {
     if (!entry.endsWith('.jar') || entry.endsWith('.jar.disabled')) continue;
+    if (createManaged.has(entry)) continue;
     if (!isClientPackJar(entry, modPresets)) continue;
     if (stashFile(modsDir, entry)) result.stashed += 1;
   }

@@ -69,6 +69,8 @@ function readForgeFamilyJvmArgs({ gameRoot, customId }) {
   return out;
 }
 
+const CREATE_MIN_MEM_MB = 4096;
+
 function clampMemory(requestedMb) {
   const systemMb = Math.floor(os.totalmem() / 1024 / 1024);
   const upperBound = Math.max(MIN_MEM_MB, systemMb - SYSTEM_RESERVE_MB);
@@ -1176,7 +1178,10 @@ function createLaunchService({
       overrideName: opts.offlineName,
     });
 
-    const memMb = clampMemory(opts.memoryMb);
+    // Create + eklentileri (Aeronautics fizik motoru dahil) 2 GB varsayılanda zorlanır;
+    // taban 4 GB — clampMemory yine sistem RAM'ine göre üst sınırı korur.
+    const createMem = loaderId === 'neoforge' && !!(opts.modPresets && opts.modPresets.create);
+    const memMb = clampMemory(createMem ? Math.max(opts.memoryMb || 0, CREATE_MIN_MEM_MB) : opts.memoryMb);
     const playMode = opts.playMode === 'launcher' ? 'launcher' : opts.playMode === 'client' ? 'client' : 'launcher';
     const modPresets = stripUnavailableBundledModPresets(
       marsanaClientModService.sanitizeModPresetsForPlayMode(

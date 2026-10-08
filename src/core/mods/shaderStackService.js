@@ -46,7 +46,43 @@ const SHADER_FPS_SLUGS = Object.freeze(['iris', 'fabric-api']);
 const EMBOSSED_SLUGS = Object.freeze(['continuity', 'fabric-api']);
 const VOICE_CHAT_SLUG = 'simple-voice-chat';
 const CREATE_SLUG = 'create';
-// Launcher'ın indirdiği Create jar'ının adı burada tutulur; seçim kaldırıldığında
+// Create kutusu işaretlenince Create ile birlikte kurulan, bilerek kısa tutulmuş eklenti
+// listesi (disk/RAM/FPS). Örtüşenler (Create Generators, Crafts & Additions, dekor
+// paketleri) bilerek yok. Yalnızca zorunlu bağımlılıklar çekilir.
+const CREATE_ADDON_SLUGS = Object.freeze([
+  'create-aeronautics',
+  'create-steam-n-rails-1.21.1',
+  'create-railways-navigator',
+  'create-diesel-generators',
+  'create-new-age',
+  'create-connected',
+  'create-dreams-and-desires',
+  'create-framed',
+]);
+// Create modunda FPS/RAM kazancı için kurulan hafif NeoForge optimizasyon modları
+// (toplam ~4 MB). Hepsi opsiyonel: bulunamazsa atlanır.
+const CREATE_PERF_SLUGS = Object.freeze([
+  'sodium',
+  'modernfix',
+  'immediatelyfast',
+  'ferrite-core',
+  'entityculling',
+  'lithium',
+]);
+// Create modu ilk kez açıldığında ağır video ayarlarını (render mesafesi 32 gibi) bir kez
+// sınırlar; kullanıcı sonra oyun içinden yükseltirse tekrar ezilmez.
+const NEWLINE_RE = /\r?\n/;
+const CREATE_VIDEO_CAPS = Object.freeze({
+  renderDistance: 10,
+  simulationDistance: 8,
+  entityDistanceScaling: 1.0,
+  biomeBlendRadius: 3,
+  mipmapLevels: 2,
+});
+// Entegre ekran kartlarında GPU darboğazı: gölge ve Flywheel'in ağır ışık/compute yolu.
+const CREATE_VIDEO_FORCE = Object.freeze({ entityShadows: 'false' });
+const FLYWHEEL_CONFIG_REL = path.join('config', 'flywheel-client.toml');
+// Launcher'ın indirdiği Create jar'larının adları burada tutulur; seçim kaldırıldığında
 // yalnızca bu jar silinir, kullanıcının elle koyduğu Create'e dokunulmaz.
 const CREATE_MARKER_FILE = '.marsana-create.json';
 const STASH_SUFFIXES = ['.marsana-stashed-fabric', '.marsana-stashed-forge'];
@@ -1065,7 +1101,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   //    indir; null ise anchor'ın yayın tarihinden önceki en son uyumlu sürümü
   //    al (contemporary heuristic).
   //  - Aynı projenin tekrar indirilmesini engellemek için downloaded set tutulur.
-  async function downloadModsFromSlugs({ modsDir, gameVersion, slugs, modrinthLoaders }) {
+  // skipExisting: diskte aynı boyutta jar varsa yeniden indirme (her açılışta ~50 MB'lık
+  // paketi çekmemek için). optionalSlugs: bu slug'lar için uygun sürüm yoksa atla.
+  async function downloadModsFromSlugs({ modsDir, gameVersion, slugs, modrinthLoaders, skipExisting = false, optionalSlugs = null }) {
     const loaderFilter = Array.isArray(modrinthLoaders) && modrinthLoaders.length
       ? modrinthLoaders
       : ['fabric'];
@@ -1109,7 +1147,18 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       // aynı alanda path.basename uyguluyor — burada da modsDir dışına çıkışı engelle.
       const safeName = path.basename(String(file.filename || ''));
       if (!safeName) return;
-      await httpClient.download(file.url, assertInside(modsDir, safeName), modrinthClient.fileIntegrity(file));
+      const destPath = assertInside(modsDir, safeName);
+      let alreadyThere = false;
+      if (skipExisting) {
+        try {
+          alreadyThere = fs.statSync(destPath).size === Number(file.size);
+        } catch {
+          alreadyThere = false;
+        }
+      }
+      if (!alreadyThere) {
+        await httpClient.download(file.url, destPath, modrinthClient.fileIntegrity(file));
+      }
       jars.push(safeName);
 
       for (const dep of version.dependencies || []) {
@@ -1158,14 +1207,14 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           strictPatch: usesStrictModrinthPatch(gameVersion) || STRICT_PATCH_MOD_SLUGS.has(slug),
         });
         if (!version) {
-          if (OPTIONAL_LOADER_MOD_SLUGS.has(slug)) continue;
+          if (OPTIONAL_LOADER_MOD_SLUGS.has(slug) || (optionalSlugs && optionalSlugs.has(slug))) continue;
           throw new LauncherError(
             Codes.MODRINTH_NOT_FOUND,
             `Modrinth: "${slug}" için uygun sürüm bulunamadı.`
           );
         }
       } catch (err) {
-        if (OPTIONAL_LOADER_MOD_SLUGS.has(slug)) continue;
+        if (OPTIONAL_LOADER_MOD_SLUGS.has(slug) || (optionalSlugs && optionalSlugs.has(slug))) continue;
         if (err && err.code === Codes.MODRINTH_NOT_FOUND) {
           throw new LauncherError(
             Codes.MODRINTH_NOT_FOUND,
@@ -1788,9 +1837,68 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (keep.length === 0) removeIfExists(path.join(modsDir, CREATE_MARKER_FILE));
   }
 
-  // Create (sade — ek mod paketi yok). Arayüz bu seçeneği NeoForge 1.21.1'e sabitler.
-  // Jar güncelse yeniden indirilmez; Modrinth'e ulaşılamazsa kurulu jar ile devam edilir
-  // (tek oyunculu, çevrimdışı açılış).
+  function readCreateMarker(modsDir) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(path.join(modsDir, CREATE_MARKER_FILE), 'utf8'));
+      return { tuned: raw.tuned === 2, flywheelTuned: raw.flywheelTuned === 2 };
+    } catch {
+      return { tuned: false, flywheelTuned: false };
+    }
+  }
+
+  // Flywheel: compute-shader tabanlı "indirect" backend ve SMOOTH ışık, entegre GPU'da
+  // pahalı. Dosya ilk oyun açılışında oluşur; yoksa sonraki açılışta denenir.
+  function tuneFlywheelConfig(gameRoot) {
+    const cfgPath = path.join(gameRoot, FLYWHEEL_CONFIG_REL);
+    let text;
+    try {
+      text = fs.readFileSync(cfgPath, 'utf8');
+    } catch {
+      return null;
+    }
+    const next = text
+      .replace(/^(\s*backend\s*=\s*)"(?:DEFAULT|INSTANCING)"/m, '$1"flywheel:instancing"')
+      .replace(/^(\s*lightSmoothness\s*=\s*)"SMOOTH"/m, '$1"FLAT"');
+    if (next !== text) fs.writeFileSync(cfgPath, next, 'utf8');
+    return next !== text;
+  }
+
+  // options.txt'te üst sınırı aşan değerleri düşürür; sınırın altındakilere dokunmaz.
+  function capCreateVideoOptions(gameRoot) {
+    const optionsPath = path.join(gameRoot, 'options.txt');
+    let text;
+    try {
+      text = fs.readFileSync(optionsPath, 'utf8');
+    } catch {
+      return false;
+    }
+    let changed = false;
+    const lines = text.split(NEWLINE_RE).map((line) => {
+      const i = line.indexOf(':');
+      if (i < 0) return line;
+      const cap = CREATE_VIDEO_CAPS[line.slice(0, i)];
+      const cur = Number(line.slice(i + 1));
+      if (cap === undefined || !Number.isFinite(cur) || cur <= cap) return line;
+      changed = true;
+      return line.slice(0, i + 1) + cap;
+    });
+    for (let n = 0; n < lines.length; n += 1) {
+      const i = lines[n].indexOf(':');
+      if (i < 0) continue;
+      const want = CREATE_VIDEO_FORCE[lines[n].slice(0, i)];
+      if (want !== undefined && lines[n].slice(i + 1) !== want) {
+        lines[n] = lines[n].slice(0, i + 1) + want;
+        changed = true;
+      }
+    }
+    if (changed) fs.writeFileSync(optionsPath, lines.join('\n'), 'utf8');
+    return changed;
+  }
+
+  // Create + küratörlü eklenti listesi (CREATE_ADDON_SLUGS). Arayüz bu seçeneği NeoForge
+  // 1.21.1'e sabitler. Güncel jar'lar yeniden indirilmez; Modrinth'e ulaşılamazsa kurulu
+  // jar'larla devam edilir (tek oyunculu, çevrimdışı açılış). Taban Create bulunamazsa
+  // hata verilir; bir eklentinin uygun sürümü yoksa o eklenti sessizce atlanır.
   async function installCreateForExternalLoader({ loader, gameRoot, gameVersion, emit }) {
     const modsDir = path.join(gameRoot, 'mods');
     const status = statusEmitter(emit);
@@ -1798,48 +1906,55 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const previousOnDisk =
       previous.length > 0 && previous.every((j) => fs.existsSync(path.join(modsDir, j)));
 
-    let version = null;
+    status('Create ve eklentileri hazırlanıyor...');
+    let jars;
     try {
-      const candidates = expandLoaderModGameVersion(gameVersion);
-      const versions = await modrinthClient.listProjectVersions(CREATE_SLUG, {
-        loaders: [loader],
-        gameVersions: candidates,
-      });
-      version = pickNewestModrinthVersion(versions, {
+      jars = await downloadModsFromSlugs({
+        modsDir,
         gameVersion,
-        gameVersionCandidates: candidates,
-        strictPatch: usesStrictModrinthPatch(gameVersion),
+        slugs: [CREATE_SLUG, ...CREATE_ADDON_SLUGS, ...CREATE_PERF_SLUGS],
+        modrinthLoaders: [loader],
+        skipExisting: true,
+        optionalSlugs: new Set([...CREATE_ADDON_SLUGS, ...CREATE_PERF_SLUGS]),
       });
     } catch (err) {
       if (previousOnDisk) {
-        status("Create: Modrinth'e ulaşılamadı — kurulu sürümle devam ediliyor.");
+        status("Create: Modrinth'e ulaşılamadı — kurulu sürümlerle devam ediliyor.");
         return { jars: previous };
       }
       throw err;
     }
 
-    const file = version ? modrinthClient.primaryFileOf(version) : null;
-    const safeName = file ? path.basename(String(file.filename || '')) : '';
-    if (!safeName) {
+    if (jars.length === 0) {
       throw new LauncherError(
         Codes.MODRINTH_NOT_FOUND,
         `Create modunun ${loader} ${gameVersion} uyumlu sürümü Modrinth'te bulunamadı.`
       );
     }
-
-    const dest = assertInside(modsDir, safeName);
-    if (!(previous.includes(safeName) && fs.existsSync(dest))) {
-      status(`Create indiriliyor (${safeName})...`);
-      await fs.promises.mkdir(modsDir, { recursive: true });
-      await httpClient.download(file.url, dest, modrinthClient.fileIntegrity(file));
+    // Listeden çıkan / güncellenen eski jar'ları sil, marker'ı tüm yeni jar'larla yaz.
+    const marker = readCreateMarker(modsDir);
+    let tuned = marker.tuned;
+    let flywheelTuned = marker.flywheelTuned;
+    if (!flywheelTuned) {
+      const r = tuneFlywheelConfig(gameRoot);
+      if (r !== null) {
+        flywheelTuned = true;
+        if (r) status('Create: Flywheel hafif moda alındı (entegre ekran kartı için).');
+      }
     }
-    removeManagedCreateJars(gameRoot, { keep: [safeName] });
+    if (!tuned) {
+      if (capCreateVideoOptions(gameRoot)) {
+        status('Create: render mesafesi ve benzeri ağır video ayarları FPS için düşürüldü (oyun içinden değiştirilebilir).');
+      }
+      tuned = true;
+    }
+    removeManagedCreateJars(gameRoot, { keep: jars });
     fs.writeFileSync(
       path.join(modsDir, CREATE_MARKER_FILE),
-      JSON.stringify({ jars: [safeName] }, null, 2),
+      JSON.stringify({ jars, tuned: tuned ? 2 : 0, flywheelTuned: flywheelTuned ? 2 : 0 }, null, 2),
       'utf8'
     );
-    return { jars: [safeName] };
+    return { jars };
   }
 
   // Forge ailesi loader'lar için kabartmalı blok (CTM) modunu yükle.
