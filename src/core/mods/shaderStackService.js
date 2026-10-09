@@ -81,6 +81,13 @@ const CREATE_VIDEO_CAPS = Object.freeze({
 });
 // Entegre ekran kartlarında GPU darboğazı: gölge ve Flywheel'in ağır ışık/compute yolu.
 const CREATE_VIDEO_FORCE = Object.freeze({ entityShadows: 'false' });
+// Tek oyunculu yerleşik sunucu simülasyon mesafesi büyükse (Create makineleri, Aeronautics
+// fiziği) sunucu iş parçacığı yetişemez ("Can't keep up"). Ekranda görünmez; her açılışta sınırlanır.
+const CREATE_SIMULATION_DISTANCE_MAX = 8;
+// Vanilla render mesafesi üst sınırı: 32 chunk yerleşik sunucuyu chunk üretimiyle boğuyor
+// ("Can't keep up") ve ekran kartını yoruyor. Distant Horizons denendi ama uzak arazi görüntüsü
+// beğenilmedi (blok blok), bu yüzden pakette yok; 12 chunk net ve akıcı.
+const CREATE_RENDER_DISTANCE_MAX = 12;
 const FLYWHEEL_CONFIG_REL = path.join('config', 'flywheel-client.toml');
 // Launcher'ın indirdiği Create jar'larının adları burada tutulur; seçim kaldırıldığında
 // yalnızca bu jar silinir, kullanıcının elle koyduğu Create'e dokunulmaz.
@@ -1863,6 +1870,33 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return next !== text;
   }
 
+  // Her açılışta: render/simülasyon mesafesi üst sınırı aşıyorsa düşürür (altındakilere dokunmaz).
+  function capCreateDistances(gameRoot) {
+    const optionsPath = path.join(gameRoot, 'options.txt');
+    let text;
+    try {
+      text = fs.readFileSync(optionsPath, 'utf8');
+    } catch {
+      return false;
+    }
+    let changed = false;
+    const lines = text.split(NEWLINE_RE).map((line) => {
+      const key = line.startsWith('simulationDistance:')
+        ? 'simulationDistance'
+        : line.startsWith('renderDistance:')
+          ? 'renderDistance'
+          : null;
+      if (!key) return line;
+      const max = key === 'simulationDistance' ? CREATE_SIMULATION_DISTANCE_MAX : CREATE_RENDER_DISTANCE_MAX;
+      const cur = Number(line.slice(key.length + 1));
+      if (!Number.isFinite(cur) || cur <= max) return line;
+      changed = true;
+      return key + ':' + max;
+    });
+    if (changed) fs.writeFileSync(optionsPath, lines.join('\n'), 'utf8');
+    return changed;
+  }
+
   // options.txt'te üst sınırı aşan değerleri düşürür; sınırın altındakilere dokunmaz.
   function capCreateVideoOptions(gameRoot) {
     const optionsPath = path.join(gameRoot, 'options.txt');
@@ -1931,7 +1965,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         `Create modunun ${loader} ${gameVersion} uyumlu sürümü Modrinth'te bulunamadı.`
       );
     }
-    // Listeden çıkan / güncellenen eski jar'ları sil, marker'ı tüm yeni jar'larla yaz.
+    if (capCreateDistances(gameRoot)) {
+      status('Create: render mesafesi en fazla ' + CREATE_RENDER_DISTANCE_MAX + ', simülasyon mesafesi en fazla ' + CREATE_SIMULATION_DISTANCE_MAX + ' (takılmayı önler).');
+    }
     const marker = readCreateMarker(modsDir);
     let tuned = marker.tuned;
     let flywheelTuned = marker.flywheelTuned;
@@ -1948,6 +1984,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       }
       tuned = true;
     }
+    // Listeden çıkan / güncellenen eski jar'ları sil, marker'ı tüm yeni jar'larla yaz.
     removeManagedCreateJars(gameRoot, { keep: jars });
     fs.writeFileSync(
       path.join(modsDir, CREATE_MARKER_FILE),
