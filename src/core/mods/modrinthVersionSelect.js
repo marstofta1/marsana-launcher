@@ -105,7 +105,8 @@ function versionMatchesGameForFetch(version, gameVersion, { strictPatch = false 
   return versionListsAnyGame(version, modrinthGameVersionCandidates(gameVersion));
 }
 
-function pickNewestModrinthVersion(versions, { anchorTs, strictPatch = false, gameVersion, gameVersionCandidates } = {}) {
+// allowPrerelease: release'i beta/alpha'ya tercih etme — yalnızca en yeni yayın tarihine bak.
+function pickNewestModrinthVersion(versions, { anchorTs, strictPatch = false, gameVersion, gameVersionCandidates, allowPrerelease = false } = {}) {
   if (!Array.isArray(versions) || versions.length === 0) return null;
   const candidates = gameVersionCandidates || modrinthGameVersionCandidates(gameVersion);
   let eligible = versions.filter((v) =>
@@ -119,7 +120,7 @@ function pickNewestModrinthVersion(versions, { anchorTs, strictPatch = false, ga
   const sortByRankAndDate = (a, b) => {
     const cr = modrinthCandidateRank(a, candidates) - modrinthCandidateRank(b, candidates);
     if (cr !== 0) return cr;
-    const releaseRank = (v) => (v.version_type === 'release' ? 0 : 1);
+    const releaseRank = (v) => (allowPrerelease || v.version_type === 'release' ? 0 : 1);
     const dr = releaseRank(a) - releaseRank(b);
     if (dr !== 0) return dr;
     return Date.parse(b.date_published || '') - Date.parse(a.date_published || '');

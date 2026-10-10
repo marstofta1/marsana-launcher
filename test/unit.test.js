@@ -312,6 +312,17 @@ test('pickNewestModrinthVersion: strictPatch yanlış patch\'i eler', () => {
   assert.strictEqual(picked && picked.id, 'right');
 });
 
+// Steam 'n' Rails 1.21.1 portu: son release eski, güncel sürüm beta kanalında.
+test('pickNewestModrinthVersion: allowPrerelease ile daha yeni beta release\'i geçer', () => {
+  const versions = [
+    { id: 'beta', game_versions: ['1.21.1'], version_type: 'beta', date_published: '2026-07-27' },
+    { id: 'release', game_versions: ['1.21.1'], version_type: 'release', date_published: '2026-06-13' },
+  ];
+  const opts = { gameVersion: '1.21.1', anchorTs: Date.parse('2026-10-01') };
+  assert.strictEqual(vsel.pickNewestModrinthVersion(versions, opts).id, 'release');
+  assert.strictEqual(vsel.pickNewestModrinthVersion(versions, { ...opts, allowPrerelease: true }).id, 'beta');
+});
+
 test('pickNewestModrinthVersion: anchorTs sonrası yayınları eler', () => {
   const versions = [
     { id: 'future', game_versions: ['26.1.2'], version_type: 'release', date_published: '2026-06-01' },

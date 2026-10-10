@@ -418,6 +418,10 @@ const STRICT_PATCH_MOD_SLUGS = new Set([
   'sodium',
 ]);
 
+// Yalnızca ön sürümü güncel olan modlar: Steam 'n' Rails 1.21.1 portunun son "release"i
+// (0.2.1) eski kalıyor, güncel içerik beta kanalında yayınlanıyor.
+const PRERELEASE_MOD_SLUGS = new Set(['create-steam-n-rails-1.21.1']);
+
 const OPTIONAL_LOADER_MOD_SLUGS = new Set([POLYTONE_SLUG, ...CLIENT_HUD_MOD_SLUGS]);
 
 function usesStrictModrinthPatch(gameVersion) {
@@ -1252,6 +1256,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           gameVersion,
           gameVersionCandidates: candidates,
           strictPatch: usesStrictModrinthPatch(gameVersion) || STRICT_PATCH_MOD_SLUGS.has(slug),
+          allowPrerelease: PRERELEASE_MOD_SLUGS.has(slug),
         });
         if (!version) {
           if (OPTIONAL_LOADER_MOD_SLUGS.has(slug) || (optionalSlugs && optionalSlugs.has(slug))) continue;
