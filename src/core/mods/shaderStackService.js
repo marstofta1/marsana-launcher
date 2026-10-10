@@ -88,6 +88,38 @@ const CREATE_SIMULATION_DISTANCE_MAX = 8;
 // ("Can't keep up") ve ekran kartını yoruyor. Distant Horizons denendi ama uzak arazi görüntüsü
 // beğenilmedi (blok blok), bu yüzden pakette yok; 12 chunk net ve akıcı.
 const CREATE_RENDER_DISTANCE_MAX = 12;
+// Hazır mod paketleri (Tam Paket / FPS Paketi) için Fabric FPS/RAM modları. Hepsi opsiyonel:
+// seçili Minecraft sürümünde uygun sürümü yoksa atlanır.
+const FPS_BOOST_SLUGS = Object.freeze([
+  'lithium',
+  'ferrite-core',
+  'immediatelyfast',
+  'entityculling',
+  'modernfix',
+  'dynamic-fps',
+]);
+// Paket ilk kez açıldığında render mesafesi bu değere ayarlanır (sonra oyun içinden değiştirilebilir).
+const FPS_BOOST_RENDER_DISTANCE = 12;
+// Vanilla varsayılanı maxFps:120 — FPS modları ne kazandırırsa kazandırsın sayaç 120'de takılır.
+// 260 = oyundaki "Sınırsız".
+// FPS Paketi sınırı kaldırır ('unlimited'); Tam Paket 120'de sabit tutar ('capped').
+const FPS_BOOST_FORCED_OPTIONS = Object.freeze({
+  unlimited: Object.freeze({
+    renderDistance: FPS_BOOST_RENDER_DISTANCE,
+    maxFps: 260,
+    enableVsync: 'false',
+  }),
+  capped: Object.freeze({
+    renderDistance: FPS_BOOST_RENDER_DISTANCE,
+    maxFps: 120,
+  }),
+});
+// Zorlanan ayar listesi değişince artır: mevcut kurulumlarda ayar bir kez daha uygulanır.
+const FPS_BOOST_TUNE_VERSION = 4;
+// Paket dışında (Create dahil) geri alınan ayarlar ve önceki değer bilinmiyorsa dönülecek vanilla varsayılanı.
+// options.txt tüm yükleyicilerde ortak; geri alınmazsa sınırsız FPS diğer profillere de sızar.
+const FPS_BOOST_RESTORE_DEFAULTS = Object.freeze({ maxFps: '120' });
+const FPS_BOOST_MARKER_FILE = '.marsana-fps-pack.json';
 const FLYWHEEL_CONFIG_REL = path.join('config', 'flywheel-client.toml');
 // Launcher'ın indirdiği Create jar'larının adları burada tutulur; seçim kaldırıldığında
 // yalnızca bu jar silinir, kullanıcının elle koyduğu Create'e dokunulmaz.
@@ -371,6 +403,11 @@ function normalizePresets(p) {
     clientHudPack: !!(p && p.clientHudPack),
     sodium: sodiumExplicit ? !!p.sodium : shaderFps,
     sodiumExtra: !!(p && p.sodiumExtra),
+    // OptiFine paketi kendi optimizasyon modlarını getirir; ikisi birlikte çift jar üretir.
+    // Kullanıcının "Mod ekle" ile eklediği, bu seçimde yüklenecek mod var.
+    userMods: !!(p && p.userMods),
+    fpsBoost: !!(p && p.fpsBoost && !p.optifine),
+    fpsUnlimited: !!(p && p.fpsBoost && !p.optifine && p.fpsUnlimited),
   };
 }
 
@@ -438,7 +475,7 @@ function modrinthSlugsForPresets(p, gameVersion) {
     for (const slug of CLIENT_HUD_REQUIRED_SLUGS) add(slug);
     for (const slug of CLIENT_HUD_MOD_SLUGS) add(slug);
   }
-  if (p.schematicFarm || p.marsanaClientMenu) add('fabric-api');
+  if (p.schematicFarm || p.marsanaClientMenu || p.userMods) add('fabric-api');
   if (p.sodium) {
     add(SODIUM_SLUG);
     add('fabric-api');
@@ -760,7 +797,10 @@ function presetsMatch(saved, wanted) {
     saved.marsanaClientMenu === wanted.marsanaClientMenu &&
     saved.clientHudPack === wanted.clientHudPack &&
     saved.sodium === wanted.sodium &&
-    saved.sodiumExtra === wanted.sodiumExtra
+    saved.sodiumExtra === wanted.sodiumExtra &&
+    // Eski bundle'larda alan yok; yok = kapalı.
+    !!saved.fpsBoost === !!wanted.fpsBoost &&
+    !!saved.userMods === !!wanted.userMods
   );
 }
 
@@ -1017,7 +1057,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       bundleListsIncompatibleManagedJars(existing.jars, gameVersion) ||
       (!modPresets.clientHudPack &&
         !modPresets.marsanaClientMenu &&
-        modIsolationService.activeClientPackJarsPresent(modsDir)) ||
+        modIsolationService.activeClientPackJarsPresent(modsDir, modPresets)) ||
       (!polytoneSupportedForGameVersion(gameVersion) &&
         (existing.jars || []).some((name) => /^polytone/i.test(String(name))))
     ) {
@@ -1929,6 +1969,78 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return changed;
   }
 
+  // Hazır paketlerin video ayarı: render mesafesi 12'ye ayarlanır, ağır ayarlar sınırlanır.
+  // Paket başına bir kez uygulanır; paket kapatılınca işaret silinir, yeniden seçilince tekrar uygulanır.
+  function syncFpsBoostVideoOptions({ gameRoot, modsDir, enabled, unlimited, status }) {
+    const markerPath = path.join(modsDir, FPS_BOOST_MARKER_FILE);
+    const optionsPath = path.join(gameRoot, 'options.txt');
+    let marker = null;
+    try {
+      marker = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
+    } catch {
+      /* işaret yok ya da bozuk */
+    }
+    let text = '';
+    try {
+      text = fs.readFileSync(optionsPath, 'utf8');
+    } catch {
+      /* ilk kurulum: options.txt henüz yok */
+    }
+    if (!enabled) {
+      if (!marker) return;
+      // Yalnızca paketin yazdığı değer hâlâ duruyorsa geri al; kullanıcı oyun içinden değiştirdiyse dokunma.
+      const prev = (marker && marker.prev) || {};
+      const written = FPS_BOOST_FORCED_OPTIONS[marker.mode] || FPS_BOOST_FORCED_OPTIONS.unlimited;
+      const restored = text.split(NEWLINE_RE).map((line) => {
+        const i = line.indexOf(':');
+        const key = i < 0 ? '' : line.slice(0, i);
+        const back = prev[key] !== undefined ? prev[key] : FPS_BOOST_RESTORE_DEFAULTS[key];
+        if (back === undefined || line.slice(i + 1) !== String(written[key])) return line;
+        return key + ':' + back;
+      }).join('\n');
+      if (restored !== text) fs.writeFileSync(optionsPath, restored, 'utf8');
+      removeIfExists(markerPath);
+      return;
+    }
+    const mode = unlimited ? 'unlimited' : 'capped';
+    if (marker && marker.tuned === FPS_BOOST_TUNE_VERSION && marker.mode === mode) return;
+
+    // "Önceki değer" yalnızca paket ilk uygulandığında dosyadan okunur; paketler arası geçişte
+    // dosyadaki değer öteki paketin yazdığıdır, eski işaretteki korunur.
+    const forced = FPS_BOOST_FORCED_OPTIONS[mode];
+    const prev = { ...((marker && marker.prev) || {}) };
+    const seen = new Set();
+    const lines = text.split(NEWLINE_RE).map((line) => {
+      const i = line.indexOf(':');
+      if (i < 0) return line;
+      const key = line.slice(0, i);
+      if (forced[key] !== undefined) {
+        seen.add(key);
+        if (!marker && key !== 'renderDistance') prev[key] = line.slice(i + 1);
+        return key + ':' + forced[key];
+      }
+      if (CREATE_VIDEO_FORCE[key] !== undefined) return key + ':' + CREATE_VIDEO_FORCE[key];
+      const cap = CREATE_VIDEO_CAPS[key];
+      const cur = Number(line.slice(i + 1));
+      if (cap === undefined || !Number.isFinite(cur) || cur <= cap) return line;
+      return key + ':' + cap;
+    });
+    let next = lines.join('\n');
+    const missing = Object.keys(forced).filter((key) => !seen.has(key));
+    if (missing.length > 0) {
+      next = next.replace(/\n+$/, '');
+      next = (next ? next + '\n' : '') + missing.map((key) => key + ':' + forced[key]).join('\n') + '\n';
+    }
+    if (next !== text) fs.writeFileSync(optionsPath, next, 'utf8');
+    fs.mkdirSync(modsDir, { recursive: true });
+    fs.writeFileSync(markerPath, JSON.stringify({ tuned: FPS_BOOST_TUNE_VERSION, mode, prev }), 'utf8');
+    status('Paket: render mesafesi ' + FPS_BOOST_RENDER_DISTANCE + ' chunk yapıldı, ' + (unlimited ? 'FPS sınırı kaldırıldı' : 'FPS sınırı 120 yapıldı') + ', ağır video ayarları düşürüldü (oyun içinden değiştirilebilir).');
+  }
+
+  function releaseFpsBoostVideoOptions(gameRoot) {
+    syncFpsBoostVideoOptions({ gameRoot, modsDir: path.join(gameRoot, 'mods'), enabled: false });
+  }
+
   // Create + küratörlü eklenti listesi (CREATE_ADDON_SLUGS). Arayüz bu seçeneği NeoForge
   // 1.21.1'e sabitler. Güncel jar'lar yeniden indirilmez; Modrinth'e ulaşılamazsa kurulu
   // jar'larla devam edilir (tek oyunculu, çevrimdışı açılış). Taban Create bulunamazsa
@@ -2038,7 +2150,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
   async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable', playMode }) {
     const presets = normalizePresets(modPresets);
-    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm && !presets.clientHudPack && !presets.marsanaClientMenu && !presets.sodium && !presets.sodiumExtra) {
+    if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm && !presets.clientHudPack && !presets.marsanaClientMenu && !presets.sodium && !presets.sodiumExtra && !presets.userMods) {
       throw new Error('shaderStackService.ensure: en az bir mod önayarı gerekli');
     }
 
@@ -2071,6 +2183,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     } else {
       deactivateShaderConfig(gameRoot);
     }
+    syncFpsBoostVideoOptions({ gameRoot, modsDir, enabled: presets.fpsBoost, unlimited: presets.fpsUnlimited, status });
 
     const cached = cachedReady({
       versionDir,
@@ -2210,8 +2323,26 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     ) {
       jars = await ensureHudRuntimeDepsAsync({ modsDir, gameVersion, status, jars, presets });
     }
+    let fpsBoostJars = [];
+    if (presets.fpsBoost) {
+      status('Paket: FPS optimizasyon modları indiriliyor (uyumlu olanlar)...');
+      try {
+        fpsBoostJars = await downloadModsFromSlugs({
+          modsDir,
+          gameVersion,
+          slugs: FPS_BOOST_SLUGS,
+          optionalSlugs: new Set(FPS_BOOST_SLUGS),
+        });
+      } catch {
+        status('Paket: bazı FPS modları indirilemedi — kalan modlarla devam ediliyor.');
+      }
+    }
     modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     jars = await ensureShaderCoreMods({ modsDir, gameVersion, presets, status, jars });
+    // Uyumsuz çıkıp temizlenen FPS modu bundle'a yazılmamalı; yoksa önbellek her açılışta geçersiz olur.
+    for (const name of fpsBoostJars) {
+      if (!jars.includes(name) && fs.existsSync(path.join(modsDir, name))) jars.push(name);
+    }
     if (optifineMeta && Array.isArray(optifineMeta.jarNames)) {
       const seen = new Set(jars);
       for (const name of optifineMeta.jarNames) {
@@ -2414,7 +2545,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { customId, assetIndexId };
   }
 
-  return { ensure, applyModResourcePackPresets, installShadersForExternalLoader, installEmbossedForExternalLoader, installVoiceChatForExternalLoader, installCreateForExternalLoader, removeManagedCreateJars, installFullbrightForExternalLoader, installBetterLeavesForExternalLoader, installGlowingOresForExternalLoader, installRoundTreesForExternalLoader, installCrops3dForExternalLoader };
+  return { ensure, applyModResourcePackPresets, installShadersForExternalLoader, installEmbossedForExternalLoader, installVoiceChatForExternalLoader, installCreateForExternalLoader, removeManagedCreateJars, releaseFpsBoostVideoOptions, installFullbrightForExternalLoader, installBetterLeavesForExternalLoader, installGlowingOresForExternalLoader, installRoundTreesForExternalLoader, installCrops3dForExternalLoader };
 }
 
 module.exports = {

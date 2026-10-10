@@ -6,6 +6,8 @@ import { createAccountCard } from './components/accountCard.js';
 import { createVersionSelector } from './components/versionSelector.js';
 import { createMemorySlider } from './components/memorySlider.js';
 import { createModsPanel } from './components/modsPanel.js';
+import { createModPacksPanel } from './components/modPacksPanel.js';
+import { createUserModsPanel } from './components/userModsPanel.js';
 import { createLaunchOptions } from './components/launchOptions.js';
 import { createPlayButton } from './components/playButton.js';
 import { createStatusPanel } from './components/statusPanel.js';
@@ -104,6 +106,7 @@ async function bootstrap() {
     modSodium: false,
     modSodiumExtra: false,
     modCreate: false,
+    selectedModPack: null,
     modClientHudPack: CLIENT_MOD_PRESET.modClientHudPack,
     statusText: '',
     progressPercent: 0,
@@ -172,6 +175,8 @@ async function bootstrap() {
     { name: 'memory', mount: createMemorySlider({ root: $('memory-slot'), store, i18n }).mount },
     { name: 'play', mount: createPlayButton({ root: $('play-slot'), store, launchApi: api.launch, i18n }).mount },
     { name: 'mods', mount: createModsPanel({ root: $('mods-slot'), store, i18n }).mount },
+    { name: 'modPacks', mount: createModPacksPanel({ root: $('mod-packs-slot'), store, i18n }).mount },
+    { name: 'userMods', mount: createUserModsPanel({ root: $('user-mods-slot'), store, modsApi: api.mods, i18n }).mount },
     { name: 'launchOptions', mount: createLaunchOptions({ root: $('launch-options-slot'), store, i18n }).mount },
     { name: 'status', mount: createStatusPanel({ root: $('status-slot'), store, events: api.events }).mount },
     { name: 'profile', mount: createPlayerProfileCard({ root: $('profile-slot'), store, i18n }).mount },

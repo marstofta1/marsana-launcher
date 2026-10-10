@@ -813,6 +813,155 @@
   line-height: 1.35;
 }
 
+.mod-packs {
+  margin: 16px 0 20px;
+}
+
+.mod-packs-lead {
+  margin: 0 0 12px;
+}
+
+.mod-packs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.mod-pack-card:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.user-mods {
+  margin-top: 20px;
+}
+
+.mod-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 22px 16px;
+  border: 2px dashed var(--border-strong);
+  border-radius: 10px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.mod-drop strong {
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.mod-drop:hover,
+.mod-drop:focus-visible,
+.mod-drop.dragover {
+  border-color: var(--accent);
+  background: var(--bg-elevated);
+  outline: none;
+}
+
+.mod-drop.busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.mod-drop-results,
+.user-mods-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.mod-drop-results li {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+
+.mod-drop-results li.ok {
+  border-color: var(--accent-positive);
+  color: var(--text-primary);
+}
+
+.mod-drop-results li.error {
+  border-color: #c0392b;
+  color: var(--text-primary);
+}
+
+.mod-drop-results li.warn {
+  border-color: #c9a227;
+  color: var(--text-secondary);
+}
+
+.user-mods-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.user-mods-bulk[hidden] {
+  display: none;
+}
+
+.user-mods-bulk-danger {
+  color: #e05a4b;
+  border-color: #c0392b;
+}
+
+.user-mod-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-input);
+}
+
+.user-mod-item.inactive {
+  opacity: 0.7;
+}
+
+.user-mod-toggle {
+  flex-shrink: 0;
+  min-width: 140px;
+}
+
+.user-mod-toggle.is-off {
+  color: var(--accent-positive);
+  border-color: var(--accent-positive);
+}
+
+.user-mod-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.user-mod-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.user-mod-remove {
+  flex-shrink: 0;
+}
+
 .client-features {
   margin-top: 16px;
   padding: 16px 18px;

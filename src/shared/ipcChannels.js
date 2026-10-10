@@ -35,6 +35,15 @@ const SYSTEM = Object.freeze({
   APPLY_MOD_ISOLATION: 'system:applyModIsolation',
 });
 
+const MODS = Object.freeze({
+  ADD: 'mods:add',
+  PICK: 'mods:pick',
+  LIST: 'mods:list',
+  REMOVE: 'mods:remove',
+  SET_ENABLED: 'mods:setEnabled',
+  BULK: 'mods:bulk',
+});
+
 const UPDATE = Object.freeze({
   CHECK: 'update:check',
   RUN: 'update:run',
@@ -56,6 +65,7 @@ module.exports = Object.freeze({
   SERVERS,
   EVENTS,
   SYSTEM,
+  MODS,
   UPDATE,
   RENDERER_EVENT_CHANNELS,
 });

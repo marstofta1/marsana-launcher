@@ -27,6 +27,7 @@ const { createNeoForgeInstaller } = require('../core/mods/neoforgeInstaller');
 const { createMrpackInstaller } = require('../core/mods/mrpackInstaller');
 const { createOptifineDownloader } = require('../core/mods/optifineDownloader');
 const { createShaderStackService } = require('../core/mods/shaderStackService');
+const { createUserModService } = require('../core/mods/userModService');
 
 const { createRecommendedServersService } = require('../core/servers/recommendedServers');
 const { createAnalyticsService } = require('../core/analytics/analyticsService');
@@ -75,6 +76,8 @@ function buildContainer({ userDataDir, repoRoot }) {
     repoRoot,
   });
 
+  const userModService = createUserModService({ paths, httpClient, logger: logger.child('user-mods') });
+
   const bedrockLaunchService = createBedrockLaunchService({ logger: logger.child('bedrock') });
 
   const launchService = createLaunchService({
@@ -82,6 +85,7 @@ function buildContainer({ userDataDir, repoRoot }) {
     httpClient,
     authService,
     shaderStackService,
+    userModService,
     bedrockLaunchService,
     fabricInstaller,
     forgeInstaller,
@@ -123,6 +127,7 @@ function buildContainer({ userDataDir, repoRoot }) {
     legacyFabricInstaller,
     loaderSupport,
     launchService,
+    userModService,
     recommendedServersService,
     analyticsService,
   });

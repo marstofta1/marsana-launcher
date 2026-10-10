@@ -176,6 +176,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
       modCrops3d: !!state.modCrops3d,
       modSchematicFarm: !!state.modSchematicFarm,
       modCreate: !!state.modCreate,
+      modPack: state.selectedModPack || null,
     };
   }
 
@@ -250,6 +251,7 @@ export function createVersionSelector({ root, store, versionsApi, i18n }) {
     if (snap.modCrops3d) parts.push(i18n.t('versionFilters.crops3d'));
     if (snap.modSchematicFarm) parts.push(i18n.t('versionFilters.schematicFarm'));
     if (snap.modCreate) parts.push(i18n.t('versionFilters.create'));
+    if (snap.modPack === 'fps') parts.push(i18n.t('versionFilters.fpsPack'));
     if (parts.length === 0) {
       filterHint.style.display = 'none';
       filterHint.textContent = '';

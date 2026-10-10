@@ -6,6 +6,7 @@ const { registerLaunchHandlers } = require('./launchHandlers');
 const { registerServerHandlers } = require('./serverHandlers');
 const { registerSystemHandlers } = require('./systemHandlers');
 const { registerUpdateHandlers } = require('./updateHandlers');
+const { registerModHandlers } = require('./modHandlers');
 
 function registerAllHandlers({ ipcMain, shell, container, getWindow }) {
   registerAuthHandlers({
@@ -29,6 +30,7 @@ function registerAllHandlers({ ipcMain, shell, container, getWindow }) {
     recommendedServersService: container.recommendedServersService,
   });
   registerSystemHandlers({ ipcMain, shell, paths: container.paths });
+  registerModHandlers({ ipcMain, userModService: container.userModService, getWindow });
   registerUpdateHandlers({ ipcMain, getWindow, logger: container.logger.child('update') });
 }
 

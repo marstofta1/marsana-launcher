@@ -1,12 +1,13 @@
 'use strict';
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 const {
   AUTH,
   VERSIONS,
   LAUNCH,
   SERVERS,
   SYSTEM,
+  MODS,
   UPDATE,
   RENDERER_EVENT_CHANNELS,
 } = require('../shared/ipcChannels');
@@ -31,6 +32,22 @@ const api = Object.freeze({
   launch: (opts) => ipcRenderer.invoke(LAUNCH.START, opts),
   openExternal: (url) => ipcRenderer.invoke(SYSTEM.OPEN_EXTERNAL, url),
   applyModIsolation: (payload) => ipcRenderer.invoke(SYSTEM.APPLY_MOD_ISOLATION, payload),
+  mods: Object.freeze({
+    // Sürüklenen File nesnesinin disk yolu yalnızca preload'da okunabilir (File.path kaldırıldı).
+    pathForFile: (file) => {
+      try {
+        return webUtils.getPathForFile(file) || '';
+      } catch {
+        return '';
+      }
+    },
+    add: (filePaths, selection) => ipcRenderer.invoke(MODS.ADD, { filePaths, selection }),
+    pick: (selection) => ipcRenderer.invoke(MODS.PICK, selection),
+    bulk: (payload) => ipcRenderer.invoke(MODS.BULK, payload),
+    list: (selection) => ipcRenderer.invoke(MODS.LIST, selection),
+    remove: (file) => ipcRenderer.invoke(MODS.REMOVE, file),
+    setEnabled: (file, enabled) => ipcRenderer.invoke(MODS.SET_ENABLED, { file, enabled }),
+  }),
   app: Object.freeze({
     getVersion: () => ipcRenderer.invoke(SYSTEM.GET_VERSION),
     getPlatform: () => ipcRenderer.invoke(SYSTEM.GET_PLATFORM),

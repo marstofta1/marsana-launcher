@@ -157,6 +157,16 @@ export function createSupported(versionId) {
   return String(versionId || '').trim() === CREATE_MOD_VERSION;
 }
 
+/** Hazır "FPS Paketi" yalnızca 1.14 – 1.21.10 arasında sunulur (26.x aynı modlarla belirgin biçimde ağır). */
+export function fpsPackSupported(versionId) {
+  const m = String(versionId || '').trim().match(/^1\.(\d+)(?:\.(\d+))?$/);
+  if (!m) return false;
+  const minor = parseInt(m[1], 10);
+  const patchNo = m[2] ? parseInt(m[2], 10) : 0;
+  if (minor < 14 || minor > 21) return false;
+  return minor < 21 || patchNo <= 10;
+}
+
 /** Launcher paketinde gömülü Marsana Client menüsü jar'ı yalnızca 26.x için mevcut. */
 export function marsanaBundledClientModsAvailable(versionId) {
   return /^26\./.test(String(versionId || '').trim());
@@ -204,6 +214,7 @@ export function isVersionAllowedForSelection({
   modSodium,
   modSodiumExtra,
   modCreate,
+  modPack = null,
   legacyFabricSupportedSet = null,
   loaderSupportedSet = null,
 }) {
@@ -256,6 +267,7 @@ export function isVersionAllowedForSelection({
   if (modCrops3d && !crops3dSupported(id)) return false;
   if (modSchematicFarm && !schematicFarmSupported(id)) return false;
   if (modCreate && !createSupported(id)) return false;
+  if (modPack === 'fps' && !fpsPackSupported(id)) return false;
 
   if (modEmbossedBlocks) {
     if (loaderVal === 'forge') {

@@ -257,8 +257,21 @@
       <ol class="changelog">
         <li class="release">
           <div class="release-head">
-            <span class="release-version">v1.0.48 — Create modunda takılma ve donma düzeltmesi</span>
+            <span class="release-version">v1.0.49 — Hazır mod paketleri ve Mod Ekle</span>
             <span class="release-tag latest">Yeni</span>
+          </div>
+          <ul class="release-changes">
+            <li><strong>Hazır Mod Paketleri.</strong> Gelişmiş Launcher sekmesinde tek tıkla kurulan üç paket: <strong>Tam Paket</strong> (Shader, OptiFine ve Create dışındaki tüm modlar; 120 FPS sınırıyla), <strong>FPS Paketi</strong> (Sodium, Sodium Extra, Lithium, FerriteCore, ImmediatelyFast, Entity Culling, ModernFix, Dynamic FPS; FPS sınırı kaldırılır, yalnızca 1.16 – 1.21.10) ve <strong>Create Paketi</strong>. Fabric paketleri görüş mesafesini 12 yığına ayarlar.</li>
+            <li><strong>Mod Ekle.</strong> Kendi mod dosyanı (.jar) alana sürükle ya da tıklayıp seç. Mod launcher'ın kütüphanesine kaydedilir ve yalnızca uyumlu yükleyici ile sürümde yüklenir; uymadığında oyunu bozmaz, nedeni yazılarak atlanır. Eksik bağımlılıklar eklerken bildirilir.</li>
+            <li><strong>Modları aç, kapat, sil.</strong> Eklenen her mod tek tek etkinleştirilip devre dışı bırakılabilir ya da silinebilir. Hepsini birden etkinleştirme, devre dışı bırakma ve silme düğmeleri iki aşamalı onay ister.</li>
+            <li><strong>Mod paketi dosyaları.</strong> Modrinth paketleri (.mrpack) içindeki modlar indirilip eklenir. CurseForge paketlerinde yalnızca dosyanın içine gömülü modlar alınabilir; kalanı için uyarı gösterilir.</li>
+            <li><strong>Daha anlaşılır hata mesajları.</strong> Boş ya da yarım inmiş dosya, sunucu eklentisi, kaynak paketi gibi durumlarda ne olduğu ve ne yapman gerektiği açıkça yazılır; kaynak ve shader paketleri doğru klasöre konur.</li>
+            <li><strong>Güvenlik:</strong> oturum anahtarı artık başlatma kaydına ve durum paneline açık yazılmaz.</li>
+          </ul>
+        </li>
+        <li class="release">
+          <div class="release-head">
+            <span class="release-version">v1.0.48 — Create modunda takılma ve donma düzeltmesi</span>
           </div>
           <ul class="release-changes">
             <li><strong>Create modunda takılma ve donmalar giderildi.</strong> Görüş mesafesi çok yüksek ayarlandığında (ör. 32 yığın) tek oyunculu dünyada oyun saniyelerce geride kalıp donuyordu. Create modu artık her açılışta görüş mesafesini en fazla <strong>12</strong>, simülasyon mesafesini en fazla <strong>8</strong> yığınla sınırlar; daha düşük ayarlarına dokunmaz.</li>

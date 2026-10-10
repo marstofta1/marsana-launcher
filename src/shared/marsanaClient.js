@@ -37,6 +37,7 @@ export const CLIENT_MOD_PRESET = Object.freeze({
   modSodium: true,
   modSodiumExtra: false,
   modCreate: false,
+  selectedModPack: null,
   modClientHudPack: true,
 });
 
@@ -148,6 +149,7 @@ export const LAUNCHER_MODE_RESET = Object.freeze({
   modSodium: false,
   modSodiumExtra: false,
   modCreate: false,
+  selectedModPack: null,
   modClientHudPack: false,
 });
 

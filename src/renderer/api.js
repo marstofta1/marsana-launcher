@@ -11,6 +11,7 @@ export const launch = api.launch;
 export const openExternal = api.openExternal;
 export const applyModIsolation = api.applyModIsolation;
 export const app = api.app;
+export const mods = api.mods;
 export const updates = api.updates;
 
 export const events = {

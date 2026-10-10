@@ -20,6 +20,19 @@ function readCreateManagedJars(modsDir) {
   }
 }
 
+// Kullanıcının "Mod ekle" ile eklediği jar'lar (userModService işareti): adı client paketi
+// modlarına benzese bile (minimap vb.) gizlenmemeli.
+const USER_MODS_MARKER_FILE = '.marsana-user-mods.json';
+
+function readUserManagedJars(modsDir) {
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(modsDir, USER_MODS_MARKER_FILE), 'utf8'));
+    return Array.isArray(raw && raw.jars) ? raw.jars.map((j) => path.basename(String(j))) : [];
+  } catch {
+    return [];
+  }
+}
+
 /** Shader cekirdegi — client HUD paketinden ayri tutulur. */
 const CORE_LAUNCHER_JAR_HINTS = Object.freeze([
   /^fabric-api/i,
@@ -47,9 +60,18 @@ function isCoreLauncherJar(fileName) {
   return CORE_LAUNCHER_JAR_HINTS.some((re) => re.test(lower));
 }
 
+// Hazır mod paketlerinin (fpsBoost) kurduğu FPS modları. Bir kısmı client HUD paketi
+// listesinde de var; paket seçiliyken client jar'ı sayılıp gizlenmemeli.
+const FPS_BOOST_JAR_RE = /^(lithium|ferritecore|immediatelyfast|entityculling|modernfix|dynamic[-_]?fps)/i;
+
+function isFpsBoostJar(fileName, modPresets) {
+  return !!(modPresets && modPresets.fpsBoost) && FPS_BOOST_JAR_RE.test(String(fileName || ''));
+}
+
 function isClientPackJar(fileName, modPresets) {
   const lower = String(fileName || '').toLowerCase();
   if (!lower.endsWith('.jar')) return false;
+  if (isFpsBoostJar(fileName, modPresets)) return false;
   if (/^sodium-[\d.]/i.test(lower) && modPresets && modPresets.sodium) return false;
   if (/^sodium-extra-/i.test(lower) && modPresets && modPresets.sodiumExtra) return false;
   if (marsanaClientModService.isMarsanaClientJar(fileName)) return true;
@@ -102,11 +124,17 @@ function applyClientPackVisibility(modsDir, modPresets, playMode) {
   let stashed = 0;
   let restored = 0;
   const createManaged = readCreateManagedJars(modsDir);
+  for (const jar of readUserManagedJars(modsDir)) createManaged.add(jar);
 
   for (const entry of fs.readdirSync(modsDir)) {
     if (entry.endsWith(CLIENT_PACK_STASH_SUFFIX)) {
       const base = entry.slice(0, -CLIENT_PACK_STASH_SUFFIX.length);
-      if ((wantsClientPack || createManaged.has(base)) && unstashFile(modsDir, entry)) restored += 1;
+      if (
+        (wantsClientPack || createManaged.has(base) || isFpsBoostJar(base, modPresets)) &&
+        unstashFile(modsDir, entry)
+      ) {
+        restored += 1;
+      }
       continue;
     }
     if (createManaged.has(entry)) continue;
@@ -118,13 +146,15 @@ function applyClientPackVisibility(modsDir, modPresets, playMode) {
   return { stashed, restored };
 }
 
-function activeClientPackJarsPresent(modsDir) {
+function activeClientPackJarsPresent(modsDir, modPresets) {
   if (!modsDir || !fs.existsSync(modsDir)) return false;
+  const userManaged = readUserManagedJars(modsDir);
   return fs.readdirSync(modsDir).some(
     (entry) =>
       entry.endsWith('.jar') &&
+      !userManaged.includes(entry) &&
       !entry.endsWith('.jar.disabled') &&
-      isClientPackJar(entry)
+      isClientPackJar(entry, modPresets)
   );
 }
 
@@ -135,6 +165,7 @@ function enforceModIsolation(modsDir, modPresets, playMode) {
 
   if (!modsDir || !fs.existsSync(modsDir)) return result;
   const createManaged = readCreateManagedJars(modsDir);
+  for (const jar of readUserManagedJars(modsDir)) createManaged.add(jar);
 
   for (const entry of fs.readdirSync(modsDir)) {
     if (!entry.endsWith('.jar') || entry.endsWith('.jar.disabled')) continue;

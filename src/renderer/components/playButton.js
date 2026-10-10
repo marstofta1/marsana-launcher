@@ -10,6 +10,7 @@ import {
   marsanaBundledClientModsAvailable,
   schematicFarmBundledAvailable,
 } from '../../shared/versionCompatibility.js';
+import { modPackLaunchPresets } from '../../shared/modPacks.js';
 
 function launchErrorMessage(err) {
   if (!err) return 'Bilinmeyen hata';
@@ -100,6 +101,8 @@ export function createPlayButton({ root, store, launchApi, i18n }) {
       const schematicOk = schematicFarmBundledAvailable(version);
       const schematicFarmEnabled =
         schematicOk && (isClientMode(state.playMode) || !!state.modSchematicFarm);
+      const packPresets =
+        !clientMode && loader === 'fabric' ? modPackLaunchPresets(state) : { fpsBoost: false, fpsUnlimited: false };
       const modPresets = sanitizeModPresetsForPlayMode(
         {
           marsanaClientMenu: state.playMode === 'client' && clientMenuOk,
@@ -116,6 +119,7 @@ export function createPlayButton({ root, store, launchApi, i18n }) {
           sodium: !!state.modSodium,
           sodiumExtra: !!state.modSodiumExtra,
           create: !!state.modCreate && loader === 'neoforge',
+          ...packPresets,
           clientHudPack: state.playMode === 'client' && !!state.modClientHudPack && clientMenuOk,
         },
         state.playMode

@@ -71,6 +71,15 @@ function readForgeFamilyJvmArgs({ gameRoot, customId }) {
 
 const CREATE_MIN_MEM_MB = 4096;
 
+// Oturum anahtarı (accessToken) hesabı geçici olarak ele geçirmeye yeter; log dosyasına ve
+// arayüzdeki çıktıya asla açık yazılmaz. Hem "--key value" hem "--key, value" biçimi maskelenir.
+const SECRET_ARG_RE = /(--(?:accessToken|xuid|clientId)[,\s]+)[^\s,\]]+/g;
+const JWT_RE = /eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g;
+
+function redactSecrets(line) {
+  return String(line).replace(SECRET_ARG_RE, '$1***').replace(JWT_RE, '***');
+}
+
 function clampMemory(requestedMb) {
   const systemMb = Math.floor(os.totalmem() / 1024 / 1024);
   const upperBound = Math.max(MIN_MEM_MB, systemMb - SYSTEM_RESERVE_MB);
@@ -139,6 +148,7 @@ function createLaunchService({
   httpClient,
   authService,
   shaderStackService,
+  userModService,
   bedrockLaunchService,
   fabricInstaller,
   forgeInstaller,
@@ -233,7 +243,7 @@ function createLaunchService({
 
   async function buildFabricBetaSpec({ version, modPresets, shaderSlug, playMode, emit }) {
     const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false, roundTrees: false, crops3d: false };
-    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.sodium || presets.sodiumExtra || presets.clientHudPack || presets.marsanaClientMenu);
+    const useMods = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.userMods || presets.sodium || presets.sodiumExtra || presets.clientHudPack || presets.marsanaClientMenu);
     if (useMods) {
       const effectiveVersion = effectiveModGameVersion(version);
       if (effectiveVersion !== version && emit && emit.status) {
@@ -352,7 +362,7 @@ function createLaunchService({
 
   async function buildFabricSpec({ version, modPresets, shaderSlug, playMode, emit }) {
     const presets = modPresets || { shaderFps: false, embossedBlocks: false, optifine: false, voiceChat: false, fullbrightUb: false, betterLeaves: false, glowingOres: false, roundTrees: false, crops3d: false };
-    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.sodium || presets.sodiumExtra || presets.clientHudPack || presets.marsanaClientMenu);
+    const useFabric = !!(presets.shaderFps || presets.embossedBlocks || presets.optifine || presets.voiceChat || presets.fullbrightUb || presets.betterLeaves || presets.glowingOres || presets.roundTrees || presets.crops3d || presets.schematicFarm || presets.userMods || presets.sodium || presets.sodiumExtra || presets.clientHudPack || presets.marsanaClientMenu);
     if (!useFabric) {
       return { spec: { number: version, type: 'release' }, overrides: { detached: false }, extra: {} };
     }
@@ -984,6 +994,10 @@ function createLaunchService({
     if (!includeCreate) {
       shaderStackService.removeManagedCreateJars(paths.gameRoot);
     }
+    // FPS sınırını yalnızca hazır Fabric paketleri kaldırır; Create ve diğer profillerde geri alınır.
+    if (!(modPresets && modPresets.fpsBoost)) {
+      shaderStackService.releaseFpsBoostVideoOptions(paths.gameRoot);
+    }
 
     if (loader === 'forge' || loader === 'forge-optifine') {
       applyLoaderModsState('forge');
@@ -1206,6 +1220,15 @@ function createLaunchService({
       emit
     );
 
+    // "Mod ekle" ile eklenen modlar: bu seçimde yüklenecek olan varsa Fabric profili modlu kurulur
+    // (yoksa Fabric + hiçbir önayar = vanilla başlatılırdı ve mod yüklenmezdi).
+    const userModSelection = {
+      loader: opts.selectedLoader || 'vanilla',
+      gameVersion: effectiveModGameVersion(opts.version),
+      playMode,
+    };
+    if (userModService && userModService.hasActiveMods(userModSelection)) modPresets.userMods = true;
+
     const modsDirPath = path.join(paths.gameRoot, 'mods');
     const iso = modIsolationService.enforceModIsolation(modsDirPath, modPresets, playMode);
     if (iso.stashed > 0 && emit && emit.status) {
@@ -1246,6 +1269,19 @@ function createLaunchService({
 
     syncSchematicFarmJar(modPresets, opts.version, emit);
 
+    // Yükleyici stash'i ve uyumluluk temizliği bittikten sonra: eklenen modları mods/ ile eşitle.
+    if (userModService) {
+      const userSync = userModService.syncToModsDir({ modsDir: modsDirPath, ...userModSelection });
+      if (emit && emit.status) {
+        if (userSync.installed.length > 0) {
+          emit.status({ text: `Eklenen modlar yüklendi (${userSync.installed.length}): ${userSync.installed.join(', ')}` });
+        }
+        for (const skip of userSync.skipped) {
+          emit.status({ text: `Eklenen mod atlandı — ${skip.name}: ${skip.reason}` });
+        }
+      }
+    }
+
     const overrides = { ...planOverrides };
     let optionsGameDir = paths.gameRoot;
     if (isLegacyLoader(loaderId)) {
@@ -1283,12 +1319,12 @@ function createLaunchService({
 
     const client = new Client();
     client.on('debug', (m) => {
-      const s = String(m);
+      const s = redactSecrets(m);
       writeLog('debug', s);
       emit.stdout(s);
     });
     client.on('data', (m) => {
-      const s = String(m);
+      const s = redactSecrets(m);
       writeLog('data', s);
       emit.stdout(s);
     });
@@ -1361,4 +1397,4 @@ function createLaunchService({
   return { launch };
 }
 
-module.exports = { createLaunchService };
+module.exports = { createLaunchService, redactSecrets };
