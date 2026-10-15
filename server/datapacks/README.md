@@ -3,9 +3,13 @@
 ## marsana-lobby — korumalı doğuş lobisi (Minecraft 1.21.1, Create gerekli)
 
 35x35'lik Create temalı bir lobi kurar ve dünya doğuş noktasını lobinin ortasına alır. Lobi
-alanında (merkezden yatayda ±20 blok) survival oyuncular otomatik olarak macera moduna geçer,
-blok kırıp koyamaz, hasar almaz ve acıkmaz. Lobideki düşman yaratıklar temizlenir. Dört kapıdan
-dışarı çıkan oyuncu survival moduna döner. Yaratıcı ve izleyici moddaki yöneticilere dokunulmaz.
+alanında (merkezden yatayda ±20 blok) adminler hariç herkes macera moduna geçer, blok kırıp
+koyamaz, hasar almaz ve acıkmaz. Lobideki düşman yaratıklar temizlenir. Dört kapıdan dışarı
+çıkan oyuncu survival moduna döner.
+
+**Adminler** `marsana.admin` etiketiyle belirlenir (datapack op'luğu göremez):
+`/tag isim add marsana.admin`, kaldırmak için `/tag isim remove marsana.admin`. Adminler lobide
+her modda kalabilir ve lobiyi düzenleyebilir.
 
 Her girişte oyuncu lobiye ışınlanır. Login System modu oyuncuyu girişte bekleme alanında tutup
 `/login` sonrası son konumuna ışınladığı için lobiye ışınlama bundan sonra yapılır: oyuncu bekleme
