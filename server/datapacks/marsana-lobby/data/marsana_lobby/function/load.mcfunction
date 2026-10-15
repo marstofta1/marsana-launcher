@@ -17,6 +17,9 @@ scoreboard objectives add marsana_lobby.ph dummy
 scoreboard objectives add marsana_lobby.ax dummy
 scoreboard objectives add marsana_lobby.ay dummy
 scoreboard objectives add marsana_lobby.az dummy
+# Claim mesajı: oyuncu kimliği (tıklama kutusunu oyuncuya bağlar) ve mesaj bekleme süresi (tick).
+scoreboard objectives add marsana_lobby.pid dummy
+scoreboard objectives add marsana_lobby.claimcd dummy
 # Profil NPC'si istatistikleri (objective oluşturulduğu andan itibaren sayar).
 scoreboard objectives add marsana_lobby.play minecraft.custom:minecraft.play_time
 scoreboard objectives add marsana_lobby.deaths deathCount

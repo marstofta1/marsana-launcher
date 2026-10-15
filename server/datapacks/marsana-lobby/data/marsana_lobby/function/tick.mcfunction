@@ -23,3 +23,9 @@ execute as @a[tag=!marsana_lobby.in,tag=marsana_lobby.adv] run function marsana_
 # Lobi dışında (Create dünyası, Nether, End) admin olmayanlar creative'dedir; girişte bekleyenlere dokunulmaz.
 execute as @a[tag=!marsana_lobby.in,tag=!marsana.admin,tag=!marsana_lobby.pending,gamemode=!creative,gamemode=!spectator] run gamemode creative @s
 tag @a remove marsana_lobby.in
+# Claim mesajı: macera modunda blok kırma denemesi sunucuya gelmez. Korumalı oyuncunun baktığı bloğa görünmez
+# bir tıklama kutusu (interaction) konur; sol tık kutuya gider ve claim advancement'ı mesajı verir.
+tag @e[type=minecraft:interaction,tag=marsana_lobby.claimbox] add marsana_lobby.stale
+execute as @a[tag=marsana_lobby.adv,tag=!marsana.admin,gamemode=adventure] at @s anchored eyes positioned ^ ^ ^ run function marsana_lobby:claim/player
+kill @e[type=minecraft:interaction,tag=marsana_lobby.stale]
+scoreboard players remove @a[scores={marsana_lobby.claimcd=1..}] marsana_lobby.claimcd 1
