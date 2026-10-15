@@ -7,6 +7,12 @@ alanında (merkezden yatayda ±20 blok) survival oyuncular otomatik olarak macer
 blok kırıp koyamaz, hasar almaz ve acıkmaz. Lobideki düşman yaratıklar temizlenir. Dört kapıdan
 dışarı çıkan oyuncu survival moduna döner. Yaratıcı ve izleyici moddaki yöneticilere dokunulmaz.
 
+Her girişte oyuncu lobiye ışınlanır. Login System modu oyuncuyu girişte bekleme alanında tutup
+`/login` sonrası son konumuna ışınladığı için lobiye ışınlama bundan sonra yapılır: oyuncu bekleme
+alanından (`loginsystem.properties` içindeki `waitingAreaX/Y/Z`, varsayılan `0 100 0`) ayrıldığı an.
+Bekleme alanı ayarlanırsa `join_wait.mcfunction` içindeki konumu da güncelle. Herkes
+`/trigger lobi` ile istediği zaman lobiye dönebilir.
+
 ### Kurulum (Aternos)
 
 1. `npm run pack:lobby` komutunu çalıştır, `dist/marsana-lobby.zip` oluşur.

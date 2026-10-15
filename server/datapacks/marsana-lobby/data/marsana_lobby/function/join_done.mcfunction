@@ -1,0 +1,2 @@
+function marsana_lobby:join_clear
+function marsana_lobby:teleport
