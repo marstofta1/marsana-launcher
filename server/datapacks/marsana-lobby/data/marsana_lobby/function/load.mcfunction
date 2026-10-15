@@ -13,6 +13,10 @@ scoreboard objectives add marsana_lobby.py dummy
 scoreboard objectives add marsana_lobby.pz dummy
 scoreboard objectives add marsana_lobby.pd dummy
 scoreboard objectives add marsana_lobby.ph dummy
+# AFK köylüsü: AFK'ya girilen konum (x10).
+scoreboard objectives add marsana_lobby.ax dummy
+scoreboard objectives add marsana_lobby.ay dummy
+scoreboard objectives add marsana_lobby.az dummy
 # Profil NPC'si istatistikleri (objective oluşturulduğu andan itibaren sayar).
 scoreboard objectives add marsana_lobby.play minecraft.custom:minecraft.play_time
 scoreboard objectives add marsana_lobby.deaths deathCount

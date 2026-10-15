@@ -7,6 +7,7 @@ tag @a remove marsana_lobby.waiting
 tag @a remove marsana_lobby.seen
 tag @a remove marsana_lobby.no_autolobby
 tag @a remove marsana_lobby.no_notify
+tag @a remove marsana_lobby.afk
 kill @e[tag=marsana_lobby.npc]
 kill @e[type=minecraft:marker,tag=marsana_lobby.center]
 schedule clear marsana_lobby:mobs
@@ -26,4 +27,7 @@ scoreboard objectives remove marsana_lobby.kills
 scoreboard objectives remove marsana_lobby.walk
 scoreboard objectives remove marsana_lobby.sprint
 scoreboard objectives remove marsana_lobby.calc
+scoreboard objectives remove marsana_lobby.ax
+scoreboard objectives remove marsana_lobby.ay
+scoreboard objectives remove marsana_lobby.az
 tellraw @s {"text":"[Marsana] Lobi koruması kapatıldı. Şimdi datapack'i silebilirsin.","color":"yellow"}
