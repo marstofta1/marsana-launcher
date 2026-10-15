@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="marsana_lobby_claim"
+version="1.0.0"
+displayName="Marsana Lobby Claim"
+description="Lobide blok kırmaya çalışana 'Burası claim'li' mesajı (yalnızca sunucu)."
+# Yalnızca sunucuda gerekir; oyuncuların kurmasına gerek yok.
+displayTest="IGNORE_ALL_VERSION"
+
+[[dependencies.marsana_lobby_claim]]
+modId="neoforge"
+type="required"
+versionRange="[21.1,)"
+ordering="NONE"
+side="SERVER"
+
+[[dependencies.marsana_lobby_claim]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.22)"
+ordering="NONE"
+side="SERVER"

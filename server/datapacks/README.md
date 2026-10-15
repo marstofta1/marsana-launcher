@@ -18,6 +18,8 @@ alanından (`loginsystem.properties` içindeki `waitingAreaX/Y/Z`, varsayılan `
 Bekleme alanı ayarlanırsa `join_wait.mcfunction` içindeki konumu da güncelle. Herkes
 `/trigger lobi` ile istediği zaman lobiye dönebilir.
 
+**Claim mesajı:** Macera modunda oyun blok kırma denemesini sunucuya göndermediği için "Burası claim'li, kıramazsın!" mesajını küçük bir sunucu modu verir: `server/mods/marsana-lobby-claim`. Derlemek için `node scripts/build-lobby-claim-mod.js <NeoForge 1.21.1 sunucusunun libraries klasörü> [JDK 21 bin]`; çıkan `dist/marsana-lobby-claim-1.0.0.jar` Aternos'ta **Dosyalar → mods** klasörüne yüklenir ve sunucu yeniden başlatılır. Oyuncuların kurmasına gerek yok.
+
 ### Kurulum (Aternos)
 
 1. `npm run pack:lobby` komutunu çalıştır, `dist/marsana-lobby.zip` oluşur.
