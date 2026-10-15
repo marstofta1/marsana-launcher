@@ -30,10 +30,24 @@ Op olarak NPC'nin duracağı blokta, NPC'nin bakacağı yöne dönerek:
 | `/function marsana_lobby:npc/create_world` | Create Dünyası | Lobiye gelmeden önceki konuma döner; kayıtlı konumu yoksa 300 blok içinde rastgele güvenli bir yere |
 | `/function marsana_lobby:npc/profile` | Profil | Oyun süresi, ölüm, öldürülen yaratık, yürünen mesafe (lobi kurulduğundan beri) |
 | `/function marsana_lobby:npc/settings` | Ayarlar | Sohbette tıklanabilir menü: girişte lobiye ışınlan, lobi bildirimleri |
+| `/function marsana_lobby:npc/shop` | Shop | Marsanaty ile alışveriş: komut bloğu (300), bariyer (1000), tek seferde 1 adet |
 
 NPC kaldırmak için yanında dur: `/function marsana_lobby:npc/remove`. Yeni NPC türü eklemek için
 `npc/place`'i yeni bir `kind` ile çağıran bir fonksiyon, `advancement/npc/<kind>.json` ve
 `npc/click_<kind>.mcfunction` ekle.
+
+### Marsanaty (oyun içi para)
+
+Gerçek parayla satılmaz, yalnızca etkinliklerden kazanılır. Etkinliği op başlatır ve ödülü verir:
+
+| Komut (op) | Ne yapar |
+|---|---|
+| `/function marsana_lobby:para/ver {oyuncu:"isim",miktar:100}` | Bir oyuncuya verir, herkese duyurur (çevrimdışı oyuncuya da) |
+| `/function marsana_lobby:para/herkese {miktar:50}` | Çevrimiçi herkese verir, duyurur |
+| `/function marsana_lobby:para/al {oyuncu:"isim",miktar:100}` | Yanlış verileni geri alır |
+
+Bakiye Shop ve Profil NPC'lerinde görünür. Fiyatlar `shop/menu.mcfunction` ve
+`shop/buy_*.mcfunction` içinde. Komut bloğunu yalnızca op'lar yere koyabilir; bu menüde yazıyor.
 
 ### Kaldırma
 

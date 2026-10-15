@@ -1,5 +1,5 @@
 # Datapack'i kaldırmadan önce çalıştır: çevrimiçi oyuncuların macera modunu geri alır, korumayı kapatır,
-# yüklü alandaki NPC'leri siler. Bina yerinde kalır.
+# yüklü alandaki NPC'leri siler. Bina yerinde kalır. Marsanaty bakiyeleri silinmez.
 execute as @a[tag=marsana_lobby.adv,gamemode=adventure] run gamemode survival @s
 tag @a remove marsana_lobby.adv
 tag @a remove marsana_lobby.pending
@@ -14,6 +14,7 @@ scoreboard objectives remove marsana_lobby
 scoreboard objectives remove marsana_lobby.left
 scoreboard objectives remove lobi
 scoreboard objectives remove ayarlar
+scoreboard objectives remove magaza
 scoreboard objectives remove marsana_lobby.px
 scoreboard objectives remove marsana_lobby.py
 scoreboard objectives remove marsana_lobby.pz

@@ -4,6 +4,9 @@ scoreboard objectives add marsana_lobby dummy
 scoreboard objectives add marsana_lobby.left minecraft.custom:minecraft.leave_game
 scoreboard objectives add lobi trigger
 scoreboard objectives add ayarlar trigger
+scoreboard objectives add magaza trigger
+# Oyun içi para. Yalnızca etkinliklerden kazanılır (para/ver, para/herkese), gerçek parayla satılmaz.
+scoreboard objectives add marsanaty dummy "Marsanaty"
 # Create Dünyası NPC'si için son survival konumu (x/z x10, y x100; boyut: -1 nether, 0 overworld, 1 end).
 scoreboard objectives add marsana_lobby.px dummy
 scoreboard objectives add marsana_lobby.py dummy
