@@ -324,7 +324,7 @@ export default {
     copyFailed: '无法复制地址。',
     list: {
       'marsana-main': {
-        description: "免费 10 人 Aternos 服务器。空闲时会休眠；连接前可能需要在面板中启动。",
+        description: "免费 Create 服务器（生存）。空闲时会休眠，连接前请在面板中唤醒。加入前请选择“Marsana 服务器”整合包。",
       },
       ultimismc: {
         description: "土耳其热门社区服务器之一。全天候在线，提供多种游戏模式。",

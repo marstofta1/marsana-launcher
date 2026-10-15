@@ -324,7 +324,7 @@ export default {
     copyFailed: 'アドレスをコピーできませんでした。',
     list: {
       'marsana-main': {
-        description: "無料の10人制Aternosサーバー。空き状態でスリープします。接続前にパネルから起動が必要な場合があります。",
+        description: "無料のCreateサーバー（サバイバル）。空き状態でスリープするため、接続前にパネルから起動してください。参加には「Marsanaサーバー」パックを選んでください。",
       },
       ultimismc: {
         description: "トルコの人気コミュニティサーバーの一つ。24時間稼働、さまざまなゲームモード。",

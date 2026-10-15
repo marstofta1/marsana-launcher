@@ -177,6 +177,10 @@ export default {
       title: 'Create Paketi',
       desc: 'Create ve seçilmiş eklentileri, optimizasyon modlarıyla. Sürüm 1.21.1 ve NeoForge otomatik ayarlanır.',
     },
+    'marsana-server': {
+      title: 'Marsana Sunucusu',
+      desc: 'Resmi sunucumuza bağlanmak için: yalnızca Create (eklentisiz), sunucuyla aynı sürüm. Oyun açılınca doğrudan sunucuya girer.',
+    },
   },
   userMods: {
     title: 'Mod Ekle',
@@ -428,7 +432,7 @@ export default {
     copyFailed: 'Adres kopyalanamadı.',
     list: {
       'marsana-main': {
-        description: "Ücretsiz 10 kişilik Aternos sunucusu. Sunucu boştayken otomatik uyur; bağlanmadan önce panelden başlatman gerekebilir.",
+        description: "Ücretsiz Create sunucusu (survival). Boştayken uyur; bağlanmadan önce panelden uyandır. Girmek için \"Marsana Sunucusu\" paketini seç.",
       },
       ultimismc: {
         description: "Türkiye'nin popüler topluluk sunucularından biri. 7/24 açıktır, çeşitli oyun modları sunar.",

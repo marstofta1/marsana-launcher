@@ -559,3 +559,23 @@ test('versionJvmArgs: arguments.jvm olmayan eski surum / bozuk girdi bos doner',
   assert.deepStrictEqual(extractPassthroughJvmArgs(null), []);
   assert.deepStrictEqual(extractPassthroughJvmArgs({ arguments: { jvm: 'x' } }), []);
 });
+
+// ---------------------------------------------------------------- marsanaServer
+test('marsanaServer: sabit modlarin indirme bilgisi tam', () => {
+  const server = require('../src/shared/marsanaServer');
+  for (const mod of server.MARSANA_SERVER_PINNED_MODS) {
+    assert.ok(mod.url.endsWith(`/${mod.versionId}/${mod.file}`), `${mod.slug} url/versionId/file uyusmuyor`);
+    assert.match(mod.sha512, /^[0-9a-f]{128}$/, `${mod.slug} sha512 gecersiz`);
+  }
+});
+
+test('marsanaServer: adres yokken quickPlay kapali', () => {
+  const server = require('../src/shared/marsanaServer');
+  if (!server.MARSANA_SERVER_HOST) assert.strictEqual(server.marsanaServerQuickPlay(), null);
+  else assert.deepStrictEqual(server.marsanaServerQuickPlay(), {
+    type: 'multiplayer',
+    identifier: server.MARSANA_SERVER_PORT === 25565
+      ? server.MARSANA_SERVER_HOST
+      : `${server.MARSANA_SERVER_HOST}:${server.MARSANA_SERVER_PORT}`,
+  });
+});

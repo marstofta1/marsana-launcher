@@ -5,6 +5,7 @@ const os = require('os');
 const path = require('path');
 const { Client } = require('minecraft-launcher-core');
 const { isMac } = require('../../shared/platform');
+const { marsanaServerQuickPlay } = require('../../shared/marsanaServer');
 const {
   isOrnitheVersionBlocked,
   ornitheBlockedVersionMessage,
@@ -861,7 +862,7 @@ function createLaunchService({
     };
   }
 
-  async function buildNeoForgeSpec({ version, includeCreate, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, javaPath, emit }) {
+  async function buildNeoForgeSpec({ version, includeCreate, createServerPack, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, javaPath, emit }) {
     const effectiveVersion =
       includeShader || includeEmbossed || includeVoiceChat || includeFullbright || includeBetterLeaves || includeGlowingOres ? effectiveModGameVersion(version) : version;
     if (effectiveVersion !== version && emit && emit.status) {
@@ -883,6 +884,7 @@ function createLaunchService({
         gameRoot: paths.gameRoot,
         gameVersion: effectiveVersion,
         emit,
+        serverPack: !!createServerPack,
       });
     }
 
@@ -994,6 +996,8 @@ function createLaunchService({
     if (!includeCreate) {
       shaderStackService.removeManagedCreateJars(paths.gameRoot);
     }
+    // Marsana Sunucusu paketi: eklentisiz, sunucuyla aynı sabit Create sürümü.
+    const createServerPack = includeCreate && !!modPresets.marsanaServer;
     // FPS sınırını yalnızca hazır Fabric paketleri kaldırır; Create ve diğer profillerde geri alınır.
     if (!(modPresets && modPresets.fpsBoost)) {
       shaderStackService.releaseFpsBoostVideoOptions(paths.gameRoot);
@@ -1024,6 +1028,7 @@ function createLaunchService({
       return buildNeoForgeSpec({
         version,
         includeCreate,
+        createServerPack,
         includeShader,
         includeEmbossed,
         includeVoiceChat,
@@ -1361,6 +1366,10 @@ function createLaunchService({
       customArgs: [...platformJvmArgs(), ...baseVersionJvmArgs, ...extraJvmArgs, ...planJvmArgs],
       overrides,
     };
+    // Marsana Sunucusu paketi oyunu doğrudan sunucuya bağlar (adres girilmişse).
+    const serverQuickPlay =
+      loaderId === 'neoforge' && modPresets.create && modPresets.marsanaServer ? marsanaServerQuickPlay() : null;
+    if (serverQuickPlay) launchOpts.quickPlay = serverQuickPlay;
 
     logger.info('Launching Minecraft', {
       version: opts.version,

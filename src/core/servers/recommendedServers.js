@@ -1,19 +1,24 @@
 'use strict';
 
-const ATERNOS_DASHBOARD = 'https://aternos.org/servers/';
+const {
+  MARSANA_SERVER_HOST,
+  MARSANA_SERVER_PORT,
+  MARSANA_SERVER_DASHBOARD_URL,
+} = require('../../shared/marsanaServer');
 
 const SERVERS = Object.freeze([
   Object.freeze({
+    // Aternos'taki resmi Create sunucusu. Adres girilene kadar listede gösterilmez.
     id: 'marsana-main',
     name: 'Marsana Resmi Sunucu',
-    host: 'marstral132.aternos.me',
-    port: 25565,
+    host: MARSANA_SERVER_HOST,
+    port: MARSANA_SERVER_PORT,
     provider: 'aternos',
-    providerDashboardUrl: ATERNOS_DASHBOARD,
+    providerDashboardUrl: MARSANA_SERVER_DASHBOARD_URL,
     websiteUrl: null,
-    capacity: 10,
+    capacity: null,
     description:
-      'Ücretsiz 10 kişilik Aternos sunucusu. Sunucu boştayken otomatik uyur; bağlanmadan önce panelden başlatman gerekebilir.',
+      'Ücretsiz Create sunucusu (survival). Boştayken uyur; bağlanmadan önce panelden uyandır. Girmek için "Marsana Sunucusu" paketini seç.',
   }),
   Object.freeze({
     id: 'ultimismc',
@@ -99,11 +104,11 @@ function publicView(server) {
 
 function createRecommendedServersService() {
   function list() {
-    return SERVERS.map(publicView);
+    return SERVERS.filter((s) => s.host).map(publicView);
   }
 
   function get(id) {
-    const s = SERVERS.find((x) => x.id === id);
+    const s = SERVERS.find((x) => x.id === id && x.host);
     return s ? publicView(s) : null;
   }
 

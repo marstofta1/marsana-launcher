@@ -177,6 +177,10 @@ export default {
       title: 'Create Pack',
       desc: 'Create and its curated add-ons with optimization mods. Version 1.21.1 and NeoForge are set automatically.',
     },
+    'marsana-server': {
+      title: 'Marsana Server',
+      desc: 'To join our official server: Create only (no add-ons), same version as the server. Connects to the server as soon as the game starts.',
+    },
   },
   userMods: {
     title: 'Add Mod',
@@ -426,7 +430,7 @@ export default {
     copyFailed: 'Could not copy address.',
     list: {
       'marsana-main': {
-        description: "Free 10-player Aternos server. It sleeps when idle; you may need to start it from the panel before connecting.",
+        description: "Free Create server (survival). It sleeps when idle; wake it from the panel before connecting. Pick the \"Marsana Server\" pack to join.",
       },
       ultimismc: {
         description: "One of Turkey's popular community servers. Online 24/7 with various game modes.",

@@ -3,6 +3,8 @@
 import { LAUNCHER_MODE_RESET } from './marsanaClient.js';
 import { CREATE_MOD_LOADER } from './versionCompatibility.js';
 
+export const MARSANA_SERVER_PACK_ID = 'marsana-server';
+
 /**
  * `mods`: pakette açılan mod bayrakları (gerisi kapatılır).
  * `fpsBoost`: Fabric'te ek FPS/RAM modları + video ayarı (render mesafesi 12) uygulanır;
@@ -43,7 +45,19 @@ export const MOD_PACKS = Object.freeze([
     fpsBoost: false,
     mods: Object.freeze({ modCreate: true }),
   },
+  {
+    // Resmi sunucu (Aternos): eklentisiz, sunucuyla aynı sabit Create sürümü + quickPlay.
+    id: MARSANA_SERVER_PACK_ID,
+    loader: CREATE_MOD_LOADER,
+    fpsBoost: false,
+    mods: Object.freeze({ modCreate: true }),
+  },
 ]);
+
+/** Seçili paket Marsana Sunucusu mu (başlatıcı sabit jar'ları kurar ve sunucuya bağlar)? */
+export function isMarsanaServerPackSelected(state) {
+  return !!state && state.selectedModPack === MARSANA_SERVER_PACK_ID && !!state.modCreate;
+}
 
 export function findModPack(id) {
   return MOD_PACKS.find((p) => p.id === id) || null;

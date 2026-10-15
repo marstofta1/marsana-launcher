@@ -3,6 +3,7 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const crypto = require('crypto');
 const AdmZip = require('adm-zip');
 
 const { LauncherError, Codes } = require('../infra/errors');
@@ -13,6 +14,7 @@ const modIsolationService = require('./modIsolationService');
 const hudDepsService = require('./hudDepsService');
 const modCompatibilityService = require('./modCompatibilityService');
 const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../shared/clientHudModRegistry');
+const { MARSANA_SERVER_PINNED_MODS } = require('../../shared/marsanaServer');
 // O4 — Modrinth sürüm-seçim mantığı ayrı, bağımsız test edilebilir modüle taşındı.
 // Aynı adlarla içe alınır; tüm çağrı yerleri değişmeden çalışır.
 const {
@@ -2050,24 +2052,44 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   // 1.21.1'e sabitler. Güncel jar'lar yeniden indirilmez; Modrinth'e ulaşılamazsa kurulu
   // jar'larla devam edilir (tek oyunculu, çevrimdışı açılış). Taban Create bulunamazsa
   // hata verilir; bir eklentinin uygun sürümü yoksa o eklenti sessizce atlanır.
-  async function installCreateForExternalLoader({ loader, gameRoot, gameVersion, emit }) {
+  //
+  // `serverPack`: Marsana Sunucusu paketi — eklenti yok; Create sunucuyla aynı
+  // sabit sürümden kurulur (NeoForge kayıt eşleşmesi), yalnızca FPS modları güncel çekilir.
+  async function installCreateForExternalLoader({ loader, gameRoot, gameVersion, emit, serverPack = false }) {
     const modsDir = path.join(gameRoot, 'mods');
     const status = statusEmitter(emit);
     const previous = readManagedCreateJars(modsDir);
+    // Sunucu paketinde çevrimdışı yedek yalnızca sabit jar'lar zaten kuruluysa kullanılır:
+    // normal Create paketinin eklentileriyle sunucuya bağlanılamaz.
     const previousOnDisk =
-      previous.length > 0 && previous.every((j) => fs.existsSync(path.join(modsDir, j)));
+      previous.length > 0 &&
+      previous.every((j) => fs.existsSync(path.join(modsDir, j))) &&
+      (!serverPack || MARSANA_SERVER_PINNED_MODS.every((m) => previous.includes(m.file)));
 
-    status('Create ve eklentileri hazırlanıyor...');
+    status(serverPack ? 'Marsana Sunucusu paketi hazırlanıyor...' : 'Create ve eklentileri hazırlanıyor...');
     let jars;
     try {
-      jars = await downloadModsFromSlugs({
-        modsDir,
-        gameVersion,
-        slugs: [CREATE_SLUG, ...CREATE_ADDON_SLUGS, ...CREATE_PERF_SLUGS],
-        modrinthLoaders: [loader],
-        skipExisting: true,
-        optionalSlugs: new Set([...CREATE_ADDON_SLUGS, ...CREATE_PERF_SLUGS]),
-      });
+      if (serverPack) {
+        const pinned = await downloadPinnedMods(modsDir, MARSANA_SERVER_PINNED_MODS);
+        const perf = await downloadModsFromSlugs({
+          modsDir,
+          gameVersion,
+          slugs: [...CREATE_PERF_SLUGS],
+          modrinthLoaders: [loader],
+          skipExisting: true,
+          optionalSlugs: new Set(CREATE_PERF_SLUGS),
+        });
+        jars = [...pinned, ...perf.filter((j) => !pinned.includes(j))];
+      } else {
+        jars = await downloadModsFromSlugs({
+          modsDir,
+          gameVersion,
+          slugs: [CREATE_SLUG, ...CREATE_ADDON_SLUGS, ...CREATE_PERF_SLUGS],
+          modrinthLoaders: [loader],
+          skipExisting: true,
+          optionalSlugs: new Set([...CREATE_ADDON_SLUGS, ...CREATE_PERF_SLUGS]),
+        });
+      }
     } catch (err) {
       if (previousOnDisk) {
         status("Create: Modrinth'e ulaşılamadı — kurulu sürümlerle devam ediliyor.");
@@ -2109,6 +2131,29 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       'utf8'
     );
     return { jars };
+  }
+
+  function sha512OfFile(filePath) {
+    try {
+      return crypto.createHash('sha512').update(fs.readFileSync(filePath)).digest('hex');
+    } catch {
+      return '';
+    }
+  }
+
+  // Sabit sürümlü jar'ları indirir; diskte aynı hash'le duranlar yeniden indirilmez.
+  async function downloadPinnedMods(modsDir, mods) {
+    await fs.promises.mkdir(modsDir, { recursive: true });
+    const jars = [];
+    for (const mod of mods) {
+      const safeName = path.basename(String(mod.file || ''));
+      const destPath = assertInside(modsDir, safeName);
+      if (sha512OfFile(destPath) !== mod.sha512) {
+        await httpClient.download(mod.url, destPath, { sha512: mod.sha512 });
+      }
+      jars.push(safeName);
+    }
+    return jars;
   }
 
   // Forge ailesi loader'lar için kabartmalı blok (CTM) modunu yükle.

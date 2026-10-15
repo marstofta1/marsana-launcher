@@ -324,7 +324,7 @@ export default {
     copyFailed: 'Impossibile copiare l\'indirizzo.',
     list: {
       'marsana-main': {
-        description: "Server Aternos gratuito per 10 giocatori. Va in standby se inattivo; potrebbe servire avviarlo dal pannello prima di connettersi.",
+        description: "Server Create gratuito (sopravvivenza). Va in standby se inattivo; riattivalo dal pannello prima di connetterti. Scegli il pacchetto \"Server Marsana\".",
       },
       ultimismc: {
         description: "Uno dei server comunitari popolari in Turchia. Aperto 24/7 con vari modalità di gioco.",

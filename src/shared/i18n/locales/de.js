@@ -324,7 +324,7 @@ export default {
     copyFailed: 'Adresse konnte nicht kopiert werden.',
     list: {
       'marsana-main': {
-        description: "Kostenloser Aternos-Server für 10 Spieler. Er schläft im Leerlauf; starte ihn ggf. im Panel vor dem Verbinden.",
+        description: "Kostenloser Create-Server (Survival). Er schläft im Leerlauf; wecke ihn vor dem Verbinden im Panel. Wähle zum Beitreten das Paket „Marsana-Server“.",
       },
       ultimismc: {
         description: "Einer der beliebten Community-Server der Türkei. Rund um die Uhr online mit verschiedenen Spielmodi.",

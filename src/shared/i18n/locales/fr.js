@@ -324,7 +324,7 @@ export default {
     copyFailed: 'Impossible de copier l\'adresse.',
     list: {
       'marsana-main': {
-        description: "Serveur Aternos gratuit pour 10 joueurs. Il se met en veille à l'inactivité ; démarrez-le depuis le panneau avant de vous connecter.",
+        description: "Serveur Create gratuit (survie). Il se met en veille à l'inactivité ; réveillez-le depuis le panneau avant de vous connecter. Choisissez le pack « Serveur Marsana ».",
       },
       ultimismc: {
         description: "L'un des serveurs communautaires populaires de Turquie. Ouvert 24h/24 avec plusieurs modes de jeu.",
