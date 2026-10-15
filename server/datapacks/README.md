@@ -41,7 +41,7 @@ Op olarak NPC'nin duracağı blokta, NPC'nin bakacağı yöne dönerek:
 | `/function marsana_lobby:npc/rules` | Kurallar | Sohbete sunucu kurallarını yazar: Marsanaty gerçek parayla satılmaz, hile (aim bot vb.) açan ban yer, eşya çoğaltma kullanılmaz |
 | `/function marsana_lobby:npc/afk` | AFK | Oyuncuyu AFK moduna alır, herkese duyurur; yarım bloktan fazla hareket edince AFK biter |
 | `/function marsana_lobby:npc/trash` | Çöp | Elde tutulan eşyayı (tüm yığını) siler; 1,5 blok yakınına atılan eşyalar da saniyede bir silinir |
-| `/function marsana_lobby:npc/shop` | Shop | Marsanaty ile alışveriş: komut bloğu (300), bariyer (1000), tek seferde 1 adet |
+| `/function marsana_lobby:npc/shop` | Shop | Marsanaty ile alışveriş: komut bloğu (300), bariyer (1000), tek seferde 1 adet; Moderatör rankı (7000) |
 
 NPC kaldırmak için yanında dur: `/function marsana_lobby:npc/remove`. Yeni NPC türü eklemek için
 `npc/place`'i yeni bir `kind` ile çağıran bir fonksiyon, `advancement/npc/<kind>.json` ve
@@ -59,6 +59,15 @@ Gerçek parayla satılmaz, yalnızca etkinliklerden kazanılır. Etkinliği op b
 
 Bakiye Shop ve Profil NPC'lerinde görünür. Fiyatlar `shop/menu.mcfunction` ve
 `shop/buy_*.mcfunction` içinde. Komut bloğunu yalnızca op'lar yere koyabilir; bu menüde yazıyor.
+
+### Ranklar
+
+Herkes **[Oyuncu]**, Shop'tan 7000 Marsanaty'ye alınan **[Moderatör]** (`marsana.rank.mod` etiketi). Ön ek sohbette ve TAB listesinde ismin önünde görünür; ek yetki vermez. Op komutları (oyuncu çevrimiçi olmalı):
+
+| Komut (op) | Ne yapar |
+|---|---|
+| `/function marsana_lobby:rank/ver {oyuncu:"isim"}` | Moderatör rankını parasız verir |
+| `/function marsana_lobby:rank/al {oyuncu:"isim"}` | Moderatör rankını geri alır (para iade edilmez) |
 
 ### Kaldırma
 

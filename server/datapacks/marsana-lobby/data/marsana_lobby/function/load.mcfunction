@@ -17,6 +17,13 @@ scoreboard objectives add marsana_lobby.ph dummy
 scoreboard objectives add marsana_lobby.ax dummy
 scoreboard objectives add marsana_lobby.ay dummy
 scoreboard objectives add marsana_lobby.az dummy
+# Ranklar: herkes Oyuncu, Shop'tan alınan Moderatör (marsana.rank.mod etiketi). Ön ek sohbette ve TAB listesinde görünür.
+team add marsana.oyuncu "Oyuncu"
+team modify marsana.oyuncu prefix {"text":"[Oyuncu] ","color":"gray"}
+team modify marsana.oyuncu color white
+team add marsana.mod "Moderatör"
+team modify marsana.mod prefix {"text":"[Moderatör] ","color":"aqua","bold":true}
+team modify marsana.mod color aqua
 # Claim mesajı: oyuncu kimliği (tıklama kutusunu oyuncuya bağlar) ve mesaj bekleme süresi (tick).
 scoreboard objectives add marsana_lobby.pid dummy
 scoreboard objectives add marsana_lobby.claimcd dummy

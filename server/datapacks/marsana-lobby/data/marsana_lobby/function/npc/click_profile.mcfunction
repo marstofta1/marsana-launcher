@@ -18,4 +18,6 @@ tellraw @s ["",{"text":" Ölüm: ","color":"gray"},{"score":{"name":"@s","object
 tellraw @s ["",{"text":" Öldürülen yaratık: ","color":"gray"},{"score":{"name":"@s","objective":"marsana_lobby.kills"},"color":"white"}]
 tellraw @s ["",{"text":" Yürünen mesafe: ","color":"gray"},{"score":{"name":"#dist","objective":"marsana_lobby.calc"},"color":"white"},{"text":" m","color":"white"}]
 tellraw @s ["",{"text":" Marsanaty: ","color":"gray"},{"score":{"name":"@s","objective":"marsanaty"},"color":"gold"}]
+execute if entity @s[tag=marsana.rank.mod] run tellraw @s ["",{"text":" Rank: ","color":"gray"},{"text":"Moderatör","color":"aqua","bold":true}]
+execute unless entity @s[tag=marsana.rank.mod] run tellraw @s ["",{"text":" Rank: ","color":"gray"},{"text":"Oyuncu","color":"white"}]
 tellraw @s {"text":" (İstatistikler lobi kurulduğundan beri sayılıyor.)","color":"dark_gray","italic":true}
