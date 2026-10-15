@@ -36,6 +36,7 @@ Op olarak NPC'nin duracağı blokta, NPC'nin bakacağı yöne dönerek:
 | `/function marsana_lobby:npc/profile` | Profil | Oyun süresi, ölüm, öldürülen yaratık, yürünen mesafe (lobi kurulduğundan beri) |
 | `/function marsana_lobby:npc/settings` | Ayarlar | Sohbette tıklanabilir menü: girişte lobiye ışınlan, lobi bildirimleri |
 | `/function marsana_lobby:npc/guide` | Nasıl Oynanır | Sohbete sunucunun kısa rehberini yazar (lobi, Create dünyası, `/trigger lobi`, Marsanaty, Shop, Çöp, Ayarlar) |
+| `/function marsana_lobby:npc/rules` | Kurallar | Sohbete sunucu kurallarını yazar: Marsanaty gerçek parayla satılmaz, hile (aim bot vb.) açan ban yer, eşya çoğaltma kullanılmaz |
 | `/function marsana_lobby:npc/trash` | Çöp | Elde tutulan eşyayı (tüm yığını) siler; 1,5 blok yakınına atılan eşyalar da saniyede bir silinir |
 | `/function marsana_lobby:npc/shop` | Shop | Marsanaty ile alışveriş: komut bloğu (300), bariyer (1000), tek seferde 1 adet |
 
