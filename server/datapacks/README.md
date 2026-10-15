@@ -4,8 +4,9 @@
 
 35x35'lik Create temalı bir lobi kurar ve dünya doğuş noktasını lobinin ortasına alır. Lobi
 alanında (merkezden yatayda ±20 blok) adminler hariç herkes macera moduna geçer, blok kırıp
-koyamaz, hasar almaz ve acıkmaz. Lobideki düşman yaratıklar temizlenir. Dört kapıdan dışarı
-çıkan oyuncu survival moduna döner.
+koyamaz, hasar almaz ve acıkmaz. Lobideki düşman yaratıklar temizlenir. Lobi dışında (Create
+dünyası, Nether, End) admin olmayanlar creative modundadır; girişte Login System'i bekleyenlere
+dokunulmaz. Lobiden çıkan admin survival'a döner.
 
 **Adminler** `marsana.admin` etiketiyle belirlenir (datapack op'luğu göremez):
 `/tag isim add marsana.admin`, kaldırmak için `/tag isim remove marsana.admin`. Adminler lobide
