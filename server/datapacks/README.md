@@ -21,6 +21,20 @@ Bekleme alanı ayarlanırsa `join_wait.mcfunction` içindeki konumu da güncelle
    `/function marsana_lobby:build`
    35x35x16 blokluk alan temizlenir; lobiyi düz bir yere kur.
 
+### NPC'ler
+
+Op olarak NPC'nin duracağı blokta, NPC'nin bakacağı yöne dönerek:
+
+| Komut | NPC | Tıklayınca |
+|---|---|---|
+| `/function marsana_lobby:npc/create_world` | Create Dünyası | Lobiye gelmeden önceki konuma döner; kayıtlı konumu yoksa 300 blok içinde rastgele güvenli bir yere |
+| `/function marsana_lobby:npc/profile` | Profil | Oyun süresi, ölüm, öldürülen yaratık, yürünen mesafe (lobi kurulduğundan beri) |
+| `/function marsana_lobby:npc/settings` | Ayarlar | Sohbette tıklanabilir menü: girişte lobiye ışınlan, lobi bildirimleri |
+
+NPC kaldırmak için yanında dur: `/function marsana_lobby:npc/remove`. Yeni NPC türü eklemek için
+`npc/place`'i yeni bir `kind` ile çağıran bir fonksiyon, `advancement/npc/<kind>.json` ve
+`npc/click_<kind>.mcfunction` ekle.
+
 ### Kaldırma
 
 Önce `/function marsana_lobby:uninstall` (çevrimiçi oyuncuların macera modunu geri alır), sonra
