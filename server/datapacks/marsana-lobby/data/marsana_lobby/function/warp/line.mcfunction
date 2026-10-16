@@ -1,0 +1,1 @@
+$tellraw @a[tag=marsana_lobby.warp_viewer] ["",{"text":" ➤ ","color":"dark_gray"},{"text":"[$(ad)]","color":"light_purple","bold":true,"clickEvent":{"action":"run_command","value":"/trigger warp set $(id)"},"hoverEvent":{"action":"show_text","contents":"$(ad) noktasına ışınlan"}}]

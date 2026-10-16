@@ -31,6 +31,8 @@ Bekleme alanı ayarlanırsa `join_wait.mcfunction` içindeki konumu da güncelle
    `/function marsana_lobby:expand`
    İç lobiye ve süslemelerine dokunmaz; dört kapıdan dış kapılara yollar, KD'de etkinlik alanı,
    KB'de parkur (bitirene duyuru, başlangıca ışınlanır), güneyde iki bahçe ekler.
+5. Tavan için yine ortada dur: `/function marsana_lobby:tavan` (14 blok yukarıda cam + andezit kiriş
+   tavan; dış duvarlar tavana kadar yükselir, altındaki hiçbir şeye dokunmaz).
 
 ### NPC'ler
 
@@ -44,6 +46,7 @@ Op olarak NPC'nin duracağı blokta, NPC'nin bakacağı yöne dönerek:
 | `/function marsana_lobby:npc/guide` | Nasıl Oynanır | Sohbete sunucunun kısa rehberini yazar (lobi, Create dünyası, `/trigger lobi`, Marsanaty, Shop, Çöp, Ayarlar) |
 | `/function marsana_lobby:npc/rules` | Kurallar | Sohbete sunucu kurallarını yazar: Marsanaty gerçek parayla satılmaz, hile (aim bot vb.) açan ban yer, eşya çoğaltma kullanılmaz |
 | `/function marsana_lobby:npc/afk` | AFK | Oyuncuyu AFK moduna alır, herkese duyurur; yarım bloktan fazla hareket edince AFK biter |
+| `/function marsana_lobby:npc/warps` | Warps | Adminin ayarladığı warp noktalarını tıklanabilir liste olarak gösterir, tıklayan oraya ışınlanır |
 | `/function marsana_lobby:npc/trash` | Çöp | Elde tutulan eşyayı (tüm yığını) siler; 1,5 blok yakınına atılan eşyalar da saniyede bir silinir |
 | `/function marsana_lobby:npc/shop` | Shop | Marsanaty ile alışveriş: komut bloğu (300), bariyer (1000), tek seferde 1 adet; Moderatör rankı (7000) |
 
@@ -63,6 +66,12 @@ Gerçek parayla satılmaz, yalnızca etkinliklerden kazanılır. Etkinliği op b
 
 Bakiye Shop ve Profil NPC'lerinde görünür. Fiyatlar `shop/menu.mcfunction` ve
 `shop/buy_*.mcfunction` içinde. Komut bloğunu yalnızca op'lar yere koyabilir; bu menüde yazıyor.
+
+### Warplar
+
+Op, warp olacak yerde bakılacak yöne dönerek: `/function marsana_lobby:warp/ayarla {ad:"Parkur"}`
+(aynı isim varsa yeri güncellenir). Silmek için: `/function marsana_lobby:warp/sil {ad:"Parkur"}`.
+Warplar her boyutta olabilir; Warps köylüsü hepsini listeler.
 
 ### Ranklar
 
@@ -85,4 +94,5 @@ zip'i sil. Bina yerinde kalır.
 ```
 node scripts/gen-lobby-structure.js > server/datapacks/marsana-lobby/data/marsana_lobby/function/structure.mcfunction
 node scripts/gen-lobby-expansion.js > server/datapacks/marsana-lobby/data/marsana_lobby/function/expansion.mcfunction
+node scripts/gen-lobby-roof.js > server/datapacks/marsana-lobby/data/marsana_lobby/function/roof.mcfunction
 ```

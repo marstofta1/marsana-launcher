@@ -20,6 +20,7 @@ scoreboard objectives remove marsana_lobby.left
 scoreboard objectives remove lobi
 scoreboard objectives remove ayarlar
 scoreboard objectives remove magaza
+scoreboard objectives remove warp
 scoreboard objectives remove marsana_lobby.px
 scoreboard objectives remove marsana_lobby.py
 scoreboard objectives remove marsana_lobby.pz

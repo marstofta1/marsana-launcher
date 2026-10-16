@@ -9,9 +9,11 @@ execute as @a[tag=marsana_lobby.pending] run function marsana_lobby:join_wait
 scoreboard players enable @a lobi
 scoreboard players enable @a ayarlar
 scoreboard players enable @a magaza
+scoreboard players enable @a warp
 execute as @a[scores={lobi=1..}] run function marsana_lobby:lobi
 execute as @a[scores={ayarlar=1..}] run function marsana_lobby:npc/settings_trigger
 execute as @a[scores={magaza=1..}] run function marsana_lobby:shop/trigger
+execute as @a[scores={warp=1..}] run function marsana_lobby:warp/trigger
 
 # AFK köylüsü: AFK oyuncu kayıtlı konumundan uzaklaşınca AFK biter.
 execute as @a[tag=marsana_lobby.afk] run function marsana_lobby:afk/check
