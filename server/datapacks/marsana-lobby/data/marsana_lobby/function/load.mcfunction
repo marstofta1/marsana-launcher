@@ -1,5 +1,7 @@
 # Lobi merkezini bir marker işaretler; "gen" puanı yalnızca son kurulan lobinin geçerli olmasını sağlar.
 # Oyuncularda aynı puan, girişte geçen süreyi (tick) sayar.
+# Sunucu geneli: ateş yayılmaz, blokları yakmaz (TNT de tick.mcfunction'da kapatılır).
+gamerule doFireTick false
 scoreboard objectives add marsana_lobby dummy
 scoreboard objectives add marsana_lobby.left minecraft.custom:minecraft.leave_game
 scoreboard objectives add lobi trigger

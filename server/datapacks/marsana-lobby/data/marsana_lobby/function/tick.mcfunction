@@ -26,6 +26,10 @@ team join marsana.oyuncu @a[tag=!marsana.rank.mod,team=!marsana.oyuncu]
 execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned ~-21 ~9 ~-33 as @a[distance=..1.6,tag=!marsana_lobby.parkur_cd] run function marsana_lobby:parkur/finish
 execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned ~-21 ~9 ~-33 run tag @a[tag=marsana_lobby.parkur_cd,distance=4..] remove marsana_lobby.parkur_cd
 
+# Sunucu geneli: TNT patlamaları kapalı. Ateşlenen TNT ve ateşlenmiş TNT'li vagon patlamadan silinir.
+kill @e[type=minecraft:tnt]
+kill @e[type=minecraft:tnt_minecart,nbt=!{TNTFuse:-1}]
+
 # Lobi kutusu: merkezden yatayda ±49 (97x97 genişletilmiş lobi), dikeyde -10..+30 blok.
 execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned ~-49 ~-10 ~-49 run tag @a[dx=98,dy=40,dz=98] add marsana_lobby.in
 execute as @a[tag=marsana_lobby.in] run function marsana_lobby:inside

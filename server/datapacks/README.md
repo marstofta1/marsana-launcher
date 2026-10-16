@@ -20,6 +20,9 @@ Bekleme alanı ayarlanırsa `join_wait.mcfunction` içindeki konumu da güncelle
 
 **Claim mesajı:** Lobide blok kırmaya çalışan admin olmayan oyuncuya sohbette "Burası claim'li, kıramazsın!" yazılır (en fazla 2 saniyede bir). Macera modunda oyun kırma denemesini sunucuya göndermediği için oyuncunun 3 blok içinde baktığı bloğa görünmez bir tıklama kutusu (interaction) konur; sol tık bu kutuya gider. Bu yüzden lobide bloklara sağ tık (kapı, düğme) çalışmaz; NPC'ler etkilenmez.
 
+**Sunucu geneli:** TNT patlamaları kapalı (ateşlenen TNT ve TNT'li vagon patlamadan silinir; 1.21.1'de
+`tntExplodes` gamerule'u yok) ve ateş yayılmaz (`gamerule doFireTick false`, datapack yüklenince ayarlanır).
+
 ### Kurulum (Aternos)
 
 1. `npm run pack:lobby` komutunu çalıştır, `dist/marsana-lobby.zip` oluşur.
