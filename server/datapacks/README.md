@@ -22,6 +22,10 @@ Bekleme alanı ayarlanırsa `join_wait.mcfunction` içindeki konumu da güncelle
 
 **Sunucu geneli:** TNT patlamaları kapalı (ateşlenen TNT ve TNT'li vagon patlamadan silinir; 1.21.1'de
 `tntExplodes` gamerule'u yok) ve ateş yayılmaz (`gamerule doFireTick false`, datapack yüklenince ayarlanır).
+Creeper'ların patlama yarıçapı 0'dır. End Crystal, End dışında ve End'de ejderha adası (merkezden 200 blok)
+dışında koyulursa silinir ve eşyası geri düşer. Yatak ve diriltici (respawn anchor) hiçbir boyutta patlamaz:
+`data/minecraft/dimension_type` her boyutta `bed_works` ve `respawn_anchor_works` değerini açar, ikisi de doğma
+noktası olur. Boyut tipleri yalnızca sunucu açılırken okunur, bu kısım için `reload` yetmez, **yeniden başlat**.
 
 ### Kurulum (Aternos)
 

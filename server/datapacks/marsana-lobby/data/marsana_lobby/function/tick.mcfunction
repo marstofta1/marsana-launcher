@@ -29,6 +29,12 @@ execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned
 # Sunucu geneli: TNT patlamaları kapalı. Ateşlenen TNT ve ateşlenmiş TNT'li vagon patlamadan silinir.
 kill @e[type=minecraft:tnt]
 kill @e[type=minecraft:tnt_minecart,nbt=!{TNTFuse:-1}]
+# Creeper patlaması kapalı: patlama yarıçapı 0 (bloklara ve oyunculara zarar vermez).
+execute as @e[type=minecraft:creeper,tag=!marsana.safe] run data merge entity @s {ExplosionRadius:0b,Tags:["marsana.safe"]}
+# End Crystal: End dışında ve End'de ejderha adası (merkezden 200 blok) dışında koyulan kristal silinir, eşyası geri düşer.
+execute as @e[type=minecraft:end_crystal] at @s unless dimension minecraft:the_end run function marsana_lobby:guvenlik/crystal
+execute as @e[type=minecraft:end_crystal] at @s if dimension minecraft:the_end unless entity @s[x=0,y=64,z=0,distance=..200] run function marsana_lobby:guvenlik/crystal
+# Yatak (Nether/End) ve diriltici (Overworld/End) patlamaları data/minecraft/dimension_type ile kapalı; ikisi de her boyutta doğma noktası olur.
 
 # Lobi kutusu: merkezden yatayda ±49 (97x97 genişletilmiş lobi), dikeyde -10..+30 blok.
 execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned ~-49 ~-10 ~-49 run tag @a[dx=98,dy=40,dz=98] add marsana_lobby.in
