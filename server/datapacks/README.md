@@ -2,8 +2,8 @@
 
 ## marsana-lobby — korumalı doğuş lobisi (Minecraft 1.21.1, Create gerekli)
 
-35x35'lik Create temalı bir lobi kurar ve dünya doğuş noktasını lobinin ortasına alır. Lobi
-alanında (merkezden yatayda ±20 blok) adminler hariç herkes macera moduna geçer, blok kırıp
+97x97'lik Create temalı bir lobi kurar ve dünya doğuş noktasını lobinin ortasına alır. Lobi
+alanında (merkezden yatayda ±49 blok) adminler hariç herkes macera moduna geçer, blok kırıp
 koyamaz, hasar almaz ve acıkmaz. Lobideki düşman yaratıklar temizlenir. Lobi dışında (Create
 dünyası, Nether, End) admin olmayanlar creative modundadır; girişte Login System'i bekleyenlere
 dokunulmaz. Lobiden çıkan admin survival'a döner.
@@ -26,7 +26,11 @@ Bekleme alanı ayarlanırsa `join_wait.mcfunction` içindeki konumu da güncelle
 2. Aternos'ta **Dosyalar → world → datapacks** klasörüne zip'i yükle ve sunucuyu yeniden başlat.
 3. Oyunda op olarak lobinin merkezi olacak yerde, zeminde dur:
    `/function marsana_lobby:build`
-   35x35x16 blokluk alan temizlenir; lobiyi düz bir yere kur.
+   97x97 blokluk alan temizlenir; lobiyi düz bir yere kur.
+4. Eski (33x33) lobisi olan sunucuda yalnızca genişletmeyi kurmak için lobinin ortasında dur:
+   `/function marsana_lobby:expand`
+   İç lobiye ve süslemelerine dokunmaz; dört kapıdan dış kapılara yollar, KD'de etkinlik alanı,
+   KB'de parkur (bitirene duyuru, başlangıca ışınlanır), güneyde iki bahçe ekler.
 
 ### NPC'ler
 
@@ -80,4 +84,5 @@ zip'i sil. Bina yerinde kalır.
 
 ```
 node scripts/gen-lobby-structure.js > server/datapacks/marsana-lobby/data/marsana_lobby/function/structure.mcfunction
+node scripts/gen-lobby-expansion.js > server/datapacks/marsana-lobby/data/marsana_lobby/function/expansion.mcfunction
 ```

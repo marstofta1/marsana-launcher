@@ -20,8 +20,12 @@ execute as @a[tag=marsana_lobby.afk] run function marsana_lobby:afk/check
 team join marsana.mod @a[tag=marsana.rank.mod,team=!marsana.mod]
 team join marsana.oyuncu @a[tag=!marsana.rank.mod,team=!marsana.oyuncu]
 
-# Lobi kutusu: merkezden yatayda ±20, dikeyde -10..+30 blok.
-execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned ~-20 ~-10 ~-20 run tag @a[dx=40,dy=40,dz=40] add marsana_lobby.in
+# Parkur: bitiş platformuna (merkezden -21 +9 -33) ulaşan oyuncu; uzaklaşınca tekrar sayılabilir.
+execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned ~-21 ~9 ~-33 as @a[distance=..1.6,tag=!marsana_lobby.parkur_cd] run function marsana_lobby:parkur/finish
+execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned ~-21 ~9 ~-33 run tag @a[tag=marsana_lobby.parkur_cd,distance=4..] remove marsana_lobby.parkur_cd
+
+# Lobi kutusu: merkezden yatayda ±49 (97x97 genişletilmiş lobi), dikeyde -10..+30 blok.
+execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned ~-49 ~-10 ~-49 run tag @a[dx=98,dy=40,dz=98] add marsana_lobby.in
 execute as @a[tag=marsana_lobby.in] run function marsana_lobby:inside
 execute as @a[tag=!marsana_lobby.in,tag=marsana_lobby.adv] run function marsana_lobby:outside
 # Lobi dışında (Create dünyası, Nether, End) admin olmayanlar creative'dedir; girişte bekleyenlere dokunulmaz.

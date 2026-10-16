@@ -8,6 +8,7 @@ tag @a remove marsana_lobby.seen
 tag @a remove marsana_lobby.no_autolobby
 tag @a remove marsana_lobby.no_notify
 tag @a remove marsana_lobby.afk
+tag @a remove marsana_lobby.parkur_cd
 kill @e[tag=marsana_lobby.npc]
 kill @e[type=minecraft:interaction,tag=marsana_lobby.claimbox]
 kill @e[type=minecraft:marker,tag=marsana_lobby.center]
