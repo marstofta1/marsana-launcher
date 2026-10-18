@@ -179,7 +179,7 @@ export default {
     },
     'marsana-server': {
       title: 'Klima SMP',
-      desc: 'Resmi sunucumuza bağlanmak için: yalnızca Create (eklentisiz), sunucuyla aynı sürüm. Oyun açılınca doğrudan sunucuya girer.',
+      desc: 'Resmi sunucumuza bağlanmak için: Create, Create Aeronautics ve Create: Diesel Generators, sunucuyla aynı sürümler. Oyun açılınca doğrudan sunucuya girer.',
     },
   },
   userMods: {

@@ -996,7 +996,7 @@ function createLaunchService({
     if (!includeCreate) {
       shaderStackService.removeManagedCreateJars(paths.gameRoot);
     }
-    // Klima SMP paketi: eklentisiz, sunucuyla aynı sabit Create sürümü.
+    // Klima SMP paketi: sunucuyla aynı sabit Create ve eklenti sürümleri.
     const createServerPack = includeCreate && !!modPresets.marsanaServer;
     // FPS sınırını yalnızca hazır Fabric paketleri kaldırır; Create ve diğer profillerde geri alınır.
     if (!(modPresets && modPresets.fpsBoost)) {

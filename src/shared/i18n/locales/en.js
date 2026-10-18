@@ -179,7 +179,7 @@ export default {
     },
     'marsana-server': {
       title: 'Klima SMP',
-      desc: 'To join our official server: Create only (no add-ons), same version as the server. Connects to the server as soon as the game starts.',
+      desc: 'To join our official server: Create, Create Aeronautics and Create: Diesel Generators, same versions as the server. Connects to the server as soon as the game starts.',
     },
   },
   userMods: {

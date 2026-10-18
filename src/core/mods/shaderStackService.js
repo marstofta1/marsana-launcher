@@ -2053,7 +2053,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   // jar'larla devam edilir (tek oyunculu, çevrimdışı açılış). Taban Create bulunamazsa
   // hata verilir; bir eklentinin uygun sürümü yoksa o eklenti sessizce atlanır.
   //
-  // `serverPack`: Klima SMP paketi — eklenti yok; Create sunucuyla aynı
+  // `serverPack`: Klima SMP paketi — Create ve eklentileri sunucuyla aynı
   // sabit sürümden kurulur (NeoForge kayıt eşleşmesi), yalnızca FPS modları güncel çekilir.
   async function installCreateForExternalLoader({ loader, gameRoot, gameVersion, emit, serverPack = false }) {
     const modsDir = path.join(gameRoot, 'mods');

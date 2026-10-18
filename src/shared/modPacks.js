@@ -46,7 +46,7 @@ export const MOD_PACKS = Object.freeze([
     mods: Object.freeze({ modCreate: true }),
   },
   {
-    // Resmi sunucu (Aternos): eklentisiz, sunucuyla aynı sabit Create sürümü + quickPlay.
+    // Resmi sunucu (Aternos): sunucuyla aynı sabit Create + eklenti sürümleri + quickPlay.
     id: MARSANA_SERVER_PACK_ID,
     loader: CREATE_MOD_LOADER,
     fpsBoost: false,
