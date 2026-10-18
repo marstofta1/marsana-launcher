@@ -41,3 +41,14 @@ scoreboard players set #60 marsana_lobby.calc 60
 scoreboard players set #100 marsana_lobby.calc 100
 scoreboard players set #1200 marsana_lobby.calc 1200
 schedule function marsana_lobby:mobs 20t replace
+# Klima SMP yan menüsü: Türkiye saati, çevrimiçi oyuncular ve Marsanaty bakiyeleri.
+scoreboard objectives add marsana_lobby.saat dummy
+scoreboard objectives add marsana_lobby.sb dummy
+scoreboard objectives modify marsana_lobby.sb displayname {"text":"KLIMA SMP","color":"aqua","bold":true}
+scoreboard objectives modify marsana_lobby.sb numberformat styled {"color":"gold"}
+scoreboard objectives setdisplay sidebar marsana_lobby.sb
+scoreboard players set #60 marsana_lobby.saat 60
+scoreboard players set #10 marsana_lobby.saat 10
+scoreboard players set #3600 marsana_lobby.saat 3600
+# Sunucu kapalıyken geçen süre bilinemez: açılışta saat ayarlanmamış sayılır (op: saat/ayarla).
+scoreboard players set #sync marsana_lobby.saat 0

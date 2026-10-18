@@ -49,3 +49,6 @@ tag @e[type=minecraft:interaction,tag=marsana_lobby.claimbox] add marsana_lobby.
 execute as @a[tag=marsana_lobby.adv,tag=!marsana.admin,gamemode=adventure] at @s anchored eyes positioned ^ ^ ^ run function marsana_lobby:claim/player
 kill @e[type=minecraft:interaction,tag=marsana_lobby.stale]
 scoreboard players remove @a[scores={marsana_lobby.claimcd=1..}] marsana_lobby.claimcd 1
+
+# Klima SMP yan menüsü (saniyede bir yenilenir).
+function marsana_lobby:sidebar/tick

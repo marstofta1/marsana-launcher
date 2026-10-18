@@ -89,6 +89,18 @@ Herkes **[Oyuncu]**, Shop'tan 7000 Marsanaty'ye alınan **[Moderatör]** (`marsa
 | `/function marsana_lobby:rank/ver {oyuncu:"isim"}` | Moderatör rankını parasız verir |
 | `/function marsana_lobby:rank/al {oyuncu:"isim"}` | Moderatör rankını geri alır (para iade edilmez) |
 
+### Klima SMP yan menüsü
+
+Ekranın sağında herkese açık bir menü durur: başlık **KLIMA SMP**, altında Türkiye saati
+(`Saat (TR): 14:30`), ardından çevrimiçi oyuncuların adları ve sağlarında Marsanaty bakiyeleri
+(en zenginden aşağı, en fazla 12 oyuncu). Menü saniyede bir yenilenir.
+
+Datapack gerçek saati okuyamaz; saat oyun tick'leriyle ilerler. Bu yüzden:
+
+- Sunucu her açıldığında (ve `/reload` sonrası) saat `--:--` görünür. Op olarak ayarla:
+  `/function marsana_lobby:saat/ayarla {saat:14,dakika:30}` (Türkiye saati, 24 saat).
+- Sunucu çok kasarsa (20 TPS altı) saat yavaş kalabilir; gerekirse yeniden ayarla.
+
 ### Kaldırma
 
 Önce `/function marsana_lobby:uninstall` (çevrimiçi oyuncuların macera modunu geri alır), sonra
