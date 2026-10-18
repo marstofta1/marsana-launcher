@@ -324,7 +324,7 @@ export default {
     copyFailed: '주소를 복사할 수 없습니다.',
     list: {
       'marsana-main': {
-        description: "무료 Create 서버(서바이벌). 유휴 시 절전하므로 접속 전 패널에서 깨우세요. 접속하려면 \"Marsana 서버\" 팩을 선택하세요.",
+        description: "무료 Create 서버(서바이벌). 유휴 시 절전하므로 접속 전 패널에서 깨우세요. 접속하려면 \"Klima SMP\" 팩을 선택하세요.",
       },
       ultimismc: {
         description: "터키의 인기 커뮤니티 서버 중 하나. 24시간 운영, 다양한 게임 모드.",

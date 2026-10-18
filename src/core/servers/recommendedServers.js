@@ -10,7 +10,7 @@ const SERVERS = Object.freeze([
   Object.freeze({
     // Aternos'taki resmi Create sunucusu. Adres girilene kadar listede gösterilmez.
     id: 'marsana-main',
-    name: 'Marsana Resmi Sunucu',
+    name: 'Klima SMP',
     host: MARSANA_SERVER_HOST,
     port: MARSANA_SERVER_PORT,
     provider: 'aternos',
@@ -18,7 +18,7 @@ const SERVERS = Object.freeze([
     websiteUrl: null,
     capacity: null,
     description:
-      'Ücretsiz Create sunucusu (survival). Boştayken uyur; bağlanmadan önce panelden uyandır. Girmek için "Marsana Sunucusu" paketini seç.',
+      'Ücretsiz Create sunucusu (survival). Boştayken uyur; bağlanmadan önce panelden uyandır. Girmek için "Klima SMP" paketini seç.',
   }),
   Object.freeze({
     id: 'ultimismc',

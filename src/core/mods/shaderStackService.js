@@ -2053,7 +2053,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   // jar'larla devam edilir (tek oyunculu, çevrimdışı açılış). Taban Create bulunamazsa
   // hata verilir; bir eklentinin uygun sürümü yoksa o eklenti sessizce atlanır.
   //
-  // `serverPack`: Marsana Sunucusu paketi — eklenti yok; Create sunucuyla aynı
+  // `serverPack`: Klima SMP paketi — eklenti yok; Create sunucuyla aynı
   // sabit sürümden kurulur (NeoForge kayıt eşleşmesi), yalnızca FPS modları güncel çekilir.
   async function installCreateForExternalLoader({ loader, gameRoot, gameVersion, emit, serverPack = false }) {
     const modsDir = path.join(gameRoot, 'mods');
@@ -2066,7 +2066,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       previous.every((j) => fs.existsSync(path.join(modsDir, j))) &&
       (!serverPack || MARSANA_SERVER_PINNED_MODS.every((m) => previous.includes(m.file)));
 
-    status(serverPack ? 'Marsana Sunucusu paketi hazırlanıyor...' : 'Create ve eklentileri hazırlanıyor...');
+    status(serverPack ? 'Klima SMP paketi hazırlanıyor...' : 'Create ve eklentileri hazırlanıyor...');
     let jars;
     try {
       if (serverPack) {

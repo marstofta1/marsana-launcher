@@ -324,7 +324,7 @@ export default {
     copyFailed: 'アドレスをコピーできませんでした。',
     list: {
       'marsana-main': {
-        description: "無料のCreateサーバー（サバイバル）。空き状態でスリープするため、接続前にパネルから起動してください。参加には「Marsanaサーバー」パックを選んでください。",
+        description: "無料のCreateサーバー（サバイバル）。空き状態でスリープするため、接続前にパネルから起動してください。参加には「Klima SMP」パックを選んでください。",
       },
       ultimismc: {
         description: "トルコの人気コミュニティサーバーの一つ。24時間稼働、さまざまなゲームモード。",

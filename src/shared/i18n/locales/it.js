@@ -324,7 +324,7 @@ export default {
     copyFailed: 'Impossibile copiare l\'indirizzo.',
     list: {
       'marsana-main': {
-        description: "Server Create gratuito (sopravvivenza). Va in standby se inattivo; riattivalo dal pannello prima di connetterti. Scegli il pacchetto \"Server Marsana\".",
+        description: "Server Create gratuito (sopravvivenza). Va in standby se inattivo; riattivalo dal pannello prima di connetterti. Scegli il pacchetto \"Klima SMP\".",
       },
       ultimismc: {
         description: "Uno dei server comunitari popolari in Turchia. Aperto 24/7 con vari modalità di gioco.",

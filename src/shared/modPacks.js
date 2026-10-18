@@ -54,7 +54,7 @@ export const MOD_PACKS = Object.freeze([
   },
 ]);
 
-/** Seçili paket Marsana Sunucusu mu (başlatıcı sabit jar'ları kurar ve sunucuya bağlar)? */
+/** Seçili paket Klima SMP mi (başlatıcı sabit jar'ları kurar ve sunucuya bağlar)? */
 export function isMarsanaServerPackSelected(state) {
   return !!state && state.selectedModPack === MARSANA_SERVER_PACK_ID && !!state.modCreate;
 }

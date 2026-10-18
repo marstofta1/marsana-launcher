@@ -324,7 +324,7 @@ export default {
     copyFailed: 'Adresse konnte nicht kopiert werden.',
     list: {
       'marsana-main': {
-        description: "Kostenloser Create-Server (Survival). Er schläft im Leerlauf; wecke ihn vor dem Verbinden im Panel. Wähle zum Beitreten das Paket „Marsana-Server“.",
+        description: "Kostenloser Create-Server (Survival). Er schläft im Leerlauf; wecke ihn vor dem Verbinden im Panel. Wähle zum Beitreten das Paket „Klima SMP“.",
       },
       ultimismc: {
         description: "Einer der beliebten Community-Server der Türkei. Rund um die Uhr online mit verschiedenen Spielmodi.",

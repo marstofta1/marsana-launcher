@@ -996,7 +996,7 @@ function createLaunchService({
     if (!includeCreate) {
       shaderStackService.removeManagedCreateJars(paths.gameRoot);
     }
-    // Marsana Sunucusu paketi: eklentisiz, sunucuyla aynı sabit Create sürümü.
+    // Klima SMP paketi: eklentisiz, sunucuyla aynı sabit Create sürümü.
     const createServerPack = includeCreate && !!modPresets.marsanaServer;
     // FPS sınırını yalnızca hazır Fabric paketleri kaldırır; Create ve diğer profillerde geri alınır.
     if (!(modPresets && modPresets.fpsBoost)) {
@@ -1366,7 +1366,7 @@ function createLaunchService({
       customArgs: [...platformJvmArgs(), ...baseVersionJvmArgs, ...extraJvmArgs, ...planJvmArgs],
       overrides,
     };
-    // Marsana Sunucusu paketi oyunu doğrudan sunucuya bağlar (adres girilmişse).
+    // Klima SMP paketi oyunu doğrudan sunucuya bağlar (adres girilmişse).
     const serverQuickPlay =
       loaderId === 'neoforge' && modPresets.create && modPresets.marsanaServer ? marsanaServerQuickPlay() : null;
     if (serverQuickPlay) launchOpts.quickPlay = serverQuickPlay;
