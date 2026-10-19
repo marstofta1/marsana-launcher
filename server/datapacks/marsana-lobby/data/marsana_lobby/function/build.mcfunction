@@ -8,7 +8,8 @@ execute as @e[type=minecraft:marker,tag=marsana_lobby.new] run scoreboard player
 execute at @e[type=minecraft:marker,tag=marsana_lobby.new,limit=1] run function marsana_lobby:structure
 execute at @e[type=minecraft:marker,tag=marsana_lobby.new,limit=1] run function marsana_lobby:expansion
 execute at @e[type=minecraft:marker,tag=marsana_lobby.new,limit=1] run function marsana_lobby:roof
-execute at @e[type=minecraft:marker,tag=marsana_lobby.new,limit=1] run setworldspawn ~ ~ ~ 180
+execute at @e[type=minecraft:marker,tag=marsana_lobby.new,limit=1] if dimension minecraft:overworld run setworldspawn ~ ~ ~ 180
+execute at @e[type=minecraft:marker,tag=marsana_lobby.new,limit=1] run forceload add ~ ~
 tag @e[type=minecraft:marker,tag=marsana_lobby.new] remove marsana_lobby.new
 gamerule spawnRadius 0
 tellraw @s {"text":"[Marsana] Lobi kuruldu, doğuş noktası lobinin ortasına alındı.","color":"green"}

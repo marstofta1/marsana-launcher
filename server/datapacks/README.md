@@ -89,6 +89,26 @@ Herkes **[Oyuncu]**, Shop'tan 7000 Marsanaty'ye alınan **[Moderatör]** (`marsa
 | `/function marsana_lobby:rank/ver {oyuncu:"isim"}` | Moderatör rankını parasız verir |
 | `/function marsana_lobby:rank/al {oyuncu:"isim"}` | Moderatör rankını geri alır (para iade edilmez) |
 
+### Lobi boyutu (Create dünyasından ayrı)
+
+Datapack boş bir `marsana_lobby:lobi` boyutu ekler. Lobi orada durursa Create dünyasında yürüyerek,
+uçarak ya da hava gemisiyle bulunamaz; yalnızca girişte, `/trigger lobi` ile ve lobideki warplarla
+gidilir. Lobi boyutunda lobi alanının dışına çıkan (boşluğa düşen) oyuncu merkeze döner. Ölüp yatak
+veya diriltici noktası olmadan doğan oyuncu lobiye ışınlanır. Dünya doğuş noktası Create dünyasında,
+eski lobinin yerinde kalır (oyuncu oradan hemen lobiye alınır).
+
+Spawn'da kurulu bir lobiyi taşımak için (bir kez):
+
+1. Yeni zip'i yükle ve sunucuyu **yeniden başlat** (yeni boyut yalnızca açılışta okunur, `reload` yetmez).
+2. Op olarak: `/function marsana_lobby:tasi` — bloklar (merkezden ±49, -6..+30), NPC'ler, merkez ve
+   lobinin içindeki warplar aynı koordinatlarla lobi boyutuna geçer; o an lobide olanlar yeni lobiye ışınlanır.
+3. `/trigger lobi` ile yeni lobiyi kontrol et.
+4. Spawn'daki eski binayı kaldır: `/function marsana_lobby:eski_sil` (üstü hava, zemin çimen olur; geri alınamaz,
+   lobi taşınmadan çalışmaz).
+
+Yeni kurulumda lobi doğrudan lobi boyutunda da kurulabilir, ama boş boyutta durulacak zemin olmadığı için
+önce taşıma yolu daha kolaydır.
+
 ### Klima SMP yan menüsü
 
 Ekranın sağında herkese açık bir menü durur: başlık **KLIMA SMP**, altında Türkiye saati

@@ -52,3 +52,5 @@ scoreboard players set #10 marsana_lobby.saat 10
 scoreboard players set #3600 marsana_lobby.saat 3600
 # Sunucu kapalıyken geçen süre bilinemez: açılışta saat ayarlanmamış sayılır (op: saat/ayarla).
 scoreboard players set #sync marsana_lobby.saat 0
+# Ölüp yatak noktası olmadan doğan oyuncu lobiye döner (respawn.mcfunction).
+scoreboard objectives add marsana_lobby.respawn deathCount

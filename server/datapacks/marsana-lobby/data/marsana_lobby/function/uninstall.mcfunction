@@ -11,11 +11,13 @@ tag @a remove marsana_lobby.afk
 tag @a remove marsana_lobby.parkur_cd
 kill @e[tag=marsana_lobby.npc]
 kill @e[type=minecraft:interaction,tag=marsana_lobby.claimbox]
+execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] run forceload remove ~ ~
 kill @e[type=minecraft:marker,tag=marsana_lobby.center]
 team remove marsana.oyuncu
 team remove marsana.mod
 schedule clear marsana_lobby:mobs
 scoreboard objectives remove marsana_lobby.sb
+scoreboard objectives remove marsana_lobby.respawn
 scoreboard objectives remove marsana_lobby.saat
 scoreboard objectives remove marsana_lobby
 scoreboard objectives remove marsana_lobby.left
