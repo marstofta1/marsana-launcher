@@ -2,6 +2,11 @@
 # Oyuncularda aynı puan, girişte geçen süreyi (tick) sayar.
 # Sunucu geneli: ateş yayılmaz, blokları yakmaz (TNT de tick.mcfunction'da kapatılır).
 gamerule doFireTick false
+# Sohbet temiz kalsın: komut bloğu çıktısı, "oyun modun değişti" gibi komut geri bildirimleri ve
+# op'lara giden "[Server: ...]" kayıtları gösterilmez (sunucu günlüğüne yine yazılır).
+gamerule commandBlockOutput false
+gamerule sendCommandFeedback false
+gamerule logAdminCommands false
 scoreboard objectives add marsana_lobby dummy
 scoreboard objectives add marsana_lobby.left minecraft.custom:minecraft.leave_game
 scoreboard objectives add lobi trigger

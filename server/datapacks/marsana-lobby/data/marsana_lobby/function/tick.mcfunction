@@ -40,10 +40,12 @@ execute as @e[type=minecraft:end_crystal] at @s if dimension minecraft:the_end u
 execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned ~-49 ~-10 ~-49 run tag @a[dx=98,dy=40,dz=98] add marsana_lobby.in
 execute as @a[tag=marsana_lobby.in] run function marsana_lobby:inside
 # Lobi boyutunda lobi kutusunun dışına çıkan (boşluğa düşen) admin olmayan oyuncu merkeze döner; adminler yalnız y<-64'te.
-execute as @a[tag=!marsana_lobby.in,tag=!marsana.admin] at @s if dimension marsana_lobby:lobi run function marsana_lobby:teleport
+# Login System'in bekleme alanındaki oyuncuya dokunulmaz; yoksa her tick bekleme alanı ile merkez arasında
+# ışınlanır, chunk'lar yüklenemez ve lobi yarım görünür.
+execute as @a[tag=!marsana_lobby.in,tag=!marsana.admin,tag=!marsana_lobby.waiting] at @s if dimension marsana_lobby:lobi run function marsana_lobby:teleport
 execute as @a[tag=marsana.admin] at @s if dimension marsana_lobby:lobi if entity @s[y=-400,dy=335] run function marsana_lobby:teleport
 execute as @a[scores={marsana_lobby.respawn=1..}] run function marsana_lobby:respawn
-execute as @a[tag=!marsana_lobby.in,tag=marsana_lobby.adv] run function marsana_lobby:outside
+execute as @a[tag=!marsana_lobby.in,tag=marsana_lobby.adv,tag=!marsana_lobby.pending] run function marsana_lobby:outside
 # Lobi dışında (Create dünyası, Nether, End) admin olmayanlar creative'dedir; girişte bekleyenlere dokunulmaz.
 execute as @a[tag=!marsana_lobby.in,tag=!marsana.admin,tag=!marsana_lobby.pending,gamemode=!creative,gamemode=!spectator] run gamemode creative @s
 tag @a remove marsana_lobby.in
