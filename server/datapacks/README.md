@@ -40,7 +40,7 @@ noktası olur. Boyut tipleri yalnızca sunucu açılırken okunur, bu kısım i�
 4. Eski (33x33) lobisi olan sunucuda yalnızca genişletmeyi kurmak için lobinin ortasında dur:
    `/function marsana_lobby:expand`
    İç lobiye ve süslemelerine dokunmaz; dört kapıdan dış kapılara yollar, KD'de etkinlik alanı,
-   KB'de parkur (bitirene duyuru, başlangıca ışınlanır), güneyde iki bahçe ekler.
+   KB'de parkur (bitirene duyuru, başlangıca ışınlanır; parkurdayken yere ya da çite düşen başa döner), güneyde iki bahçe ekler.
 5. Tavan için yine ortada dur: `/function marsana_lobby:tavan` (14 blok yukarıda cam + andezit kiriş
    tavan; dış duvarlar tavana kadar yükselir, altındaki hiçbir şeye dokunmaz).
 
@@ -57,6 +57,10 @@ Op olarak NPC'nin duracağı blokta, NPC'nin bakacağı yöne dönerek:
 | `/function marsana_lobby:npc/rules` | Kurallar | Sohbete sunucu kurallarını yazar: Marsanaty gerçek parayla satılmaz, hile (aim bot vb.) açan ban yer, eşya çoğaltma kullanılmaz |
 | `/function marsana_lobby:npc/afk` | AFK | Oyuncuyu AFK moduna alır, herkese duyurur; yarım bloktan fazla hareket edince AFK biter |
 | `/function marsana_lobby:npc/warps` | Warps | Adminin ayarladığı warp noktalarını tıklanabilir liste olarak gösterir, tıklayan oraya ışınlanır |
+| `/function marsana_lobby:npc/end` | End | End lobisine (ana adanın ortası, 0.5 62 -3.5) ışınlar |
+| `/function marsana_lobby:npc/nether` | Nether | Nether'da 0 0 çevresinde 5000 blok içinde rastgele güvenli bir yere ışınlar (y 120 altı, lav/ateş üstü değil) |
+| `/function marsana_lobby:npc/rtp` | Rastgele Işınlan | Create dünyasında 0 0 çevresinde 5000 blok içinde rastgele güvenli bir yere ışınlar; Create Dünyası NPC'sinden farklı olarak kayıtlı konuma değil, her seferinde yeni bir yere |
+| `/function marsana_lobby:npc/donus` | Lobiye Dön | Ana lobinin ortasına ışınlar (`/trigger lobi` gibi); End lobisi gibi uzak yerler için |
 | `/function marsana_lobby:npc/trash` | Çöp | Elde tutulan eşyayı (tüm yığını) siler; 1,5 blok yakınına atılan eşyalar da saniyede bir silinir |
 | `/function marsana_lobby:npc/shop` | Shop | Marsanaty ile alışveriş: komut bloğu (300), bariyer (1000), tek seferde 1 adet; Moderatör rankı (7000) |
 
@@ -91,6 +95,21 @@ Herkes **[Oyuncu]**, Shop'tan 7000 Marsanaty'ye alınan **[Moderatör]** (`marsa
 |---|---|
 | `/function marsana_lobby:rank/ver {oyuncu:"isim"}` | Moderatör rankını parasız verir |
 | `/function marsana_lobby:rank/al {oyuncu:"isim"}` | Moderatör rankını geri alır (para iade edilmez) |
+
+### End lobisi
+
+End ana adasının ortasında (0 62 0) elle kurulmuş bina ikinci korumalı alandır: x -10..10, y 52..82, z -10..10
+(`tick.mcfunction`, `mobs.mcfunction` ve `save_pos_force.mcfunction` içinde; değiştirirsen üçünü birlikte güncelle).
+End NPC'si `0.5 62 -3.5`'e, güneye bakarak ışınlar (`npc/click_end.mcfunction`).
+Ana lobiden farkı: **adminler de** macera moduna alınır, kimse blok kıramaz (creative'e geçen admin bir sonraki
+tick'te geri döner; "claim'li" mesajını adminler de görür). Düzenlemek için alanın dışından `/fill`, `/setblock`
+gibi komutlar kullanılabilir. Diğer kurallar ana lobideki gibi: hasar almaz, düşman yaratıklar
+(Enderman dahil, ejderha hariç) temizlenir. Dışarı çıkan creative'e geçer. Buradaki konum Create Dünyası NPC'si
+için kaydedilmez.
+
+**Dikkat:** 0 0, vanilla'da End çıkış portalının (bedrock çeşme) yeridir. Ejderha her öldüğünde (yeniden çağrılan
+ejderha dahil) oyun çeşmeyi buraya yeniden kurar ve binanın ortasındaki blokların üstüne yazar. Ejderha da çeşmenin
+üstüne konar.
 
 ### Lobi boyutu (Create dünyasından ayrı)
 

@@ -9,6 +9,8 @@ tag @a remove marsana_lobby.no_autolobby
 tag @a remove marsana_lobby.no_notify
 tag @a remove marsana_lobby.afk
 tag @a remove marsana_lobby.parkur_cd
+tag @a remove marsana_lobby.parkur
+tag @a remove marsana_lobby.endlobi
 kill @e[tag=marsana_lobby.npc]
 kill @e[type=minecraft:interaction,tag=marsana_lobby.claimbox]
 execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] run forceload remove ~ ~

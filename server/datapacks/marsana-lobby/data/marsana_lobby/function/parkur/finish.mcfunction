@@ -1,5 +1,6 @@
 # Parkur bitiş platformuna ulaşan oyuncu: kutlama, herkese duyuru, başlangıca ışınlama.
 tag @s add marsana_lobby.parkur_cd
+tag @s remove marsana_lobby.parkur
 title @s title {"text":"Parkur tamamlandı!","color":"gold","bold":true}
 tellraw @a ["",{"text":"[Parkur] ","color":"aqua"},{"selector":"@s","color":"yellow"},{"text":" parkuru tamamladı!","color":"gray"}]
 playsound minecraft:ui.toast.challenge_complete master @s
