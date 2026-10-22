@@ -111,7 +111,7 @@ Herkes **[Oyuncu]**, Shop'tan 7000 Marsanaty'ye alınan **[Moderatör]** (`marsa
 
 ### End lobisi
 
-End ana adasının ortasında (0 62 0) elle kurulmuş bina ikinci korumalı alandır: x -10..10, y 52..82, z -10..10
+End ana adasının ortasında (0 62 0) elle kurulmuş bina ikinci korumalı alandır: x -14..14, y 52..82, z -14..14
 (`tick.mcfunction`, `mobs.mcfunction` ve `save_pos_force.mcfunction` içinde; değiştirirsen üçünü birlikte güncelle).
 End NPC'si `0.5 62 -3.5`'e, güneye bakarak ışınlar (`npc/click_end.mcfunction`).
 Ana lobiden farkı: **adminler de** macera moduna alınır, kimse blok kıramaz (creative'e geçen admin bir sonraki

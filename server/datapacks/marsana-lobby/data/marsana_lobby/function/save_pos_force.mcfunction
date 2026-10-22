@@ -1,7 +1,7 @@
 # Lobi boyutundaki konum kaydedilmez (Create Dünyası NPC'si oyuncuyu oraya göndermesin).
 execute at @s if dimension marsana_lobby:lobi run return 0
 # End lobisindeki konum da kaydedilmez.
-execute in minecraft:the_end positioned -10 52 -10 if entity @s[dx=20,dy=30,dz=20] run return 0
+execute in minecraft:the_end positioned -14 52 -14 if entity @s[dx=28,dy=30,dz=28] run return 0
 # Create Dünyası 2'deki (düz dünya) konum ayrı tutulur; Create Dünyası NPC'si oraya göndermez.
 execute at @s if dimension marsana_lobby:duz2 run return run function marsana_lobby:save_pos_duz
 execute store result score @s marsana_lobby.px run data get entity @s Pos[0] 10

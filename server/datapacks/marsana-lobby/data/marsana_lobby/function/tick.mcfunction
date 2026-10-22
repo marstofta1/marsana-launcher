@@ -51,11 +51,11 @@ execute as @e[type=minecraft:end_crystal] at @s if dimension minecraft:the_end u
 
 # Lobi kutusu: merkezden yatayda ±49 (97x97 genişletilmiş lobi), dikeyde -10..+30 blok.
 execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] positioned ~-49 ~-10 ~-49 run tag @a[dx=98,dy=40,dz=98] add marsana_lobby.in
-# End lobisi: ana adanın ortasında (0 62 0) kurulu bina, x -10..10, y 52..82, z -10..10. Aynı koruma (macera modu, hasar yok).
-execute in minecraft:the_end positioned -10 52 -10 run tag @a[dx=20,dy=30,dz=20] add marsana_lobby.in
+# End lobisi: ana adanın ortasında (0 62 0) kurulu bina, x -14..14, y 52..82, z -14..14. Aynı koruma (macera modu, hasar yok).
+execute in minecraft:the_end positioned -14 52 -14 run tag @a[dx=28,dy=30,dz=28] add marsana_lobby.in
 # End lobisi adminler için de claim'li: endlobi etiketi bir sonraki tick'e kadar kalır (claim/attack tick arasında okur).
 tag @a remove marsana_lobby.endlobi
-execute in minecraft:the_end positioned -10 52 -10 run tag @a[dx=20,dy=30,dz=20] add marsana_lobby.endlobi
+execute in minecraft:the_end positioned -14 52 -14 run tag @a[dx=28,dy=30,dz=28] add marsana_lobby.endlobi
 execute as @a[tag=marsana_lobby.in] run function marsana_lobby:inside
 # Lobi boyutunda lobi kutusunun dışına çıkan (boşluğa düşen) admin olmayan oyuncu merkeze döner; adminler yalnız y<-64'te.
 # Login System'in bekleme alanındaki oyuncuya dokunulmaz; yoksa her tick bekleme alanı ile merkez arasında
