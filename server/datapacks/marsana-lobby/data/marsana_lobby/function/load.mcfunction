@@ -17,6 +17,8 @@ scoreboard objectives add warp trigger
 scoreboard objectives add isinlan trigger
 scoreboard objectives add marsana_lobby.menucd dummy
 scoreboard objectives add marsana_lobby.tablo minecraft.used:minecraft.painting
+# End City NPC'sinin ışınladığı şehir (Klima SMP dünyasında 0 0'a en yakın End City); npc/endcity_ayarla ile değişir.
+execute unless data storage marsana_lobby:ayar endcity run data modify storage marsana_lobby:ayar endcity set value {x:-576,z:-928}
 # Oyun içi para. Yalnızca etkinliklerden kazanılır (para/ver, para/herkese), gerçek parayla satılmaz.
 scoreboard objectives add marsanaty dummy "Marsanaty"
 # Create Dünyası NPC'si için son survival konumu (x/z x10, y x100; boyut: -1 nether, 0 overworld, 1 end).
