@@ -128,6 +128,11 @@ Spawn'da kurulu bir lobiyi taşımak için (bir kez):
 4. Spawn'daki eski binayı kaldır: `/function marsana_lobby:eski_sil` (üstü hava, zemin çimen olur; geri alınamaz,
    lobi taşınmadan çalışmaz).
 
+**Kaybolan chunk'lar:** Lobi boyutunda bir chunk tamamen boş kalırsa (zeminden tavana boşluk, altında boşluk)
+op olarak `/function marsana_lobby:onar` çalıştır. 1024 blok doğuda geçici, temiz bir lobi kurulur; temel katmanı
+(merkezin 6 altı) boş olan chunk'lar ondan geri alınır, sağlam chunk'lara dokunulmaz, kopya silinir. Kaybolan
+chunk'lardaki NPC'ler ve elle yapılmış değişiklikler geri gelmez.
+
 Yeni kurulumda lobi doğrudan lobi boyutunda da kurulabilir, ama boş boyutta durulacak zemin olmadığı için
 önce taşıma yolu daha kolaydır.
 
