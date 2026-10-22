@@ -4,7 +4,7 @@
   "predicate": {
     "equipment": {
       "offhand": {
-        "items": "minecraft:painting",
+        "items": "create:crafting_blueprint",
         "predicates": { "minecraft:custom_data": "{marsana_menu:1b}" }
       }
     }

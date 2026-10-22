@@ -13,10 +13,11 @@ scoreboard objectives add lobi trigger
 scoreboard objectives add ayarlar trigger
 scoreboard objectives add magaza trigger
 scoreboard objectives add warp trigger
-# Işınlanma Menüsü eşyası: menüdeki seçim, menü bekleme süresi (tick), menü eşyasıyla asılan tablo.
+# Işınlanma Menüsü eşyası: menüdeki seçim, menü bekleme süresi (tick), menü eşyasıyla asılan üretim planı (eski tablo sayacı silinir).
 scoreboard objectives add isinlan trigger
 scoreboard objectives add marsana_lobby.menucd dummy
-scoreboard objectives add marsana_lobby.tablo minecraft.used:minecraft.painting
+scoreboard objectives remove marsana_lobby.tablo
+scoreboard objectives add marsana_lobby.plan minecraft.used:create.crafting_blueprint
 # End City NPC'sinin ışınladığı şehir (Klima SMP dünyasında 0 0'a en yakın End City); npc/endcity_ayarla ile değişir.
 execute unless data storage marsana_lobby:ayar endcity run data modify storage marsana_lobby:ayar endcity set value {x:-576,z:-928}
 # Oyun içi para. Yalnızca etkinliklerden kazanılır (para/ver, para/herkese), gerçek parayla satılmaz.

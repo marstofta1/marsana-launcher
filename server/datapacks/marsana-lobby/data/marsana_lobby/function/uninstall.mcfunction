@@ -49,7 +49,7 @@ scoreboard objectives remove marsana_lobby.pid
 scoreboard objectives remove marsana_lobby.claimcd
 scoreboard objectives remove isinlan
 scoreboard objectives remove marsana_lobby.menucd
-scoreboard objectives remove marsana_lobby.tablo
+scoreboard objectives remove marsana_lobby.plan
 kill @e[type=minecraft:interaction,tag=marsana_lobby.menubox]
-clear @a minecraft:painting[minecraft:custom_data={marsana_menu:1b}]
+clear @a create:crafting_blueprint[minecraft:custom_data={marsana_menu:1b}]
 tellraw @s {"text":"[Klima] Lobi koruması kapatıldı. Şimdi datapack'i silebilirsin.","color":"yellow"}

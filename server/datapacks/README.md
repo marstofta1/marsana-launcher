@@ -72,15 +72,15 @@ NPC kaldırmak için yanında dur: `/function marsana_lobby:npc/remove`. Yeni NP
 
 ### Işınlanma Menüsü eşyası
 
-Herkesin envanterinde parlayan bir **Işınlanma Menüsü** (tablo görünümlü, `custom_data` `marsana_menu`) durur.
+Herkesin envanterinde parlayan bir **Işınlanma Menüsü** (Create üretim planı, `create:crafting_blueprint`, `custom_data` `marsana_menu`) durur.
 Elde tutup sağ tıklayınca sohbette tıklanabilir menü çıkar: Create Dünyası, Create Dünyası 2, Nether, End, Lobi
 (`/trigger isinlan set 1..5`, NPC'lerle aynı ışınlamalar). Atılan kopya silinir, envanterde tam bir tane olmazsa
 (atıldı, sandığa kondu, çoğaltıldı) yenisi verilir; sol ele konamaz. Envanter doluysa verilemez.
 
 Sağ tık algılama: eşyayı tutan oyuncunun gözünün 0,6 blok önünde görünmez bir tıklama kutusu (interaction)
 durur, sağ tık bloğa değil kutuya gider (`menu/tick`, `advancement/menu.json`). Eşya elde iken blok kırılamaz/
-koyulamaz. Kutu hızlı harekette geride kalıp eşya duvara tablo olarak asılırsa o tablo silinir ve menü yine açılır.
-Görünümü değiştirmek için `menu/` ve `predicate/menu_*.json` içindeki `minecraft:painting`'i değiştir.
+koyulamaz. Kutu hızlı harekette geride kalıp eşya duvara plan olarak asılırsa o plan silinir ve menü yine açılır.
+Görünümü değiştirmek için `menu/` ve `predicate/menu_*.json` içindeki `create:crafting_blueprint`'i ve `marsana_lobby.plan` sayacının ölçütünü değiştir.
 
 ### Marsanaty (oyun içi para)
 
