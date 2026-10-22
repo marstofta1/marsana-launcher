@@ -12,4 +12,4 @@ function marsana_lobby:tasi/warps
 execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] in minecraft:overworld run forceload remove ~-49 ~-49 ~49 ~49
 execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] run forceload remove ~-49 ~-49 ~49 ~49
 execute at @e[type=minecraft:marker,tag=marsana_lobby.center,limit=1] run forceload add ~ ~
-tellraw @a[tag=marsana.admin] {"text":"[Marsana] Lobi, lobi boyutuna taşındı. Kontrol ettikten sonra spawn'daki eski binayı /function marsana_lobby:eski_sil ile kaldır.","color":"green"}
+tellraw @a[tag=marsana.admin] {"text":"[Klima] Lobi, lobi boyutuna taşındı. Kontrol ettikten sonra spawn'daki eski binayı /function marsana_lobby:eski_sil ile kaldır.","color":"green"}

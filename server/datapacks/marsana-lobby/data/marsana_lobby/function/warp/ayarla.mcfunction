@@ -13,4 +13,4 @@ execute store result storage marsana_lobby:warps new.z int 1 run data get entity
 execute store result storage marsana_lobby:warps new.yaw int 1 run data get entity @s Rotation[0]
 data modify storage marsana_lobby:warps new.dim set from entity @s Dimension
 data modify storage marsana_lobby:warps list append from storage marsana_lobby:warps new
-$tellraw @s {"text":"[Marsana] \"$(ad)\" warpı buraya ayarlandı.","color":"green"}
+$tellraw @s {"text":"[Klima] \"$(ad)\" warpı buraya ayarlandı.","color":"green"}

@@ -32,6 +32,10 @@ scoreboard objectives remove marsana_lobby.py
 scoreboard objectives remove marsana_lobby.pz
 scoreboard objectives remove marsana_lobby.pd
 scoreboard objectives remove marsana_lobby.ph
+scoreboard objectives remove marsana_lobby.d2x
+scoreboard objectives remove marsana_lobby.d2y
+scoreboard objectives remove marsana_lobby.d2z
+scoreboard objectives remove marsana_lobby.d2h
 scoreboard objectives remove marsana_lobby.play
 scoreboard objectives remove marsana_lobby.deaths
 scoreboard objectives remove marsana_lobby.kills
@@ -43,4 +47,9 @@ scoreboard objectives remove marsana_lobby.ay
 scoreboard objectives remove marsana_lobby.az
 scoreboard objectives remove marsana_lobby.pid
 scoreboard objectives remove marsana_lobby.claimcd
-tellraw @s {"text":"[Marsana] Lobi koruması kapatıldı. Şimdi datapack'i silebilirsin.","color":"yellow"}
+scoreboard objectives remove isinlan
+scoreboard objectives remove marsana_lobby.menucd
+scoreboard objectives remove marsana_lobby.tablo
+kill @e[type=minecraft:interaction,tag=marsana_lobby.menubox]
+clear @a minecraft:painting[minecraft:custom_data={marsana_menu:1b}]
+tellraw @s {"text":"[Klima] Lobi koruması kapatıldı. Şimdi datapack'i silebilirsin.","color":"yellow"}

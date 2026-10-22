@@ -4,5 +4,5 @@ advancement revoke @s only marsana_lobby:npc/nether
 # Daha uzak noktalar her tıklamada yeni chunk ürettirir; sunucu kasmasın diye 5000 ile sınırlı.
 function marsana_lobby:save_pos
 execute store success score #ok marsana_lobby.calc in minecraft:the_nether run spreadplayers 0 0 0 5000 under 120 false @s
-execute if score #ok marsana_lobby.calc matches 0 run return run tellraw @s {"text":"[Marsana] Nether'da güvenli bir yer bulunamadı, tekrar dene.","color":"red"}
-tellraw @s {"text":"[Marsana] Nether'da rastgele bir yere ışınlandın. Lobiye dönmek için: /trigger lobi","color":"red"}
+execute if score #ok marsana_lobby.calc matches 0 run return run tellraw @s {"text":"[Klima] Nether'da güvenli bir yer bulunamadı, tekrar dene.","color":"red"}
+tellraw @s {"text":"[Klima] Nether'da rastgele bir yere ışınlandın. Lobiye dönmek için: /trigger lobi","color":"red"}

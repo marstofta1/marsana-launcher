@@ -4,4 +4,4 @@ $summon minecraft:villager ~ ~ ~ {NoAI:1b,Invulnerable:1b,Silent:1b,PersistenceR
 $summon minecraft:interaction ~ ~ ~ {width:0.9f,height:2.1f,response:1b,Tags:["marsana_lobby.npc","marsana_lobby.npc_new","marsana_lobby.npc_$(kind)"]}
 tp @e[type=minecraft:villager,tag=marsana_lobby.npc_new] ~ ~ ~ ~ 0
 tag @e[tag=marsana_lobby.npc_new] remove marsana_lobby.npc_new
-$tellraw @s {"text":"[Marsana] $(name) NPC'si yerleştirildi.","color":"green"}
+$tellraw @s {"text":"[Klima] $(name) NPC'si yerleştirildi.","color":"green"}

@@ -10,10 +10,15 @@ scoreboard players enable @a lobi
 scoreboard players enable @a ayarlar
 scoreboard players enable @a magaza
 scoreboard players enable @a warp
+scoreboard players enable @a isinlan
 execute as @a[scores={lobi=1..}] run function marsana_lobby:lobi
 execute as @a[scores={ayarlar=1..}] run function marsana_lobby:npc/settings_trigger
 execute as @a[scores={magaza=1..}] run function marsana_lobby:shop/trigger
 execute as @a[scores={warp=1..}] run function marsana_lobby:warp/trigger
+execute as @a[scores={isinlan=1..}] run function marsana_lobby:menu/trigger
+
+# Işınlanma Menüsü eşyası (sağ tık: menü).
+function marsana_lobby:menu/tick
 
 # AFK köylüsü: AFK oyuncu kayıtlı konumundan uzaklaşınca AFK biter.
 execute as @a[tag=marsana_lobby.afk] run function marsana_lobby:afk/check
@@ -61,6 +66,8 @@ execute as @a[scores={marsana_lobby.respawn=1..}] run function marsana_lobby:res
 execute as @a[tag=!marsana_lobby.in,tag=marsana_lobby.adv,tag=!marsana_lobby.pending] run function marsana_lobby:outside
 # Lobi dışında (Create dünyası, Nether, End) admin olmayanlar creative'dedir; girişte bekleyenlere dokunulmaz.
 execute as @a[tag=!marsana_lobby.in,tag=!marsana.admin,tag=!marsana_lobby.pending,gamemode=!creative,gamemode=!spectator] run gamemode creative @s
+# End'de lobi sınırının dışında macera modunda kalan admin de creative'e geçer (lobi etiketi kaybolsa bile).
+execute as @a[tag=!marsana_lobby.in,tag=marsana.admin,tag=!marsana_lobby.pending,gamemode=adventure] at @s if dimension minecraft:the_end run gamemode creative @s
 tag @a remove marsana_lobby.in
 # Claim mesajı: macera modunda blok kırma denemesi sunucuya gelmez. Korumalı oyuncunun baktığı bloğa görünmez
 # bir tıklama kutusu (interaction) konur; sol tık kutuya gider ve claim advancement'ı mesajı verir.

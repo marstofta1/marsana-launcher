@@ -30,4 +30,4 @@ scoreboard players operation #z0 marsana_lobby.calc *= #16 marsana_lobby.calc
 scoreboard players set #onarilan marsana_lobby.calc 0
 function marsana_lobby:onar/x
 function marsana_lobby:onar/temizle
-tellraw @a[tag=marsana.admin] ["",{"text":"[Marsana] Lobi onarıldı, geri alınan chunk: ","color":"green"},{"score":{"name":"#onarilan","objective":"marsana_lobby.calc"},"color":"green"}]
+tellraw @a[tag=marsana.admin] ["",{"text":"[Klima] Lobi onarıldı, geri alınan chunk: ","color":"green"},{"score":{"name":"#onarilan","objective":"marsana_lobby.calc"},"color":"green"}]

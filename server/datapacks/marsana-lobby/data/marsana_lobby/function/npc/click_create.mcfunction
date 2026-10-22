@@ -7,4 +7,4 @@ data modify storage marsana_lobby:tmp p.dim set value "minecraft:overworld"
 execute if score @s marsana_lobby.pd matches -1 run data modify storage marsana_lobby:tmp p.dim set value "minecraft:the_nether"
 execute if score @s marsana_lobby.pd matches 1 run data modify storage marsana_lobby:tmp p.dim set value "minecraft:the_end"
 function marsana_lobby:npc/tp_saved with storage marsana_lobby:tmp p
-tellraw @s {"text":"[Marsana] Create dünyasına, kaldığın yere ışınlandın.","color":"gold"}
+tellraw @s {"text":"[Klima] Create dünyasına, kaldığın yere ışınlandın.","color":"gold"}

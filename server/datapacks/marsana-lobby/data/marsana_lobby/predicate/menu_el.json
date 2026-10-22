@@ -1,0 +1,12 @@
+{
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "equipment": {
+      "mainhand": {
+        "items": "minecraft:painting",
+        "predicates": { "minecraft:custom_data": "{marsana_menu:1b}" }
+      }
+    }
+  }
+}

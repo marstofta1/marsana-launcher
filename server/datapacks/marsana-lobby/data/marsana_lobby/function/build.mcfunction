@@ -12,4 +12,4 @@ execute at @e[type=minecraft:marker,tag=marsana_lobby.new,limit=1] if dimension 
 execute at @e[type=minecraft:marker,tag=marsana_lobby.new,limit=1] run forceload add ~ ~
 tag @e[type=minecraft:marker,tag=marsana_lobby.new] remove marsana_lobby.new
 gamerule spawnRadius 0
-tellraw @s {"text":"[Marsana] Lobi kuruldu, doğuş noktası lobinin ortasına alındı.","color":"green"}
+tellraw @s {"text":"[Klima] Lobi kuruldu, doğuş noktası lobinin ortasına alındı.","color":"green"}

@@ -60,6 +60,7 @@ Op olarak NPC'nin duracağı blokta, NPC'nin bakacağı yöne dönerek:
 | `/function marsana_lobby:npc/end` | End | End lobisine (ana adanın ortası, 0.5 62 -3.5) ışınlar |
 | `/function marsana_lobby:npc/nether` | Nether | Nether'da 0 0 çevresinde 5000 blok içinde rastgele güvenli bir yere ışınlar (y 120 altı, lav/ateş üstü değil) |
 | `/function marsana_lobby:npc/rtp` | Rastgele Işınlan | Create dünyasında 0 0 çevresinde 5000 blok içinde rastgele güvenli bir yere ışınlar; Create Dünyası NPC'sinden farklı olarak kayıtlı konuma değil, her seferinde yeni bir yere |
+| `/function marsana_lobby:npc/duz` | Create Dünyası 2 | Create dünyasından ayrı düz dünya boyutuna (`marsana_lobby:duz2`) ışınlar; orada kaldığı yer varsa oraya, yoksa ortasına (0.5 64 0.5; zemin ufuk yüksekliği 63 altında olursa gökyüzü gündüz de kararır). Oradaki konum ayrı tutulur, Create Dünyası NPC'si oraya göndermez. Yeni boyut yalnızca açılışta okunur: zip'i yükleyince sunucuyu **yeniden başlat** |
 | `/function marsana_lobby:npc/donus` | Lobiye Dön | Ana lobinin ortasına ışınlar (`/trigger lobi` gibi); End lobisi gibi uzak yerler için |
 | `/function marsana_lobby:npc/trash` | Çöp | Elde tutulan eşyayı (tüm yığını) siler; 1,5 blok yakınına atılan eşyalar da saniyede bir silinir |
 | `/function marsana_lobby:npc/shop` | Shop | Marsanaty ile alışveriş: komut bloğu (300), bariyer (1000), tek seferde 1 adet; Moderatör rankı (7000) |
@@ -67,6 +68,18 @@ Op olarak NPC'nin duracağı blokta, NPC'nin bakacağı yöne dönerek:
 NPC kaldırmak için yanında dur: `/function marsana_lobby:npc/remove`. Yeni NPC türü eklemek için
 `npc/place`'i yeni bir `kind` ile çağıran bir fonksiyon, `advancement/npc/<kind>.json` ve
 `npc/click_<kind>.mcfunction` ekle.
+
+### Işınlanma Menüsü eşyası
+
+Herkesin envanterinde parlayan bir **Işınlanma Menüsü** (tablo görünümlü, `custom_data` `marsana_menu`) durur.
+Elde tutup sağ tıklayınca sohbette tıklanabilir menü çıkar: Create Dünyası, Create Dünyası 2, Nether, End, Lobi
+(`/trigger isinlan set 1..5`, NPC'lerle aynı ışınlamalar). Atılan kopya silinir, envanterde tam bir tane olmazsa
+(atıldı, sandığa kondu, çoğaltıldı) yenisi verilir; sol ele konamaz. Envanter doluysa verilemez.
+
+Sağ tık algılama: eşyayı tutan oyuncunun gözünün 0,6 blok önünde görünmez bir tıklama kutusu (interaction)
+durur, sağ tık bloğa değil kutuya gider (`menu/tick`, `advancement/menu.json`). Eşya elde iken blok kırılamaz/
+koyulamaz. Kutu hızlı harekette geride kalıp eşya duvara tablo olarak asılırsa o tablo silinir ve menü yine açılır.
+Görünümü değiştirmek için `menu/` ve `predicate/menu_*.json` içindeki `minecraft:painting`'i değiştir.
 
 ### Marsanaty (oyun içi para)
 

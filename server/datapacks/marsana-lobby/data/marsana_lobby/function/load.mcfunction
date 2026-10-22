@@ -13,6 +13,10 @@ scoreboard objectives add lobi trigger
 scoreboard objectives add ayarlar trigger
 scoreboard objectives add magaza trigger
 scoreboard objectives add warp trigger
+# Işınlanma Menüsü eşyası: menüdeki seçim, menü bekleme süresi (tick), menü eşyasıyla asılan tablo.
+scoreboard objectives add isinlan trigger
+scoreboard objectives add marsana_lobby.menucd dummy
+scoreboard objectives add marsana_lobby.tablo minecraft.used:minecraft.painting
 # Oyun içi para. Yalnızca etkinliklerden kazanılır (para/ver, para/herkese), gerçek parayla satılmaz.
 scoreboard objectives add marsanaty dummy "Marsanaty"
 # Create Dünyası NPC'si için son survival konumu (x/z x10, y x100; boyut: -1 nether, 0 overworld, 1 end).
@@ -21,6 +25,11 @@ scoreboard objectives add marsana_lobby.py dummy
 scoreboard objectives add marsana_lobby.pz dummy
 scoreboard objectives add marsana_lobby.pd dummy
 scoreboard objectives add marsana_lobby.ph dummy
+# Create Dünyası 2 (düz dünya) NPC'si için oradaki son konum (aynı ölçek; d2h 1 = kayıtlı).
+scoreboard objectives add marsana_lobby.d2x dummy
+scoreboard objectives add marsana_lobby.d2y dummy
+scoreboard objectives add marsana_lobby.d2z dummy
+scoreboard objectives add marsana_lobby.d2h dummy
 # AFK köylüsü: AFK'ya girilen konum (x10).
 scoreboard objectives add marsana_lobby.ax dummy
 scoreboard objectives add marsana_lobby.ay dummy
