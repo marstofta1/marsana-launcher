@@ -73,8 +73,8 @@ NPC kaldırmak için yanında dur: `/function marsana_lobby:npc/remove`. Yeni NP
 ### Işınlanma Menüsü eşyası
 
 Herkesin envanterinde parlayan bir **Işınlanma Menüsü** (Create üretim planı, `create:crafting_blueprint`, `custom_data` `marsana_menu`) durur.
-Elde tutup sağ tıklayınca sohbette tıklanabilir menü çıkar: Create Dünyası, Create Dünyası 2, Nether, End, Lobi
-(`/trigger isinlan set 1..5`, NPC'lerle aynı ışınlamalar). Atılan kopya silinir, envanterde tam bir tane olmazsa
+Elde tutup sağ tıklayınca sohbette tıklanabilir menü çıkar: Create Dünyası, Create Dünyası 2, Nether, End, End City, Lobi
+(`/trigger isinlan set 1..6`, NPC'lerle aynı ışınlamalar). Atılan kopya silinir, envanterde tam bir tane olmazsa
 (atıldı, sandığa kondu, çoğaltıldı) yenisi verilir; sol ele konamaz. Envanter doluysa verilemez.
 
 Sağ tık algılama: eşyayı tutan oyuncunun gözünün 0,6 blok önünde görünmez bir tıklama kutusu (interaction)
