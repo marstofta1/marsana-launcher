@@ -468,29 +468,45 @@ function createLaunchService({
       lastApplied,
     });
 
-    const updateEntries = Object.entries(updates);
-    if (updateEntries.length > 0) {
-      const lines = currentOptionsText ? currentOptionsText.split(/\r?\n/) : [];
-      const seen = new Set();
-      for (let i = 0; i < lines.length; i++) {
-        const m = lines[i].match(/^([^:]+):/);
-        if (!m) continue;
-        const key = m[1];
-        if (Object.prototype.hasOwnProperty.call(updates, key)) {
-          lines[i] = `${key}:${updates[key]}`;
-          seen.add(key);
-        }
-      }
-      for (const [key, value] of updateEntries) {
-        if (!seen.has(key)) lines.push(`${key}:${value}`);
-      }
-      fs.writeFileSync(optionsPath, lines.join('\n'), 'utf8');
-    }
+    writeOptionsTxtValues(optionsPath, currentOptionsText, updates);
 
     // Slider konumunu kaydet (yazim olmasa bile) — gelecekteki launcher degisikligi algilansin.
     if (JSON.stringify(nextLastApplied) !== JSON.stringify(lastApplied)) {
       writeAudioState(gameDir, nextLastApplied);
     }
+  }
+
+  // options.txt'te verilen anahtarlari degistirir, olmayanlari sona ekler; diger satirlara dokunmaz.
+  function writeOptionsTxtValues(optionsPath, currentOptionsText, updates) {
+    const updateEntries = Object.entries(updates);
+    if (updateEntries.length === 0) return;
+    const lines = currentOptionsText ? currentOptionsText.split(/\r?\n/) : [];
+    const seen = new Set();
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(/^([^:]+):/);
+      if (!m) continue;
+      const key = m[1];
+      if (Object.prototype.hasOwnProperty.call(updates, key)) {
+        lines[i] = `${key}:${updates[key]}`;
+        seen.add(key);
+      }
+    }
+    for (const [key, value] of updateEntries) {
+      if (!seen.has(key)) lines.push(`${key}:${value}`);
+    }
+    fs.writeFileSync(optionsPath, lines.join('\n'), 'utf8');
+  }
+
+  // Klima SMP her acilista ana ses %50 ile baslar (launcher slider'i ve oyun-ici secimden bagimsiz).
+  const KLIMA_SMP_MASTER_VOLUME = '0.5';
+  function applyKlimaSmpVolume(gameDir) {
+    const optionsPath = path.join(gameDir, 'options.txt');
+    const currentOptionsText = fs.existsSync(optionsPath)
+      ? fs.readFileSync(optionsPath, 'utf8')
+      : '';
+    writeOptionsTxtValues(optionsPath, currentOptionsText, {
+      soundCategory_master: KLIMA_SMP_MASTER_VOLUME,
+    });
   }
 
   function purgeManagedOptifineJars(dir) {
@@ -1394,6 +1410,13 @@ function createLaunchService({
       applyAudioSettingsToOptionsTxt(opts.audioSettings, optionsGameDir);
     } catch (e) {
       logger.warn('Ses ayarları options.txt yazımı başarısız', { err: e.message });
+    }
+    if (serverQuickPlay) {
+      try {
+        applyKlimaSmpVolume(optionsGameDir);
+      } catch (e) {
+        logger.warn('Klima SMP ses ayarı options.txt yazımı başarısız', { err: e.message });
+      }
     }
 
     modIsolationService.enforceModIsolation(modsDirPath, modPresets, playMode);
