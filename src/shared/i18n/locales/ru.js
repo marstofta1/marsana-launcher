@@ -155,7 +155,7 @@ export default {
     voiceChat: 'Голосовой чат (Simple Voice Chat)',
     voiceChatHint: 'Голосовой чат по близости; настройка клавишей V в игре. На мультиплеер-серверах нужен мод.',
     create: 'Create (+ дополнения)',
-    createHint: 'Устанавливает Create и подборку дополнений (Aeronautics, Diesel Generators, New Age, Steam \'n\' Rails, Connected…). Лучше для одиночной игры; рекомендуется около 4 ГБ ОЗУ. При выборе автоматически устанавливаются версия 1.21.1 и NeoForge.',
+    createHint: 'Устанавливает Create и подборку дополнений (Aeronautics, Diesel Generators, Power Grid, Steam \'n\' Rails, Connected…). Лучше для одиночной игры; рекомендуется около 4 ГБ ОЗУ. При выборе автоматически устанавливаются версия 1.21.1 и NeoForge.',
     fullbrightUb: 'Fullbright UB',
     fullbrightUbHint: 'Пакет ресурсов полной яркости; совместим с Vanilla, OptiFine и Sodium/Iris. PolyTone добавляется при шейдерах + Sodium.',
     betterLeaves: 'Motschen\'s Better Leaves',

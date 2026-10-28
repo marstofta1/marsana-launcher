@@ -155,7 +155,7 @@ export default {
     voiceChat: 'ボイスチャット（Simple Voice Chat）',
     voiceChatHint: '近距離ボイスチャット；ゲーム内で V で設定。マルチサーバーではMODが必要です。',
     create: 'Create（+ アドオン）',
-    createHint: 'Create と厳選アドオン（Aeronautics、Diesel Generators、New Age、Steam \'n\' Rails、Connected など）をまとめて導入します。シングルプレイ向け。RAM は約 4 GB 推奨。選択するとバージョン 1.21.1 と NeoForge が自動で設定されます。',
+    createHint: 'Create と厳選アドオン（Aeronautics、Diesel Generators、Power Grid、Steam \'n\' Rails、Connected など）をまとめて導入します。シングルプレイ向け。RAM は約 4 GB 推奨。選択するとバージョン 1.21.1 と NeoForge が自動で設定されます。',
     fullbrightUb: 'Fullbright UB',
     fullbrightUbHint: '暗所フル輝度リソースパック；Vanilla、OptiFine、Sodium/Iris と互換。シェーダー + Sodium 選択時に PolyTone を自動追加。',
     betterLeaves: 'Motschen\'s Better Leaves',

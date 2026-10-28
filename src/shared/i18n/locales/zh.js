@@ -155,7 +155,7 @@ export default {
     voiceChat: '语音聊天（Simple Voice Chat）',
     voiceChatHint: '近距离语音；游戏内按 V 设置。多人服务器需安装模组。',
     create: 'Create（+ 附属）',
-    createHint: '安装 Create 及精选附属模组（Aeronautics、Diesel Generators、New Age、Steam \'n\' Rails、Connected 等）。适合单人游戏；建议约 4 GB 内存。选中后会自动切换到 1.21.1 版本和 NeoForge。',
+    createHint: '安装 Create 及精选附属模组（Aeronautics、Diesel Generators、Power Grid、Steam \'n\' Rails、Connected 等）。适合单人游戏；建议约 4 GB 内存。选中后会自动切换到 1.21.1 版本和 NeoForge。',
     fullbrightUb: 'Fullbright UB',
     fullbrightUbHint: '黑暗环境全亮资源包；兼容 Vanilla、OptiFine 与 Sodium/Iris。选择光影 + Sodium 时自动添加 PolyTone。',
     betterLeaves: 'Motschen\'s Better Leaves',

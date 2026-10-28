@@ -233,7 +233,7 @@ export default {
     voiceChat: 'Voice Chat (Simple Voice Chat)',
     voiceChatHint: 'Proximity voice chat; configure with V in-game. Requires the mod on multiplayer servers.',
     create: 'Create (+ add-ons)',
-    createHint: 'Installs Create plus a curated set of add-ons (Aeronautics, Diesel Generators, New Age, Steam \'n\' Rails, Connected…). Best for singleplayer; about 4 GB RAM recommended. Selecting it automatically switches to version 1.21.1 and NeoForge.',
+    createHint: 'Installs Create plus a curated set of add-ons (Aeronautics, Diesel Generators, Power Grid, Steam \'n\' Rails, Connected…). Best for singleplayer; about 4 GB RAM recommended. Selecting it automatically switches to version 1.21.1 and NeoForge.',
     sodium: 'Sodium',
     sodiumHint: 'Performance mod for Fabric/Quilt. Recommended with Iris shaders; Shader + FPS no longer installs Sodium — select it separately.',
     sodiumExtra: 'Sodium Extra',

@@ -56,7 +56,7 @@ const CREATE_ADDON_SLUGS = Object.freeze([
   'create-steam-n-rails-1.21.1',
   'create-railways-navigator',
   'create-diesel-generators',
-  'create-new-age',
+  'power-grid',
   'create-connected',
   'create-dreams-and-desires',
   'create-framed',

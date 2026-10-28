@@ -235,7 +235,7 @@ export default {
     voiceChat: 'Voice Chat (Simple Voice Chat)',
     voiceChatHint: 'Proximity sesli sohbet; oyunda V ile ayarlanır. Çok oyunculu sunucuda mod gerekir.',
     create: 'Create (+ eklentiler)',
-    createHint: 'Create ve seçilmiş eklentileri (Aeronautics, Diesel Generators, New Age, Steam \'n\' Rails, Connected…) birlikte kurar. Özellikle tek oyunculu önerilir; yaklaşık 4 GB RAM önerilir. Seçildiğinde sürüm 1.21.1 ve NeoForge otomatik ayarlanır.',
+    createHint: 'Create ve seçilmiş eklentileri (Aeronautics, Diesel Generators, Power Grid, Steam \'n\' Rails, Connected…) birlikte kurar. Özellikle tek oyunculu önerilir; yaklaşık 4 GB RAM önerilir. Seçildiğinde sürüm 1.21.1 ve NeoForge otomatik ayarlanır.',
     sodium: 'Sodium',
     sodiumHint: 'Fabric/Quilt için performans modu. Iris shader ile birlikte önerilir; Shader + FPS artık Sodium kurmaz — ayrı seçilir.',
     sodiumExtra: 'Sodium Extra',

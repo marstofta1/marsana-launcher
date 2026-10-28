@@ -155,7 +155,7 @@ export default {
     voiceChat: 'Voice Chat (Simple Voice Chat)',
     voiceChatHint: 'Chat vocale di prossimità; configura con V in gioco. Mod richiesta sui server multiplayer.',
     create: 'Create (+ add-on)',
-    createHint: 'Installa Create e una selezione di add-on (Aeronautics, Diesel Generators, New Age, Steam \'n\' Rails, Connected…). Ideale per il giocatore singolo; circa 4 GB di RAM consigliati. Selezionandolo vengono impostati automaticamente la versione 1.21.1 e NeoForge.',
+    createHint: 'Installa Create e una selezione di add-on (Aeronautics, Diesel Generators, Power Grid, Steam \'n\' Rails, Connected…). Ideale per il giocatore singolo; circa 4 GB di RAM consigliati. Selezionandolo vengono impostati automaticamente la versione 1.21.1 e NeoForge.',
     fullbrightUb: 'Fullbright UB',
     fullbrightUbHint: 'Pacchetto risorse a luminosità piena; compatibile con Vanilla, OptiFine e Sodium/Iris. PolyTone aggiunto con Shader + Sodium.',
     betterLeaves: 'Motschen\'s Better Leaves',

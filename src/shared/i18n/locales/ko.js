@@ -155,7 +155,7 @@ export default {
     voiceChat: '보이스 채팅 (Simple Voice Chat)',
     voiceChatHint: '근거리 음성 채팅; 게임에서 V로 설정. 멀티 서버에는 모드 필요.',
     create: 'Create (+ 애드온)',
-    createHint: 'Create와 엄선된 애드온(Aeronautics, Diesel Generators, New Age, Steam \'n\' Rails, Connected 등)을 함께 설치합니다. 싱글플레이에 적합하며 RAM 약 4GB 권장. 선택하면 버전 1.21.1과 NeoForge가 자동으로 설정됩니다.',
+    createHint: 'Create와 엄선된 애드온(Aeronautics, Diesel Generators, Power Grid, Steam \'n\' Rails, Connected 등)을 함께 설치합니다. 싱글플레이에 적합하며 RAM 약 4GB 권장. 선택하면 버전 1.21.1과 NeoForge가 자동으로 설정됩니다.',
     fullbrightUb: 'Fullbright UB',
     fullbrightUbHint: '어두운 곳 최대 밝기 리소스 팩; Vanilla, OptiFine, Sodium/Iris 호환. 셰이더 + Sodium 선택 시 PolyTone 자동 추가.',
     betterLeaves: 'Motschen\'s Better Leaves',
