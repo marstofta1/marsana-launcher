@@ -19,7 +19,8 @@ Kullanıcı hangi skill'in ne zaman gerektiğini hatırlamak zorunda değil; bu 
 | Paper / Spigot / Bukkit **sunucu plugini**, `plugin.yml`, listener, komut, arena/kit sistemleri | `minecraft-plugin-development` |
 | Modrinth'ten mod arama, metadata çekme, JAR indirme, sürüm eşleştirme | `modrinth-api` |
 | Electron main/renderer/preload kodu, IPC, pencere yönetimi, `src/` altındaki launcher mantığı | `electron-development` |
-| Paketleme, `electron-builder`, kod imzalama, NSIS/DMG, `electron-updater`, sürüm yayınlama, `pack:*` script'leri | `electron-builder` |
+| Paketleme, `electron-builder`, kod imzalama, NSIS/DMG, `electron-updater`, `pack:*` script'leri | `electron-builder` |
+| Yeni launcher sürümü yayınlama, `docs/downloads`, `latest.yml`, sürüm numarası, `#guncellemeler` notu, main'e push | `marsana-release` (+ `electron-builder`) |
 
 Birden fazla satır uyuyorsa hepsini çağır (ör. mod'a özellik ekleyip test yazmak →
 `minecraft-modding` + `minecraft-testing`).
@@ -47,13 +48,20 @@ Proje ve oturum sağlığı için, uygun anda `/compact`, `/clear` veya yeni otu
 
 Öneriyi tek satırla ve işin doğal bir durak noktasında yap; yarım kalmış işi bölme.
 
-## Skill kurulumu (yeni makinede)
+## Launcher'ı Claude ile doğrulama (MCP)
 
-Gerçek skill dosyaları `.agents/skills/` altında ve depoya dahildir. `.claude/skills/` ise
-makineye özel junction'lar içerdiği için `.gitignore`'dadır. Skill'ler görünmüyorsa yeniden oluştur:
+`.mcp.json`'daki `launcher-devtools` (Google'ın resmi `chrome-devtools-mcp`'si, sürümü sabit)
+çalışan launcher'ın arayüzüne bağlanır: sayfa okuma, tıklama, konsol, ağ, ekran görüntüsü.
+Önce launcher'ı `npm run start:debug` ile (arka planda) aç; bu, yalnız paketsiz geliştirme
+sürümünde 127.0.0.1:9222 hata ayıklama portunu açar. `chrome-devtools` girişi ise ayrı bir
+Chrome açar (web sayfaları için). MCP sürümünü güncellerken `@latest` yerine yine sabit sürüm yaz.
 
-```
-npx skills experimental_install
-```
+## Skill dosyaları
 
-Kaynak ve sürüm bilgisi `skills-lock.json` içinde tutulur.
+Skill'ler `.claude/skills/<ad>/SKILL.md` altında **gerçek dosya** olarak depoya dahildir;
+her klonda kurulum gerektirmeden yüklenir. Junction/symlink kullanma — makineye özel mutlak
+yol tutar, git'e girmez ve yeni makinede skill'ler sessizce kaybolur.
+
+Kaynak ve sürüm bilgisi `skills-lock.json` içinde tutulur. Bir skill'i kaynağından güncellemek
+için yeni `SKILL.md`'yi (ve `references/`'ı) ilgili klasöre doğrudan kopyala, farkı gözden geçirip
+commit'le; projeye özel düzeltmeleri (sürüm gerçekleri vb.) korumak için körü körüne üzerine yazma.

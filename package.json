@@ -7,6 +7,7 @@
   "main": "src/main/index.js",
   "scripts": {
     "start": "node scripts/embed-version-manifest.js && electron .",
+    "start:debug": "node scripts/embed-version-manifest.js && electron . --marsana-debug",
     "test": "node --test test/unit.test.js && node scripts/verify-update-feed-url.js && node scripts/verify-zip-containment.js && node scripts/verify-download-safety.js",
     "pack": "electron-builder",
     "pack:mac": "node scripts/verify-update-feed-url.js && node scripts/verify-zip-containment.js && node scripts/verify-download-safety.js && electron-builder --mac && node scripts/prepare-macos-downloads.js",

@@ -14,6 +14,14 @@ const { registerAllHandlers } = require('./ipc');
 const { isMac } = require('../shared/platform');
 const { redirectToNewestLauncherInstall } = require('./launcherInstall');
 
+// `npm run start:debug`: Chrome DevTools MCP'nin (.mcp.json "launcher-devtools") arayüze
+// bağlanabilmesi için yalnız 127.0.0.1:9222'de hata ayıklama portu açar. Paketli sürümde asla açılmaz:
+// açık port, bilgisayardaki her programın launcher'ı kontrol etmesine izin verir.
+if (!app.isPackaged && process.argv.includes('--marsana-debug')) {
+  app.commandLine.appendSwitch('remote-debugging-port', '9222');
+  app.commandLine.appendSwitch('remote-debugging-address', '127.0.0.1');
+}
+
 let mainWindow = null;
 let container = null;
 const getWindow = () => mainWindow;
