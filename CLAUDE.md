@@ -47,6 +47,20 @@ Proje ve oturum sağlığı için, uygun anda `/compact`, `/clear` veya yeni otu
 
 Öneriyi tek satırla ve işin doğal bir durak noktasında yap; yarım kalmış işi bölme.
 
+## Hafıza bakımı — şişmeyen, kendini bakan yapı
+
+Claude'un otomatik hafızası (`~/.claude/projects/<proje>/memory/`) şu kurallarla tutulur:
+
+- **Güncel durum, günlük değil.** Bir not değişince dosyayı güncel hâline göre yeniden yaz;
+  altına tarihli satır ekleme. Geçmiş zaten git'te.
+- **Repo'da olanı yazma.** Kod yapısı, commit/sürüm geçmişi, datapack ayrıntısı, skill içeriği
+  hafızaya girmez; yalnız bunlardan çıkarılamayan tercih, karar gerekçesi ve kurallar girer.
+- **Sınırlar:** dosya başı ≤ 2 KB, toplam ≤ 16 KB, `MEMORY.md` satırı ≤ 150 karakter.
+- **Otomatik kontrol:** `.claude/hooks/memory-health.js` her oturum başında hafızayı denetler
+  (sınır aşımı, indekste olmayan/kayıp dosya, eksik frontmatter, 60 günden eski proje notu).
+  Sağlıklıysa sessizdir. Uyarı verirse, o oturumdaki ilk iş doğal bir durakta
+  `consolidate-memory` skill'ini kendin çalıştırmak ve kullanıcıya tek satırla söylemektir.
+
 ## Launcher'ı Claude ile doğrulama (MCP)
 
 `.mcp.json`'daki `launcher-devtools` (Google'ın resmi `chrome-devtools-mcp`'si, sürümü sabit)

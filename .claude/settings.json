@@ -91,5 +91,19 @@
       "Bash(tar xzf *)",
       "Bash(git --no-pager diff -- package.json src/core/mods/shaderStackService.js src/core/mods/mrpackInstaller.js)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/memory-health.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }
