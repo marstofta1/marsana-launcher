@@ -15,8 +15,7 @@ Kullanıcı hangi skill'in ne zaman gerektiğini hatırlamak zorunda değil; bu 
 | `marsana-client-mod/`, `marsana-schematic-farm-mod/`, mod kodu, Fabric kayıt/mixin/item/blok/entity, `fabric.mod.json`, mod `build.gradle` | `minecraft-modding` |
 | Mod veya plugin testi, GameTest, MockBukkit, JUnit, mod CI | `minecraft-testing` |
 | Datapack, `.mcfunction`, loot table, advancement, predicate, tag, `pack.mcmeta` | `minecraft-datapack` |
-| Modpack derleme, Packwiz, KubeJS, `bundled-mods/` içeriğinin seçimi, client/server dosya ayrımı | `minecraft-modpack-authoring` |
-| Paper / Spigot / Bukkit **sunucu plugini**, `plugin.yml`, listener, komut, arena/kit sistemleri | `minecraft-plugin-development` |
+| Klima SMP / Aternos: datapack'i sunucuya teslim, reload/restart, Aternos konsolu, sunucu modu ve `marsanaServer.js` pin'leri | `klima-sunucu` (+ datapack işiyse `minecraft-datapack`) |
 | Modrinth'ten mod arama, metadata çekme, JAR indirme, sürüm eşleştirme | `modrinth-api` |
 | Electron main/renderer/preload kodu, IPC, pencere yönetimi, `src/` altındaki launcher mantığı | `electron-development` |
 | Paketleme, `electron-builder`, kod imzalama, NSIS/DMG, `electron-updater`, `pack:*` script'leri | `electron-builder` |

@@ -25,18 +25,6 @@
       "skillPath": ".agents/skills/minecraft-modding/SKILL.md",
       "computedHash": "26481193c02c1dc8c74f4efea2404ea6635ad2086cf5460c65dde285fef2a454"
     },
-    "minecraft-modpack-authoring": {
-      "source": "siredvin/minecraft-modding-skills",
-      "sourceType": "github",
-      "skillPath": "skills/minecraft-modpack-authoring/SKILL.md",
-      "computedHash": "7dcc3901f2c28403ce5044ef3c5e164745f2e4f592d3342958e93f41b315537f"
-    },
-    "minecraft-plugin-development": {
-      "source": "github/awesome-copilot",
-      "sourceType": "github",
-      "skillPath": "skills/minecraft-plugin-development/SKILL.md",
-      "computedHash": "0dd6605a2f0b6729e8b2d18f2ce5faca1a93275b0b1e575a2c7987bfa0c2f1f1"
-    },
     "minecraft-testing": {
       "source": "jahrome907/minecraft-agent-skills",
       "sourceType": "github",
