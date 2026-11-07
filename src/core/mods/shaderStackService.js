@@ -61,6 +61,18 @@ const CREATE_ADDON_SLUGS = Object.freeze([
   'create-dreams-and-desires',
   'create-framed',
 ]);
+// Modrinth'te olmayan (ör. incelemede) Create eklentileri: jar launcher'la gelir
+// (bundled-mods/create-addons/), hash doğrulanıp kopyalanır. Modrinth'e çıkınca
+// slug'ı CREATE_ADDON_SLUGS'a taşı, buradan sil.
+const CREATE_BUNDLED_ADDONS = Object.freeze([
+  Object.freeze({
+    slug: 'create-engines',
+    file: 'create_engines-1.21.1-0.1.1.jar',
+    bundled: 'create-addons/create_engines-1.21.1-0.1.1.jar',
+    sha512:
+      'dd87c97eb98118cf9d609f5bd3ecb1e738fd0095b54053f964fed9388342ad705d5cbc005b7a22c07a57d5daedc5114196ef25f5bfad84150a8546fca7e6cc34',
+  }),
+]);
 // Create modunda FPS/RAM kazancı için kurulan hafif NeoForge optimizasyon modları
 // (toplam ~4 MB). Hepsi opsiyonel: bulunamazsa atlanır.
 const CREATE_PERF_SLUGS = Object.freeze([
@@ -2089,6 +2101,17 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           skipExisting: true,
           optionalSlugs: new Set([...CREATE_ADDON_SLUGS, ...CREATE_PERF_SLUGS]),
         });
+        // Launcher'la gelen eklentiler; taban Create kurulduysa eklenir, jar eksikse atlanır.
+        if (jars.length > 0) {
+          for (const addon of CREATE_BUNDLED_ADDONS) {
+            try {
+              const [jar] = await downloadPinnedMods(modsDir, [addon]);
+              if (!jars.includes(jar)) jars.push(jar);
+            } catch (err) {
+              status('Create: ' + addon.file + ' atlandı (' + err.message + ').');
+            }
+          }
+        }
       }
     } catch (err) {
       if (previousOnDisk) {
@@ -2612,6 +2635,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
 module.exports = {
   createShaderStackService,
+  CREATE_BUNDLED_ADDONS,
   // O1/O4 — kritik Modrinth sürüm-eşleştirme mantığı test edilebilsin diye dışa
   // aktarılır (davranış DEĞİŞMEZ; ayrıca ileride ayrı modüle güvenli çıkarım
   // için test güvenlik ağı). Bu fonksiyonlar saf (yan etkisiz).

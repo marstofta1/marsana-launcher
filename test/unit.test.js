@@ -563,7 +563,8 @@ test('versionJvmArgs: arguments.jvm olmayan eski surum / bozuk girdi bos doner',
 // ---------------------------------------------------------------- marsanaServer
 test('marsanaServer: sabit modlarin indirme bilgisi tam', () => {
   const server = require('../src/shared/marsanaServer');
-  for (const mod of server.MARSANA_SERVER_PINNED_MODS) {
+  const { CREATE_BUNDLED_ADDONS } = require('../src/core/mods/shaderStackService');
+  for (const mod of [...server.MARSANA_SERVER_PINNED_MODS, ...CREATE_BUNDLED_ADDONS]) {
     assert.match(mod.sha512, /^[0-9a-f]{128}$/, `${mod.slug} sha512 gecersiz`);
     if (mod.bundled) {
       // Launcher'la gelen jar depoda olmali ve hash'i tutmali.
