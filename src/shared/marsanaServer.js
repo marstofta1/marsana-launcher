@@ -68,15 +68,6 @@ const MARSANA_SERVER_PINNED_MODS = Object.freeze([
     sha512:
       '60307e23a27526d22bf753d387edef5a2f2a063a04a47b69e98b7f71bbad32fdf17e05f9838008e47a5999a60e5e77a91f0695215d0ab57694f0034fde9873ca',
   }),
-  // Create: Engines (klima) — Modrinth'te henüz incelemede; jar launcher'la gelir
-  // (bundled-mods/klima-smp/). Modrinth'e çıkınca url'li normal girişe çevir.
-  Object.freeze({
-    slug: 'create-engines',
-    file: 'create_engines-1.21.1-0.1.1.jar',
-    bundled: 'klima-smp/create_engines-1.21.1-0.1.1.jar',
-    sha512:
-      'dd87c97eb98118cf9d609f5bd3ecb1e738fd0095b54053f964fed9388342ad705d5cbc005b7a22c07a57d5daedc5114196ef25f5bfad84150a8546fca7e6cc34',
-  }),
 ]);
 
 /** MCLC `quickPlay` hedefi; sunucu adresi henüz girilmediyse null. */
