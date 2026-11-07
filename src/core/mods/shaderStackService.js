@@ -2149,7 +2149,19 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       const safeName = path.basename(String(mod.file || ''));
       const destPath = assertInside(modsDir, safeName);
       if (sha512OfFile(destPath) !== mod.sha512) {
-        await httpClient.download(mod.url, destPath, { sha512: mod.sha512 });
+        if (mod.bundled) {
+          // Modrinth'te olmayan (ör. incelemede) mod: launcher'la gelen jar kopyalanır.
+          const src = repoRoot ? path.join(repoRoot, 'bundled-mods', mod.bundled) : null;
+          if (!src || sha512OfFile(src) !== mod.sha512) {
+            throw new LauncherError(
+              Codes.MODRINTH_NOT_FOUND,
+              `Klima SMP modu launcher içinde bulunamadı: ${safeName}`
+            );
+          }
+          await fs.promises.copyFile(src, destPath);
+        } else {
+          await httpClient.download(mod.url, destPath, { sha512: mod.sha512 });
+        }
       }
       jars.push(safeName);
     }

@@ -564,8 +564,16 @@ test('versionJvmArgs: arguments.jvm olmayan eski surum / bozuk girdi bos doner',
 test('marsanaServer: sabit modlarin indirme bilgisi tam', () => {
   const server = require('../src/shared/marsanaServer');
   for (const mod of server.MARSANA_SERVER_PINNED_MODS) {
-    assert.ok(mod.url.endsWith(`/${mod.versionId}/${mod.file}`), `${mod.slug} url/versionId/file uyusmuyor`);
     assert.match(mod.sha512, /^[0-9a-f]{128}$/, `${mod.slug} sha512 gecersiz`);
+    if (mod.bundled) {
+      // Launcher'la gelen jar depoda olmali ve hash'i tutmali.
+      const p = path.join(__dirname, '..', 'bundled-mods', mod.bundled);
+      const hash = require('crypto').createHash('sha512').update(require('node:fs').readFileSync(p)).digest('hex');
+      assert.strictEqual(hash, mod.sha512, `${mod.slug} bundled jar hash'i uyusmuyor`);
+      assert.strictEqual(path.basename(mod.bundled), mod.file);
+      continue;
+    }
+    assert.ok(mod.url.endsWith(`/${mod.versionId}/${mod.file}`), `${mod.slug} url/versionId/file uyusmuyor`);
   }
 });
 
