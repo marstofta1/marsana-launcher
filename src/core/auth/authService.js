@@ -1,8 +1,19 @@
 'use strict';
 
+const crypto = require('crypto');
 const { LauncherError, Codes } = require('../infra/errors');
 
 const TOKEN_SAFETY_MARGIN_MS = 60_000;
+const OFFLINE_NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
+
+/** Minecraft'ın çevrimdışı UUID'si: UUID.nameUUIDFromBytes("OfflinePlayer:" + isim) (v3/MD5). */
+function offlineUuid(name) {
+  const hash = crypto.createHash('md5').update(`OfflinePlayer:${name}`, 'utf8').digest();
+  hash[6] = (hash[6] & 0x0f) | 0x30;
+  hash[8] = (hash[8] & 0x3f) | 0x80;
+  const hex = hash.toString('hex');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
 
 function toPublicView(account) {
   if (!account) return null;
@@ -56,6 +67,28 @@ function createAuthService({ store, authProvider, logger }) {
 
   function buildLaunchProfile({ allowOffline = false, overrideName = '' } = {}) {
     const account = store.load();
+
+    // Hesapsız (çevrimdışı/cracked) giriş: Microsoft hesabı gerekmez, yalnız bir isim.
+    // Tek oyunculu, LAN ve online-mode=false sunucularda çalışır.
+    if (allowOffline && (!account || account.bedrockOnly)) {
+      const name = (overrideName || '').trim();
+      if (!OFFLINE_NAME_RE.test(name)) {
+        throw new LauncherError(
+          Codes.AUTH_REQUIRED,
+          'Çevrimdışı oynamak için 3-16 karakterlik bir isim gir (harf, rakam, alt çizgi).'
+        );
+      }
+      const uuid = offlineUuid(name);
+      return {
+        access_token: '0',
+        client_token: uuid,
+        uuid,
+        name,
+        user_properties: '{}',
+        meta: { type: 'mojang', demo: false, offline: true },
+      };
+    }
+
     if (!account) {
       throw new LauncherError(Codes.AUTH_REQUIRED, 'Önce Microsoft hesabıyla giriş yapmalısın.');
     }
@@ -101,4 +134,4 @@ function createAuthService({ store, authProvider, logger }) {
   return { login, refreshIfPossible, current, logout, buildLaunchProfile };
 }
 
-module.exports = { createAuthService };
+module.exports = { createAuthService, offlineUuid };

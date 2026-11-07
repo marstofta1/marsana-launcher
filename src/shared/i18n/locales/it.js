@@ -94,7 +94,7 @@ export default {
   },
   play: {
     button: 'GIOCA',
-    offline: 'Avvia in modalità offline (solo se hai già effettuato l\'accesso)',
+    offline: 'Avvia in modalità offline (senza account)',
     offlineName: 'Nome visualizzato offline (nome account se vuoto)',
     offlineNamePlaceholder: 'Steve',
     bedrockTitle: 'Apre Minecraft for Windows (Store). Accedi in gioco con il tuo account Microsoft/Xbox.',
@@ -134,7 +134,7 @@ export default {
     versionListFailed: 'Impossibile recuperare l\'elenco versioni: {error}',
   },
   launchOptions: {
-    offline: 'Avvia in modalità offline (solo se hai già effettuato l\'accesso)',
+    offline: 'Avvia in modalità offline (senza account)',
     offlineName: 'Nome visualizzato offline (nome account se vuoto)',
     offlineNamePlaceholder: 'Steve',
     offlineAccounts: 'Saved accounts',

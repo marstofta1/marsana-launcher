@@ -129,6 +129,17 @@ export function createAccountCard({ root, store, auth, openExternal, i18n }) {
 
     root.appendChild(grid);
 
+    // Hesapsız (çevrimdışı/cracked) oynama: Microsoft girişi yok, yalnız isim.
+    const offlineBtn = document.createElement('button');
+    offlineBtn.type = 'button';
+    offlineBtn.className = 'btn ghost auth-offline';
+    offlineBtn.textContent = i18n.t('auth.playOffline');
+    offlineBtn.title = i18n.t('auth.playOfflineHint');
+    offlineBtn.addEventListener('click', () => {
+      store.setState({ offline: true, statusText: i18n.t('auth.playOfflineStatus') });
+    });
+    root.appendChild(offlineBtn);
+
     const psOption = AUTH_METHOD_OPTIONS.find((o) => o.id === AUTH_METHODS.PLAYSTATION);
     if (psOption?.helpUrl) {
       const hint = document.createElement('p');

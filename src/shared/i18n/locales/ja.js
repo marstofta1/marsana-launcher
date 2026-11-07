@@ -94,7 +94,7 @@ export default {
   },
   play: {
     button: 'プレイ',
-    offline: 'オフラインモードで起動（以前にログイン済みの場合のみ）',
+    offline: 'オフラインモードで起動（アカウント不要）',
     offlineName: 'オフライン表示名（空欄ならアカウント名）',
     offlineNamePlaceholder: 'Steve',
     bedrockTitle: 'Minecraft for Windows（Store）を開きます。ゲーム内で Microsoft/Xbox アカウントでログインしてください。',
@@ -134,7 +134,7 @@ export default {
     versionListFailed: 'バージョンリストを取得できませんでした：{error}',
   },
   launchOptions: {
-    offline: 'オフラインモードで起動（以前にログイン済みの場合のみ）',
+    offline: 'オフラインモードで起動（アカウント不要）',
     offlineName: 'オフライン表示名（空欄ならアカウント名）',
     offlineNamePlaceholder: 'Steve',
     offlineAccounts: 'Saved accounts',

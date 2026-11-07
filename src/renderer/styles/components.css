@@ -1521,3 +1521,8 @@ body.no-animations *::after {
   width: 100%;
   font-size: 13px;
 }
+
+.account .auth-offline {
+  width: 100%;
+  margin-top: 8px;
+}

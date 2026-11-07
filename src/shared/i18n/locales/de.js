@@ -94,7 +94,7 @@ export default {
   },
   play: {
     button: 'SPIELEN',
-    offline: 'Im Offline-Modus starten (nur wenn du dich zuvor angemeldet hast)',
+    offline: 'Im Offline-Modus starten (ohne Konto)',
     offlineName: 'Offline-Anzeigename (Kontoname wenn leer)',
     offlineNamePlaceholder: 'Steve',
     bedrockTitle: 'Öffnet Minecraft for Windows (Store). Im Spiel mit deinem Microsoft/Xbox-Konto anmelden.',
@@ -134,7 +134,7 @@ export default {
     versionListFailed: 'Versionsliste konnte nicht abgerufen werden: {error}',
   },
   launchOptions: {
-    offline: 'Im Offline-Modus starten (nur wenn du dich zuvor angemeldet hast)',
+    offline: 'Im Offline-Modus starten (ohne Konto)',
     offlineName: 'Offline-Anzeigename (Kontoname wenn leer)',
     offlineNamePlaceholder: 'Steve',
     offlineAccounts: 'Saved accounts',

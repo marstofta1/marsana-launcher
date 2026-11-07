@@ -94,7 +94,7 @@ export default {
   },
   play: {
     button: '开始',
-    offline: '离线模式启动（仅曾登录过账户时可用）',
+    offline: '离线模式启动（无需账户）',
     offlineName: '离线显示名称（留空则使用账户名）',
     offlineNamePlaceholder: 'Steve',
     bedrockTitle: '打开 Minecraft for Windows（商店版）。在游戏中使用你的 Microsoft/Xbox 账户登录。',
@@ -134,7 +134,7 @@ export default {
     versionListFailed: '无法获取版本列表：{error}',
   },
   launchOptions: {
-    offline: '离线模式启动（仅曾登录过账户时可用）',
+    offline: '离线模式启动（无需账户）',
     offlineName: '离线显示名称（留空则使用账户名）',
     offlineNamePlaceholder: 'Steve',
     offlineAccounts: 'Saved accounts',

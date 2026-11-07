@@ -12,6 +12,18 @@ import {
 } from '../../shared/versionCompatibility.js';
 import { modPackLaunchPresets, isMarsanaServerPackSelected } from '../../shared/modPacks.js';
 
+const OFFLINE_NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
+
+/** Hesapsız (çevrimdışı) oynamaya hazır mı: çevrimdışı mod açık ve isim geçerli. */
+function offlineReady(state) {
+  return !!state.offline && OFFLINE_NAME_RE.test((state.offlineName || '').trim());
+}
+
+/** Java için kullanılabilir bir hesap yok (hiç giriş yok veya yalnız Bedrock). */
+function noJavaAccount(state) {
+  return !state.user || !!state.user.bedrockOnly;
+}
+
 function launchErrorMessage(err) {
   if (!err) return 'Bilinmeyen hata';
   if (typeof err === 'string') return err;
@@ -63,13 +75,10 @@ export function createPlayButton({ root, store, launchApi, i18n }) {
     // Marsana overlay/menü mod'u yalnızca o sürümde yüklenir.
     const clientMode = isClientMode(state.playMode);
 
-    if (state.user?.bedrockOnly && !isExternalLoader(loader)) {
-      store.setState({ statusText: i18n.t('play.bedrockOnlyBlocked') });
-      return;
-    }
-
-    if (!isExternalLoader(loader) && !state.user) {
-      store.setState({ statusText: i18n.t('play.loginRequired') });
+    if (!isExternalLoader(loader) && noJavaAccount(state) && !offlineReady(state)) {
+      let key = state.user?.bedrockOnly ? 'play.bedrockOnlyBlocked' : 'play.loginRequired';
+      if (state.offline) key = 'play.offlineNameRequired';
+      store.setState({ statusText: i18n.t(key) });
       return;
     }
     if (!isExternalLoader(loader) && !clientMode && !state.selectedVersion) {
@@ -168,13 +177,17 @@ export function createPlayButton({ root, store, launchApi, i18n }) {
       btn.title = i18n.t('play.bedrockTitle');
       return;
     }
-    if (state.user?.bedrockOnly) {
+    if (noJavaAccount(state) && !offlineReady(state)) {
       btn.disabled = true;
-      btn.title = i18n.t('play.bedrockOnlyTitle');
+      btn.title = state.user?.bedrockOnly
+        ? i18n.t('play.bedrockOnlyTitle')
+        : state.offline
+          ? i18n.t('play.offlineNameRequired')
+          : i18n.t('play.loginRequired');
       return;
     }
     btn.title = '';
-    btn.disabled = !state.user || !state.selectedVersion;
+    btn.disabled = !state.selectedVersion;
   }
 
   btn.addEventListener('click', handleClick);

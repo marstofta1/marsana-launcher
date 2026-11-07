@@ -94,7 +94,7 @@ export default {
   },
   play: {
     button: 'ИГРАТЬ',
-    offline: 'Запуск в офлайн-режиме (только если вы уже входили)',
+    offline: 'Запуск в офлайн-режиме (без аккаунта)',
     offlineName: 'Отображаемое имя офлайн (имя аккаунта, если пусто)',
     offlineNamePlaceholder: 'Steve',
     bedrockTitle: 'Открывает Minecraft for Windows (Store). Войдите в игре своим аккаунтом Microsoft/Xbox.',
@@ -134,7 +134,7 @@ export default {
     versionListFailed: 'Не удалось загрузить список версий: {error}',
   },
   launchOptions: {
-    offline: 'Запуск в офлайн-режиме (только если вы уже входили)',
+    offline: 'Запуск в офлайн-режиме (без аккаунта)',
     offlineName: 'Отображаемое имя офлайн (имя аккаунта, если пусто)',
     offlineNamePlaceholder: 'Steve',
     offlineAccounts: 'Saved accounts',

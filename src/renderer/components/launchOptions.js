@@ -66,7 +66,7 @@ export function createLaunchOptions({ root, store, i18n }) {
     <div data-role="offlineNameField" style="display:${state.offline ? 'block' : 'none'};">
       <label class="field">
         <span>${i18n.t('launchOptions.offlineName')}</span>
-        <input type="text" data-role="offlineName" maxlength="${NAME_MAX}" placeholder="${i18n.t('launchOptions.offlineNamePlaceholder')}" value="${escapeHtml(state.offlineName || '')}" autocomplete="off" />
+        <input type="text" data-role="offlineName" maxlength="${NAME_MAX}" value="${escapeHtml(state.offlineName || '')}" autocomplete="off" />
       </label>
     </div>
     </div>
@@ -129,6 +129,12 @@ export function createLaunchOptions({ root, store, i18n }) {
     render();
     const unsubs = [
       store.subscribe((state) => {
+        const box = root.querySelector('[data-role="offline"]');
+        if (box && box.checked !== !!state.offline) {
+          render();
+          if (state.offline) root.querySelector('[data-role="offlineName"]')?.focus();
+          return;
+        }
         const wrap = root.querySelector('[data-role="launch-options-wrap"]');
         if (wrap) {
           const hide = (state.selectedLoader || '') === 'bedrock';

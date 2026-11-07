@@ -94,7 +94,7 @@ export default {
   },
   play: {
     button: 'JOUER',
-    offline: 'Lancer en mode hors ligne (uniquement si vous vous êtes déjà connecté)',
+    offline: 'Lancer en mode hors ligne (sans compte)',
     offlineName: 'Nom affiché hors ligne (nom du compte si vide)',
     offlineNamePlaceholder: 'Steve',
     bedrockTitle: 'Ouvre Minecraft for Windows (Store). Connectez-vous avec votre compte Microsoft/Xbox en jeu.',
@@ -134,7 +134,7 @@ export default {
     versionListFailed: 'Impossible de récupérer la liste des versions : {error}',
   },
   launchOptions: {
-    offline: 'Lancer en mode hors ligne (uniquement si vous vous êtes déjà connecté)',
+    offline: 'Lancer en mode hors ligne (sans compte)',
     offlineName: 'Nom affiché hors ligne (nom du compte si vide)',
     offlineNamePlaceholder: 'Steve',
     offlineAccounts: 'Saved accounts',
