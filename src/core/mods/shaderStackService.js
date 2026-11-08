@@ -70,7 +70,7 @@ const CREATE_BUNDLED_ADDONS = Object.freeze([
     file: 'create_engines-1.21.1-0.1.1.jar',
     bundled: 'create-addons/create_engines-1.21.1-0.1.1.jar',
     sha512:
-      '43194024cdd8a661951248ae3900fcb7eecea030464520a96d619b38169dc891b80af5b564d65035d320b4d1111eafedb11a550fe88c07d98705bdc57802a511',
+      '8bd7c3801eaa2aa7d3d316738afb90579aee975f9fe664196f1e576e72000887fef038685f1000272ae264e255714df35ad73cad198d6dcb942428ff7c14dc28',
   }),
 ]);
 // Create modunda FPS/RAM kazancı için kurulan hafif NeoForge optimizasyon modları
