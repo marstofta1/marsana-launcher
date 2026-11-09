@@ -150,6 +150,7 @@ function createLaunchService({
   authService,
   shaderStackService,
   userModService,
+  skinService,
   bedrockLaunchService,
   fabricInstaller,
   forgeInstaller,
@@ -1405,6 +1406,19 @@ function createLaunchService({
       });
     } catch (e) {
       logger.warn('Kaynak paketi ön ayarları yazılamadı', { err: e.message });
+    }
+    // Seçili skin: çevrimdışı oyunda kaynak paketiyle uygulanır (Microsoft'ta Mojang'dan gelir).
+    if (skinService) {
+      try {
+        const skin = skinService.syncSkinPackForLaunch({
+          gameDir: optionsGameDir,
+          gameVersion: effectiveModGameVersion(opts.version),
+          offline: !!(profile.meta && profile.meta.offline),
+        });
+        if (skin.active) emit.status({ text: 'Seçili skin çevrimdışı oyuna uygulandı.' });
+      } catch (e) {
+        logger.warn('Skin paketi yazılamadı', { err: e.message });
+      }
     }
     try {
       applyAudioSettingsToOptionsTxt(opts.audioSettings, optionsGameDir);

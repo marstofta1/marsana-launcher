@@ -19,6 +19,7 @@ import { createPlatformsPanel } from './components/platformsPanel.js';
 import { initBootSplash, setBootSplashStatus, dismissBootSplash } from './bootSplash.js';
 import { createModeSwitcher, updateBranding } from './components/modeSwitcher.js';
 import { createCosmeticsPanel } from './components/cosmeticsPanel.js';
+import { createSkinsPanel } from './components/skinsPanel.js';
 import { wireUpdateFlow } from './components/updateFlow.js';
 import {
   DEFAULT_PLAY_MODE,
@@ -180,6 +181,7 @@ async function bootstrap() {
     { name: 'launchOptions', mount: createLaunchOptions({ root: $('launch-options-slot'), store, i18n }).mount },
     { name: 'status', mount: createStatusPanel({ root: $('status-slot'), store, events: api.events }).mount },
     { name: 'profile', mount: createPlayerProfileCard({ root: $('profile-slot'), store, i18n }).mount },
+    { name: 'skins', mount: createSkinsPanel({ root: $('skins-slot'), store, skinsApi: api.skins, i18n }).mount },
     { name: 'cosmetics', mount: createCosmeticsPanel({ root: $('cosmetics-slot'), store, i18n }).mount },
     ...( $('platforms-slot', { optional: true })
       ? [{

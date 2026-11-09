@@ -588,3 +588,153 @@ test('marsanaServer: adres yokken quickPlay kapali', () => {
       : `${server.MARSANA_SERVER_HOST}:${server.MARSANA_SERVER_PORT}`,
   });
 });
+
+// ---------------------------------------------------------------- skin galerisi
+const skinPng = require('../src/core/skins/png');
+const skins = require('../src/core/skins/skinService');
+
+function blankSkin({ slim = false } = {}) {
+  const rgba = Buffer.alloc(64 * 64 * 4);
+  for (let y = 0; y < 64; y += 1) {
+    for (let x = 0; x < 64; x += 1) {
+      if (slim && (x === 54 || x === 55) && y >= 20 && y < 32) continue;
+      const i = (y * 64 + x) * 4;
+      rgba[i] = x * 4; rgba[i + 1] = y * 4; rgba[i + 2] = 99; rgba[i + 3] = 255;
+    }
+  }
+  return skinPng.encodePng(64, 64, rgba);
+}
+
+test('skin png: kodla/çöz gidiş-dönüş aynı pikselleri verir', () => {
+  const buf = blankSkin();
+  const { width, height, rgba } = skinPng.decodePng(buf);
+  assert.strictEqual(width, 64);
+  assert.strictEqual(height, 64);
+  const i = (10 * 64 + 20) * 4;
+  assert.deepStrictEqual([...rgba.subarray(i, i + 4)], [80, 40, 99, 255]);
+});
+
+test('skin: kol genişliğinden klasik/ince kalıp tespit edilir', () => {
+  assert.strictEqual(skins.validateSkinBuffer(blankSkin()).variant, 'classic');
+  assert.strictEqual(skins.validateSkinBuffer(blankSkin({ slim: true })).variant, 'slim');
+});
+
+test('skin: 64x64 olmayan ya da PNG olmayan dosya reddedilir', () => {
+  assert.throws(() => skins.validateSkinBuffer(skinPng.encodePng(64, 32, Buffer.alloc(64 * 32 * 4))), /64x64/);
+  assert.throws(() => skins.validateSkinBuffer(Buffer.from('not a png')), /PNG/);
+});
+
+test('skin paketi: sürüme göre pack.mcmeta biçimi', () => {
+  assert.deepStrictEqual(skins.skinPackMeta('1.21.1').pack.pack_format, 34);
+  const modern = skins.skinPackMeta('26.1.2').pack;
+  assert.strictEqual(modern.min_format, modern.max_format);
+  assert.strictEqual(modern.pack_format, undefined);
+  assert.strictEqual(skins.skinPackMeta('1.20.1').pack.pack_format, 15);
+  assert.strictEqual(skins.skinPackMeta('1.8.9').pack.pack_format, 1);
+  assert.strictEqual(skins.skinPackMeta('1.7.10'), null);
+  assert.strictEqual(skins.skinPackMeta('b1.7.3'), null);
+});
+
+test('skin paketi: çevrimdışında etkinleşir, çevrimiçinde options.txt\'ten çıkar', async () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'marsana-skin-'));
+  try {
+    const gameDir = path.join(dir, 'minecraft');
+    fs.mkdirSync(gameDir);
+    fs.writeFileSync(path.join(gameDir, 'options.txt'), 'fov:0.0\nresourcePacks:["vanilla","file/other.zip"]\n');
+    const service = skins.createSkinService({
+      paths: { userDataDir: dir },
+      authService: { current: () => null, getMinecraftAccessToken: async () => null },
+      logger: { warn() {} },
+    });
+    const picked = await service.selectPreset('ninja');
+    assert.strictEqual(picked.uploaded, false);
+    assert.strictEqual(picked.uploadError, null);
+    assert.strictEqual(picked.selection.presetId, 'ninja');
+
+    assert.strictEqual(service.syncSkinPackForLaunch({ gameDir, gameVersion: '1.21.1', offline: true }).active, true);
+    const opts = fs.readFileSync(path.join(gameDir, 'options.txt'), 'utf8');
+    assert.match(opts, /^resourcePacks:\["vanilla","file\/other.zip","file\/marsana-skin"\]$/m);
+    assert.match(opts, /^fov:0.0$/m);
+    const steve = path.join(gameDir, 'resourcepacks', 'marsana-skin', 'assets', 'minecraft', 'textures', 'entity', 'player', 'wide', 'steve.png');
+    assert.ok(fs.existsSync(steve));
+
+    assert.strictEqual(service.syncSkinPackForLaunch({ gameDir, gameVersion: '1.21.1', offline: false }).active, false);
+    assert.match(fs.readFileSync(path.join(gameDir, 'options.txt'), 'utf8'), /^resourcePacks:\["vanilla","file\/other.zip"\]$/m);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('skin: Microsoft hesabında Mojang API\'ye klasik varyantla yüklenir', async () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'marsana-skin-'));
+  const calls = [];
+  try {
+    const service = skins.createSkinService({
+      paths: { userDataDir: dir },
+      authService: { current: () => ({ uuid: 'x' }), getMinecraftAccessToken: async () => 'tok' },
+      logger: { warn() {} },
+      fetchImpl: async (url, init) => {
+        calls.push({ url, init });
+        return { ok: true, status: 200, json: async () => ({}) };
+      },
+    });
+    const res = await service.selectPreset('robot');
+    assert.strictEqual(res.uploaded, true);
+    const writes = () => calls.filter((c) => c.init && (c.init.method === 'POST' || c.init.method === 'DELETE'));
+    assert.strictEqual(writes()[0].url, 'https://api.minecraftservices.com/minecraft/profile/skins');
+    assert.strictEqual(writes()[0].init.method, 'POST');
+    assert.strictEqual(writes()[0].init.headers.Authorization, 'Bearer tok');
+    assert.strictEqual(writes()[0].init.body.get('variant'), 'classic');
+    await service.selectDefault();
+    assert.strictEqual(writes()[1].init.method, 'DELETE');
+    assert.ok(writes()[1].url.endsWith('/skins/active'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('skin: Microsoft hesabındaki eski skin ilk değişiklikten önce yedeklenir', async () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'marsana-skin-'));
+  const oldSkin = blankSkin();
+  try {
+    const service = skins.createSkinService({
+      paths: { userDataDir: dir },
+      authService: { current: () => ({ uuid: 'x' }), getMinecraftAccessToken: async () => 'tok' },
+      logger: { warn() {} },
+      fetchImpl: async (url) => {
+        if (url.endsWith('/minecraft/profile')) {
+          return { ok: true, json: async () => ({ skins: [{ state: 'ACTIVE', url: 'http://textures.minecraft.net/texture/abc' }] }) };
+        }
+        if (url.startsWith('https://textures.minecraft.net/')) {
+          return { ok: true, arrayBuffer: async () => oldSkin.buffer.slice(oldSkin.byteOffset, oldSkin.byteOffset + oldSkin.length) };
+        }
+        return { ok: true, status: 200, json: async () => ({}) };
+      },
+    });
+    const res = await service.selectPreset('ninja');
+    assert.ok(res.customDataUrl, 'eski skin "Benim skinim" olarak görünmeli');
+    assert.ok(fs.readFileSync(path.join(dir, 'skins', 'custom.png')).equals(oldSkin));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('skin: hazır skinler 64x64 PNG ve geçersiz id reddedilir', async () => {
+  const fs = require('node:fs');
+  const skinDir = path.join(__dirname, '..', 'src', 'renderer', 'assets', 'skins');
+  const files = fs.readdirSync(skinDir).filter((f) => f.endsWith('.png'));
+  assert.ok(files.length >= 8);
+  for (const f of files) assert.strictEqual(skins.validateSkinBuffer(fs.readFileSync(path.join(skinDir, f))).variant, 'classic', f);
+  const service = skins.createSkinService({
+    paths: { userDataDir: require('node:os').tmpdir() },
+    authService: { current: () => null, getMinecraftAccessToken: async () => null },
+    logger: { warn() {} },
+  });
+  await assert.rejects(() => service.selectPreset('../../etc'), /Geçersiz/);
+});

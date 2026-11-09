@@ -2636,6 +2636,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 module.exports = {
   createShaderStackService,
   CREATE_BUNDLED_ADDONS,
+  resourcePackFormatForGameVersion,
   // O1/O4 â€” kritik Modrinth sÃ¼rÃ¼m-eÅŸleÅŸtirme mantÄ±ÄŸÄ± test edilebilsin diye dÄ±ÅŸa
   // aktarÄ±lÄ±r (davranÄ±ÅŸ DEÄÄ°ÅMEZ; ayrÄ±ca ileride ayrÄ± modÃ¼le gÃ¼venli Ã§Ä±karÄ±m
   // iÃ§in test gÃ¼venlik aÄŸÄ±). Bu fonksiyonlar saf (yan etkisiz).

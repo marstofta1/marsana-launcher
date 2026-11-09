@@ -59,6 +59,20 @@ function createAuthService({ store, authProvider, logger }) {
     return toPublicView(store.load());
   }
 
+  /** Java lisanslı Microsoft hesabı için geçerli Minecraft erişim belirteci; yoksa null. */
+  async function getMinecraftAccessToken() {
+    let account = store.load();
+    if (!account || account.bedrockOnly || !account.accessToken) return null;
+    const valid = account.expiresAt && account.expiresAt > Date.now() + TOKEN_SAFETY_MARGIN_MS;
+    if (!valid) {
+      await refreshIfPossible();
+      account = store.load();
+      if (!account || !account.accessToken) return null;
+      if (!(account.expiresAt && account.expiresAt > Date.now() + TOKEN_SAFETY_MARGIN_MS)) return null;
+    }
+    return account.accessToken;
+  }
+
   function logout() {
     store.clear();
     logger.info('Account logged out');
@@ -131,7 +145,7 @@ function createAuthService({ store, authProvider, logger }) {
     };
   }
 
-  return { login, refreshIfPossible, current, logout, buildLaunchProfile };
+  return { login, refreshIfPossible, current, logout, buildLaunchProfile, getMinecraftAccessToken };
 }
 
 module.exports = { createAuthService, offlineUuid };

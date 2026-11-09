@@ -758,6 +758,122 @@
   line-height: 1.4;
 }
 
+/* Skin galerisi */
+#skins-slot {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.skins-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.skins-header h3 {
+  margin: 0;
+}
+
+.skins-upload {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+.skins-lead {
+  margin: 0 0 12px;
+  padding-left: 0;
+}
+
+.skins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+}
+
+.skin-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 0;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.skin-tile:hover:not(:disabled) {
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
+}
+
+.skin-tile:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.skin-tile.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.skin-preview {
+  width: 48px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skin-preview canvas {
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+
+.skin-preview-default {
+  width: 40px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: 6px;
+  font-size: 20px;
+  color: var(--text-muted);
+}
+
+.skin-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.skins-message {
+  margin: 10px 0 0;
+  min-height: 1em;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.skins-message.ok {
+  color: var(--accent-positive);
+}
+
+.skins-message.warn {
+  color: #d9822b;
+}
+
 #cosmetics-slot {
   margin-top: 8px;
   padding-top: 16px;

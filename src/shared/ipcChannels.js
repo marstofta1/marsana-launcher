@@ -44,6 +44,12 @@ const MODS = Object.freeze({
   BULK: 'mods:bulk',
 });
 
+const SKINS = Object.freeze({
+  STATE: 'skins:state',
+  SELECT: 'skins:select',
+  PICK_CUSTOM: 'skins:pickCustom',
+});
+
 const UPDATE = Object.freeze({
   CHECK: 'update:check',
   RUN: 'update:run',
@@ -66,6 +72,7 @@ module.exports = Object.freeze({
   EVENTS,
   SYSTEM,
   MODS,
+  SKINS,
   UPDATE,
   RENDERER_EVENT_CHANNELS,
 });

@@ -28,6 +28,7 @@ const { createMrpackInstaller } = require('../core/mods/mrpackInstaller');
 const { createOptifineDownloader } = require('../core/mods/optifineDownloader');
 const { createShaderStackService } = require('../core/mods/shaderStackService');
 const { createUserModService } = require('../core/mods/userModService');
+const { createSkinService } = require('../core/skins/skinService');
 
 const { createRecommendedServersService } = require('../core/servers/recommendedServers');
 const { createAnalyticsService } = require('../core/analytics/analyticsService');
@@ -78,6 +79,8 @@ function buildContainer({ userDataDir, repoRoot }) {
 
   const userModService = createUserModService({ paths, httpClient, logger: logger.child('user-mods') });
 
+  const skinService = createSkinService({ paths, authService, logger: logger.child('skins') });
+
   const bedrockLaunchService = createBedrockLaunchService({ logger: logger.child('bedrock') });
 
   const launchService = createLaunchService({
@@ -86,6 +89,7 @@ function buildContainer({ userDataDir, repoRoot }) {
     authService,
     shaderStackService,
     userModService,
+    skinService,
     bedrockLaunchService,
     fabricInstaller,
     forgeInstaller,
@@ -128,6 +132,7 @@ function buildContainer({ userDataDir, repoRoot }) {
     loaderSupport,
     launchService,
     userModService,
+    skinService,
     recommendedServersService,
     analyticsService,
   });

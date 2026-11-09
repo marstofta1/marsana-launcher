@@ -8,6 +8,7 @@ const {
   SERVERS,
   SYSTEM,
   MODS,
+  SKINS,
   UPDATE,
   RENDERER_EVENT_CHANNELS,
 } = require('../shared/ipcChannels');
@@ -47,6 +48,13 @@ const api = Object.freeze({
     list: (selection) => ipcRenderer.invoke(MODS.LIST, selection),
     remove: (file) => ipcRenderer.invoke(MODS.REMOVE, file),
     setEnabled: (file, enabled) => ipcRenderer.invoke(MODS.SET_ENABLED, { file, enabled }),
+  }),
+  skins: Object.freeze({
+    state: () => ipcRenderer.invoke(SKINS.STATE),
+    selectPreset: (id) => ipcRenderer.invoke(SKINS.SELECT, { kind: 'preset', id }),
+    selectCustom: () => ipcRenderer.invoke(SKINS.SELECT, { kind: 'custom' }),
+    selectDefault: () => ipcRenderer.invoke(SKINS.SELECT, { kind: 'default' }),
+    pickCustom: () => ipcRenderer.invoke(SKINS.PICK_CUSTOM),
   }),
   app: Object.freeze({
     getVersion: () => ipcRenderer.invoke(SYSTEM.GET_VERSION),
