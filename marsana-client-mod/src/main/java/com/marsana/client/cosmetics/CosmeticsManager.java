@@ -8,19 +8,38 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.resources.Identifier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class CosmeticsManager {
+    /** colorArgb: doku PNG'si okunamazsa kullanilan duz yedek renk. */
     public record CosmeticOption(String id, String label, int colorArgb) {}
 
     public static final CosmeticOption NONE = new CosmeticOption("none", "Kapali", 0);
-    public static final CosmeticOption GREEN = new CosmeticOption("marsana-green", "Marsana Yesil", 0xFF3D9A5F);
-    public static final CosmeticOption NIGHT = new CosmeticOption("marsana-night", "Marsana Gece", 0xFF1A2744);
-    public static final CosmeticOption GOLD = new CosmeticOption("marsana-gold", "Marsana Altin", 0xFFC9A227);
 
-    public static final CosmeticOption[] OPTIONS = { NONE, GREEN, NIGHT, GOLD };
+    // Dokular jar icinde: assets/marsana-client/textures/cosmetic/<id>.png
+    // (scripts/generate-capes.js uretir; launcher'daki COSMETIC_ITEMS ile ayni id'ler).
+    public static final CosmeticOption[] OPTIONS = {
+        NONE,
+        new CosmeticOption("marsana-green", "Marsana Yesil", 0xFF3D9A5F),
+        new CosmeticOption("marsana-night", "Marsana Gece", 0xFF1A2744),
+        new CosmeticOption("marsana-gold", "Marsana Altin", 0xFFC9A227),
+        new CosmeticOption("flame", "Alev", 0xFFD6301C),
+        new CosmeticOption("ocean", "Okyanus", 0xFF2A7FB8),
+        new CosmeticOption("galaxy", "Galaksi", 0xFF3A1F6E),
+        new CosmeticOption("forest", "Orman", 0xFF2D5A2F),
+        new CosmeticOption("rainbow", "Gokkusagi", 0xFFF7CF3B),
+        new CosmeticOption("frost", "Buz", 0xFF9FD3F0),
+        new CosmeticOption("dragon", "Ejderha", 0xFF2A7A44),
+        new CosmeticOption("sakura", "Sakura", 0xFFF2A6C4),
+        new CosmeticOption("storm", "Simsek", 0xFF2A2E36),
+    };
 
+    private static final Logger LOGGER = LoggerFactory.getLogger("marsana-client/cosmetics");
     private static final Map<String, ClientAsset.ResourceTexture> CAPE_TEXTURES = new HashMap<>();
 
     private CosmeticsManager() {}
@@ -33,9 +52,11 @@ public final class CosmeticsManager {
         if (!CAPE_TEXTURES.isEmpty()) {
             return;
         }
-        registerCape(GREEN);
-        registerCape(NIGHT);
-        registerCape(GOLD);
+        for (CosmeticOption option : OPTIONS) {
+            if (option != NONE) {
+                registerCape(option);
+            }
+        }
     }
 
     public static String getSelectedCosmetic() {
@@ -56,8 +77,32 @@ public final class CosmeticsManager {
     }
 
     private static void registerCape(CosmeticOption option) {
+        NativeImage image = loadCapeImage(option);
+        Identifier texId = Identifier.fromNamespaceAndPath(MarsanaClientMod.MOD_ID, "cosmetic/" + option.id());
+        DynamicTexture texture = new DynamicTexture(() -> "marsana-cosmetic-" + option.id(), image);
+        Minecraft.getInstance().getTextureManager().register(texId, texture);
+        // 2-argumanli yapici: texturePath() == texId olur. Tek-argumanli yapici
+        // yolu "textures/<path>.png"e cevirir; renderer texturePath() ile baglar,
+        // o yola kayit olmadigi icin PNG aranir -> mor-siyah missing-texture.
+        CAPE_TEXTURES.put(option.id(), new ClientAsset.ResourceTexture(texId, texId));
+    }
+
+    /** Jar'daki desenli PNG'yi okur; bulunamazsa duz renkli yedek pelerin cizer. */
+    private static NativeImage loadCapeImage(CosmeticOption option) {
+        String resource = "/assets/" + MarsanaClientMod.MOD_ID + "/textures/cosmetic/" + option.id() + ".png";
+        try (InputStream in = CosmeticsManager.class.getResourceAsStream(resource)) {
+            if (in != null) {
+                return NativeImage.read(in);
+            }
+            LOGGER.warn("Pelerin dokusu bulunamadi: {}", resource);
+        } catch (Exception e) {
+            LOGGER.warn("Pelerin dokusu okunamadi: {}", resource, e);
+        }
+        return solidCape(option.colorArgb() & 0xFFFFFF);
+    }
+
+    private static NativeImage solidCape(int rgb) {
         NativeImage image = new NativeImage(64, 32, true);
-        int rgb = option.colorArgb() & 0xFFFFFF;
         for (int y = 0; y < 32; y++) {
             for (int x = 0; x < 64; x++) {
                 boolean border = x == 0 || y == 0 || x == 63 || y == 31;
@@ -67,13 +112,7 @@ public final class CosmeticsManager {
                 image.setPixel(x, y, 0xFF000000 | shade);
             }
         }
-        Identifier texId = Identifier.fromNamespaceAndPath(MarsanaClientMod.MOD_ID, "cosmetic/" + option.id());
-        DynamicTexture texture = new DynamicTexture(() -> "marsana-cosmetic-" + option.id(), image);
-        Minecraft.getInstance().getTextureManager().register(texId, texture);
-        // 2-argumanli yapici: texturePath() == texId olur. Tek-argumanli yapici
-        // yolu "textures/<path>.png"e cevirir; renderer texturePath() ile baglar,
-        // o yola kayit olmadigi icin PNG aranir -> mor-siyah missing-texture.
-        CAPE_TEXTURES.put(option.id(), new ClientAsset.ResourceTexture(texId, texId));
+        return image;
     }
 
     private static int darken(int rgb, float factor) {

@@ -70,11 +70,22 @@ export const CLIENT_FEATURES = Object.freeze([
   },
 ]);
 
+// Pelerin dokuları: src/renderer/assets/capes/<id>.png (scripts/generate-capes.js üretir).
+// Id'ler marsana-client-mod CosmeticsManager.OPTIONS ile aynı olmalı.
 export const COSMETIC_ITEMS = Object.freeze([
   { id: 'none', label: 'Kapalı', hint: 'Vanilla görünüm — ek pelerin yok.', color: null },
-  { id: 'marsana-green', label: 'Marsana Yeşil', hint: 'Marka yeşili pelerin.', color: '#3d9a5f' },
-  { id: 'marsana-night', label: 'Marsana Gece', hint: 'Koyu lacivert gece teması.', color: '#1a2744' },
-  { id: 'marsana-gold', label: 'Marsana Altın', hint: 'Altın sarısı premium görünüm.', color: '#c9a227' },
+  { id: 'marsana-green', label: 'Marsana Yeşil', hint: 'Marka yeşili, M amblemli pelerin.', color: '#3d9a5f' },
+  { id: 'marsana-night', label: 'Marsana Gece', hint: 'Hilal ve yıldızlı gece mavisi.', color: '#1a2744' },
+  { id: 'marsana-gold', label: 'Marsana Altın', hint: 'Elmas desenli altın pelerin.', color: '#c9a227' },
+  { id: 'flame', label: 'Alev', hint: 'Aşağıdan yükselen alevler.', color: '#d6301c' },
+  { id: 'ocean', label: 'Okyanus', hint: 'Köpüklü dalga desenleri.', color: '#2a7fb8' },
+  { id: 'galaxy', label: 'Galaksi', hint: 'Mor nebula ve yıldızlar.', color: '#3a1f6e' },
+  { id: 'forest', label: 'Orman', hint: 'Gün batımında çam ağaçları.', color: '#2d5a2f' },
+  { id: 'rainbow', label: 'Gökkuşağı', hint: 'Altı renkli şeritler.', color: '#f7cf3b' },
+  { id: 'frost', label: 'Buz', hint: 'Kar taneli buz mavisi.', color: '#9fd3f0' },
+  { id: 'dragon', label: 'Ejderha', hint: 'Yeşil ejderha pulları.', color: '#2a7a44' },
+  { id: 'sakura', label: 'Sakura', hint: 'Pembe zemin, kiraz çiçekleri.', color: '#f2a6c4' },
+  { id: 'storm', label: 'Şimşek', hint: 'Fırtına grisi, sarı şimşek.', color: '#2a2e36' },
 ]);
 
 export const DEFAULT_COSMETIC = 'none';

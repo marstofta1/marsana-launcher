@@ -738,3 +738,27 @@ test('skin: hazır skinler 64x64 PNG ve geçersiz id reddedilir', async () => {
   });
   await assert.rejects(() => service.selectPreset('../../etc'), /Geçersiz/);
 });
+
+// ---------------------------------------------------------------- pelerinler
+test('pelerin: launcher COSMETIC_ITEMS ile mod OPTIONS aynı id\'leri taşır ve her birinin dokusu var', () => {
+  const fs = require('node:fs');
+  const root = path.join(__dirname, '..');
+  const shared = fs.readFileSync(path.join(root, 'src', 'shared', 'marsanaClient.js'), 'utf8');
+  const block = shared.slice(shared.indexOf('COSMETIC_ITEMS'), shared.indexOf('DEFAULT_COSMETIC'));
+  const launcherIds = [...block.matchAll(/id: '([a-z-]+)'/g)].map((m) => m[1]);
+  const java = fs.readFileSync(
+    path.join(root, 'marsana-client-mod', 'src', 'main', 'java', 'com', 'marsana', 'client', 'cosmetics', 'CosmeticsManager.java'),
+    'utf8'
+  );
+  const modIds = [...java.matchAll(/new CosmeticOption\("([a-z-]+)"/g)].map((m) => m[1]);
+  assert.deepStrictEqual(launcherIds, modIds);
+  for (const id of launcherIds.filter((x) => x !== 'none')) {
+    for (const dir of [
+      path.join(root, 'src', 'renderer', 'assets', 'capes'),
+      path.join(root, 'marsana-client-mod', 'src', 'main', 'resources', 'assets', 'marsana-client', 'textures', 'cosmetic'),
+    ]) {
+      const size = skinPng.readPngSize(fs.readFileSync(path.join(dir, `${id}.png`)));
+      assert.deepStrictEqual(size, { width: 64, height: 32 }, `${id} (${dir})`);
+    }
+  }
+});

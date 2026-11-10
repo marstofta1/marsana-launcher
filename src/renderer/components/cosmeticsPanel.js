@@ -4,6 +4,17 @@ import {
   isClientMode,
 } from '../../shared/marsanaClient.js';
 
+/** Pelerin dokusunun arkadan görünen yüzünü (64x32 içinde x1,y1 10x16) 3x büyütüp çizer. */
+function drawCape(canvas, id) {
+  const img = new Image();
+  img.onload = () => {
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 1, 1, 10, 16, 0, 0, canvas.width, canvas.height);
+  };
+  img.src = `assets/capes/${id}.png`;
+}
+
 export function createCosmeticsPanel({ root, store, i18n }) {
   root.innerHTML = `
     <div class="cosmetics-panel" data-role="cosmetics-panel">
@@ -40,11 +51,13 @@ export function createCosmeticsPanel({ root, store, i18n }) {
         title="${item.hint}"
       >
         <span class="cosmetic-preview${item.color ? '' : ' cosmetic-preview-none'}">
-          ${item.color ? `<span class="cosmetic-cape" style="--cape-color:${item.color}"></span>` : '—'}
+          ${item.color ? `<canvas class="cosmetic-cape-canvas" width="30" height="48" data-cape="${item.id}"></canvas>` : '—'}
         </span>
         <span class="cosmetic-label">${item.label}</span>
       </button>`
     ).join('');
+
+    for (const canvas of grid.querySelectorAll('canvas[data-cape]')) drawCape(canvas, canvas.dataset.cape);
 
     for (const btn of grid.querySelectorAll('.cosmetic-tile')) {
       btn.addEventListener('click', () => {

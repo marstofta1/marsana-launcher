@@ -141,15 +141,18 @@ public class MarsanaMenuScreen extends Screen {
 
     private void buildCosmeticsTab() {
         int y = 64;
+        // Iki sutun: 13 pelerin tek sutunda kucuk ekranlara sigmiyor.
         for (int i = 0; i < CosmeticsManager.OPTIONS.length; i++) {
             CosmeticsManager.CosmeticOption opt = CosmeticsManager.OPTIONS[i];
             boolean selected = opt.id().equals(CosmeticsManager.getSelectedCosmetic());
-            String label = (selected ? "> " : "  ") + opt.label() + " (Ucretsiz)";
+            String label = (selected ? "> " : "") + opt.label();
             int idx = i;
+            int col = i % 2;
+            int row = i / 2;
             Button btn = Button.builder(Component.literal(label), b -> {
                 CosmeticsManager.selectCosmetic(CosmeticsManager.OPTIONS[idx].id());
                 rebuildTabContent();
-            }).bounds(this.width / 2 - 160, y + i * 24, 320, 20).build();
+            }).bounds(this.width / 2 - 160 + col * 165, y + row * 24, 155, 20).build();
             addRenderableWidget(btn);
             dynamicButtons.add(btn);
         }
