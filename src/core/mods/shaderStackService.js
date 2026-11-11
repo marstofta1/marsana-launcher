@@ -15,8 +15,8 @@ const hudDepsService = require('./hudDepsService');
 const modCompatibilityService = require('./modCompatibilityService');
 const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../shared/clientHudModRegistry');
 const { MARSANA_SERVER_PINNED_MODS } = require('../../shared/marsanaServer');
-// O4 Ã¢â‚¬â€ Modrinth sÃƒÂ¼rÃƒÂ¼m-seÃƒÂ§im mantÃ„Â±Ã„Å¸Ã„Â± ayrÃ„Â±, baÃ„Å¸Ã„Â±msÃ„Â±z test edilebilir modÃƒÂ¼le taÃ…Å¸Ã„Â±ndÃ„Â±.
-// AynÃ„Â± adlarla iÃƒÂ§e alÃ„Â±nÃ„Â±r; tÃƒÂ¼m ÃƒÂ§aÃ„Å¸rÃ„Â± yerleri deÃ„Å¸iÃ…Å¸meden ÃƒÂ§alÃ„Â±Ã…Å¸Ã„Â±r.
+// O4 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Modrinth sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼m-seÃƒÆ’Ã‚Â§im mantÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â± ayrÃƒâ€Ã‚Â±, baÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±msÃƒâ€Ã‚Â±z test edilebilir modÃƒÆ’Ã‚Â¼le taÃƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±ndÃƒâ€Ã‚Â±.
+// AynÃƒâ€Ã‚Â± adlarla iÃƒÆ’Ã‚Â§e alÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±r; tÃƒÆ’Ã‚Â¼m ÃƒÆ’Ã‚Â§aÃƒâ€Ã…Â¸rÃƒâ€Ã‚Â± yerleri deÃƒâ€Ã…Â¸iÃƒâ€¦Ã…Â¸meden ÃƒÆ’Ã‚Â§alÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±r.
 const {
   extractMcVersionFromModMeta,
   versionMatchesGamePatch,
@@ -42,15 +42,15 @@ const READY_FILE = '.marsana-shader-ready.json';
 // surerdi. Bump, sonraki acilista yeniden cozumleme + reconcile'i zorlar.
 const SHADER_BUNDLE_VERSION = 49;
 
-// Anchor mod'larÃ„Â± ÃƒÂ¶nce yazÃ„Â±yoruz; dependency ÃƒÂ§ÃƒÂ¶zÃƒÂ¼mlemesi onlardan baÃ…Å¸lar,
-// bÃƒÂ¶ylece Iris/Continuity istedikleri Sodium sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼nÃƒÂ¼ kilitler.
+// Anchor mod'larÃƒâ€Ã‚Â± ÃƒÆ’Ã‚Â¶nce yazÃƒâ€Ã‚Â±yoruz; dependency ÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â¶zÃƒÆ’Ã‚Â¼mlemesi onlardan baÃƒâ€¦Ã…Â¸lar,
+// bÃƒÆ’Ã‚Â¶ylece Iris/Continuity istedikleri Sodium sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼nÃƒÆ’Ã‚Â¼ kilitler.
 const SHADER_FPS_SLUGS = Object.freeze(['iris', 'fabric-api']);
 const EMBOSSED_SLUGS = Object.freeze(['continuity', 'fabric-api']);
 const VOICE_CHAT_SLUG = 'simple-voice-chat';
 const CREATE_SLUG = 'create';
-// Create kutusu iÃ…Å¸aretlenince Create ile birlikte kurulan, bilerek kÃ„Â±sa tutulmuÃ…Å¸ eklenti
-// listesi (disk/RAM/FPS). Ãƒâ€“rtÃƒÂ¼Ã…Å¸enler (Create Generators, Crafts & Additions, dekor
-// paketleri) bilerek yok. YalnÃ„Â±zca zorunlu baÃ„Å¸Ã„Â±mlÃ„Â±lÃ„Â±klar ÃƒÂ§ekilir.
+// Create kutusu iÃƒâ€¦Ã…Â¸aretlenince Create ile birlikte kurulan, bilerek kÃƒâ€Ã‚Â±sa tutulmuÃƒâ€¦Ã…Â¸ eklenti
+// listesi (disk/RAM/FPS). ÃƒÆ’Ã¢â‚¬â€œrtÃƒÆ’Ã‚Â¼Ãƒâ€¦Ã…Â¸enler (Create Generators, Crafts & Additions, dekor
+// paketleri) bilerek yok. YalnÃƒâ€Ã‚Â±zca zorunlu baÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±mlÃƒâ€Ã‚Â±lÃƒâ€Ã‚Â±klar ÃƒÆ’Ã‚Â§ekilir.
 const CREATE_ADDON_SLUGS = Object.freeze([
   'create-aeronautics',
   'create-steam-n-rails-1.21.1',
@@ -61,20 +61,20 @@ const CREATE_ADDON_SLUGS = Object.freeze([
   'create-dreams-and-desires',
   'create-framed',
 ]);
-// Modrinth'te olmayan (ÃƒÂ¶r. incelemede) Create eklentileri: jar launcher'la gelir
-// (bundled-mods/create-addons/), hash doÃ„Å¸rulanÃ„Â±p kopyalanÃ„Â±r. Modrinth'e ÃƒÂ§Ã„Â±kÃ„Â±nca
-// slug'Ã„Â± CREATE_ADDON_SLUGS'a taÃ…Å¸Ã„Â±, buradan sil.
+// Modrinth'te olmayan (ÃƒÆ’Ã‚Â¶r. incelemede) Create eklentileri: jar launcher'la gelir
+// (bundled-mods/create-addons/), hash doÃƒâ€Ã…Â¸rulanÃƒâ€Ã‚Â±p kopyalanÃƒâ€Ã‚Â±r. Modrinth'e ÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±kÃƒâ€Ã‚Â±nca
+// slug'Ãƒâ€Ã‚Â± CREATE_ADDON_SLUGS'a taÃƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±, buradan sil.
 const CREATE_BUNDLED_ADDONS = Object.freeze([
   Object.freeze({
     slug: 'create-engines',
     file: 'create_engines-1.21.1-0.1.1.jar',
     bundled: 'create-addons/create_engines-1.21.1-0.1.1.jar',
     sha512:
-      '3c8357afc7b4e762fb5e5646e48e2a3850dcbc53e9590b467dbc6d9b5021b072fc5d13b98f48736ca1cfe9f2b924db648b13b24c470e1f1f25cd87f45af64a0e',
+      '10fffc883cb70c4b74bd46c7413aa187b7559b1c8981b4713c5f056609e42881b9343b143e866c4b0fd39be36e866d89f23a9d451e9369d36e0d38cf4965d650',
   }),
 ]);
-// Create modunda FPS/RAM kazancÃ„Â± iÃƒÂ§in kurulan hafif NeoForge optimizasyon modlarÃ„Â±
-// (toplam ~4 MB). Hepsi opsiyonel: bulunamazsa atlanÃ„Â±r.
+// Create modunda FPS/RAM kazancÃƒâ€Ã‚Â± iÃƒÆ’Ã‚Â§in kurulan hafif NeoForge optimizasyon modlarÃƒâ€Ã‚Â±
+// (toplam ~4 MB). Hepsi opsiyonel: bulunamazsa atlanÃƒâ€Ã‚Â±r.
 const CREATE_PERF_SLUGS = Object.freeze([
   'sodium',
   'modernfix',
@@ -83,8 +83,8 @@ const CREATE_PERF_SLUGS = Object.freeze([
   'entityculling',
   'lithium',
 ]);
-// Create modu ilk kez aÃƒÂ§Ã„Â±ldÃ„Â±Ã„Å¸Ã„Â±nda aÃ„Å¸Ã„Â±r video ayarlarÃ„Â±nÃ„Â± (render mesafesi 32 gibi) bir kez
-// sÃ„Â±nÃ„Â±rlar; kullanÃ„Â±cÃ„Â± sonra oyun iÃƒÂ§inden yÃƒÂ¼kseltirse tekrar ezilmez.
+// Create modu ilk kez aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±ldÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â±nda aÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±r video ayarlarÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â± (render mesafesi 32 gibi) bir kez
+// sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rlar; kullanÃƒâ€Ã‚Â±cÃƒâ€Ã‚Â± sonra oyun iÃƒÆ’Ã‚Â§inden yÃƒÆ’Ã‚Â¼kseltirse tekrar ezilmez.
 const NEWLINE_RE = /\r?\n/;
 const CREATE_VIDEO_CAPS = Object.freeze({
   renderDistance: 10,
@@ -93,17 +93,17 @@ const CREATE_VIDEO_CAPS = Object.freeze({
   biomeBlendRadius: 3,
   mipmapLevels: 2,
 });
-// Entegre ekran kartlarÃ„Â±nda GPU darboÃ„Å¸azÃ„Â±: gÃƒÂ¶lge ve Flywheel'in aÃ„Å¸Ã„Â±r Ã„Â±Ã…Å¸Ã„Â±k/compute yolu.
+// Entegre ekran kartlarÃƒâ€Ã‚Â±nda GPU darboÃƒâ€Ã…Â¸azÃƒâ€Ã‚Â±: gÃƒÆ’Ã‚Â¶lge ve Flywheel'in aÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±r Ãƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±k/compute yolu.
 const CREATE_VIDEO_FORCE = Object.freeze({ entityShadows: 'false' });
-// Tek oyunculu yerleÃ…Å¸ik sunucu simÃƒÂ¼lasyon mesafesi bÃƒÂ¼yÃƒÂ¼kse (Create makineleri, Aeronautics
-// fiziÃ„Å¸i) sunucu iÃ…Å¸ parÃƒÂ§acÃ„Â±Ã„Å¸Ã„Â± yetiÃ…Å¸emez ("Can't keep up"). Ekranda gÃƒÂ¶rÃƒÂ¼nmez; her aÃƒÂ§Ã„Â±lÃ„Â±Ã…Å¸ta sÃ„Â±nÃ„Â±rlanÃ„Â±r.
+// Tek oyunculu yerleÃƒâ€¦Ã…Â¸ik sunucu simÃƒÆ’Ã‚Â¼lasyon mesafesi bÃƒÆ’Ã‚Â¼yÃƒÆ’Ã‚Â¼kse (Create makineleri, Aeronautics
+// fiziÃƒâ€Ã…Â¸i) sunucu iÃƒâ€¦Ã…Â¸ parÃƒÆ’Ã‚Â§acÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â± yetiÃƒâ€¦Ã…Â¸emez ("Can't keep up"). Ekranda gÃƒÆ’Ã‚Â¶rÃƒÆ’Ã‚Â¼nmez; her aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±lÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸ta sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rlanÃƒâ€Ã‚Â±r.
 const CREATE_SIMULATION_DISTANCE_MAX = 8;
-// Vanilla render mesafesi ÃƒÂ¼st sÃ„Â±nÃ„Â±rÃ„Â±: 32 chunk yerleÃ…Å¸ik sunucuyu chunk ÃƒÂ¼retimiyle boÃ„Å¸uyor
-// ("Can't keep up") ve ekran kartÃ„Â±nÃ„Â± yoruyor. Distant Horizons denendi ama uzak arazi gÃƒÂ¶rÃƒÂ¼ntÃƒÂ¼sÃƒÂ¼
-// beÃ„Å¸enilmedi (blok blok), bu yÃƒÂ¼zden pakette yok; 12 chunk net ve akÃ„Â±cÃ„Â±.
+// Vanilla render mesafesi ÃƒÆ’Ã‚Â¼st sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â±: 32 chunk yerleÃƒâ€¦Ã…Â¸ik sunucuyu chunk ÃƒÆ’Ã‚Â¼retimiyle boÃƒâ€Ã…Â¸uyor
+// ("Can't keep up") ve ekran kartÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â± yoruyor. Distant Horizons denendi ama uzak arazi gÃƒÆ’Ã‚Â¶rÃƒÆ’Ã‚Â¼ntÃƒÆ’Ã‚Â¼sÃƒÆ’Ã‚Â¼
+// beÃƒâ€Ã…Â¸enilmedi (blok blok), bu yÃƒÆ’Ã‚Â¼zden pakette yok; 12 chunk net ve akÃƒâ€Ã‚Â±cÃƒâ€Ã‚Â±.
 const CREATE_RENDER_DISTANCE_MAX = 12;
-// HazÃ„Â±r mod paketleri (Tam Paket / FPS Paketi) iÃƒÂ§in Fabric FPS/RAM modlarÃ„Â±. Hepsi opsiyonel:
-// seÃƒÂ§ili Minecraft sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼nde uygun sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼ yoksa atlanÃ„Â±r.
+// HazÃƒâ€Ã‚Â±r mod paketleri (Tam Paket / FPS Paketi) iÃƒÆ’Ã‚Â§in Fabric FPS/RAM modlarÃƒâ€Ã‚Â±. Hepsi opsiyonel:
+// seÃƒÆ’Ã‚Â§ili Minecraft sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼nde uygun sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼ yoksa atlanÃƒâ€Ã‚Â±r.
 const FPS_BOOST_SLUGS = Object.freeze([
   'lithium',
   'ferrite-core',
@@ -112,11 +112,11 @@ const FPS_BOOST_SLUGS = Object.freeze([
   'modernfix',
   'dynamic-fps',
 ]);
-// Paket ilk kez aÃƒÂ§Ã„Â±ldÃ„Â±Ã„Å¸Ã„Â±nda render mesafesi bu deÃ„Å¸ere ayarlanÃ„Â±r (sonra oyun iÃƒÂ§inden deÃ„Å¸iÃ…Å¸tirilebilir).
+// Paket ilk kez aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±ldÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â±nda render mesafesi bu deÃƒâ€Ã…Â¸ere ayarlanÃƒâ€Ã‚Â±r (sonra oyun iÃƒÆ’Ã‚Â§inden deÃƒâ€Ã…Â¸iÃƒâ€¦Ã…Â¸tirilebilir).
 const FPS_BOOST_RENDER_DISTANCE = 12;
-// Vanilla varsayÃ„Â±lanÃ„Â± maxFps:120 Ã¢â‚¬â€ FPS modlarÃ„Â± ne kazandÃ„Â±rÃ„Â±rsa kazandÃ„Â±rsÃ„Â±n sayaÃƒÂ§ 120'de takÃ„Â±lÃ„Â±r.
-// 260 = oyundaki "SÃ„Â±nÃ„Â±rsÃ„Â±z".
-// FPS Paketi sÃ„Â±nÃ„Â±rÃ„Â± kaldÃ„Â±rÃ„Â±r ('unlimited'); Tam Paket 120'de sabit tutar ('capped').
+// Vanilla varsayÃƒâ€Ã‚Â±lanÃƒâ€Ã‚Â± maxFps:120 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â FPS modlarÃƒâ€Ã‚Â± ne kazandÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â±rsa kazandÃƒâ€Ã‚Â±rsÃƒâ€Ã‚Â±n sayaÃƒÆ’Ã‚Â§ 120'de takÃƒâ€Ã‚Â±lÃƒâ€Ã‚Â±r.
+// 260 = oyundaki "SÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rsÃƒâ€Ã‚Â±z".
+// FPS Paketi sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â± kaldÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â±r ('unlimited'); Tam Paket 120'de sabit tutar ('capped').
 const FPS_BOOST_FORCED_OPTIONS = Object.freeze({
   unlimited: Object.freeze({
     renderDistance: FPS_BOOST_RENDER_DISTANCE,
@@ -128,15 +128,15 @@ const FPS_BOOST_FORCED_OPTIONS = Object.freeze({
     maxFps: 120,
   }),
 });
-// Zorlanan ayar listesi deÃ„Å¸iÃ…Å¸ince artÃ„Â±r: mevcut kurulumlarda ayar bir kez daha uygulanÃ„Â±r.
+// Zorlanan ayar listesi deÃƒâ€Ã…Â¸iÃƒâ€¦Ã…Â¸ince artÃƒâ€Ã‚Â±r: mevcut kurulumlarda ayar bir kez daha uygulanÃƒâ€Ã‚Â±r.
 const FPS_BOOST_TUNE_VERSION = 4;
-// Paket dÃ„Â±Ã…Å¸Ã„Â±nda (Create dahil) geri alÃ„Â±nan ayarlar ve ÃƒÂ¶nceki deÃ„Å¸er bilinmiyorsa dÃƒÂ¶nÃƒÂ¼lecek vanilla varsayÃ„Â±lanÃ„Â±.
-// options.txt tÃƒÂ¼m yÃƒÂ¼kleyicilerde ortak; geri alÃ„Â±nmazsa sÃ„Â±nÃ„Â±rsÃ„Â±z FPS diÃ„Å¸er profillere de sÃ„Â±zar.
+// Paket dÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±nda (Create dahil) geri alÃƒâ€Ã‚Â±nan ayarlar ve ÃƒÆ’Ã‚Â¶nceki deÃƒâ€Ã…Â¸er bilinmiyorsa dÃƒÆ’Ã‚Â¶nÃƒÆ’Ã‚Â¼lecek vanilla varsayÃƒâ€Ã‚Â±lanÃƒâ€Ã‚Â±.
+// options.txt tÃƒÆ’Ã‚Â¼m yÃƒÆ’Ã‚Â¼kleyicilerde ortak; geri alÃƒâ€Ã‚Â±nmazsa sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rsÃƒâ€Ã‚Â±z FPS diÃƒâ€Ã…Â¸er profillere de sÃƒâ€Ã‚Â±zar.
 const FPS_BOOST_RESTORE_DEFAULTS = Object.freeze({ maxFps: '120' });
 const FPS_BOOST_MARKER_FILE = '.marsana-fps-pack.json';
 const FLYWHEEL_CONFIG_REL = path.join('config', 'flywheel-client.toml');
-// Launcher'Ã„Â±n indirdiÃ„Å¸i Create jar'larÃ„Â±nÃ„Â±n adlarÃ„Â± burada tutulur; seÃƒÂ§im kaldÃ„Â±rÃ„Â±ldÃ„Â±Ã„Å¸Ã„Â±nda
-// yalnÃ„Â±zca bu jar silinir, kullanÃ„Â±cÃ„Â±nÃ„Â±n elle koyduÃ„Å¸u Create'e dokunulmaz.
+// Launcher'Ãƒâ€Ã‚Â±n indirdiÃƒâ€Ã…Â¸i Create jar'larÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±n adlarÃƒâ€Ã‚Â± burada tutulur; seÃƒÆ’Ã‚Â§im kaldÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â±ldÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â±nda
+// yalnÃƒâ€Ã‚Â±zca bu jar silinir, kullanÃƒâ€Ã‚Â±cÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±n elle koyduÃƒâ€Ã…Â¸u Create'e dokunulmaz.
 const CREATE_MARKER_FILE = '.marsana-create.json';
 const STASH_SUFFIXES = ['.marsana-stashed-fabric', '.marsana-stashed-forge'];
 const FULLBRIGHT_UB_SLUG = 'fullbright-ub';
@@ -157,9 +157,9 @@ const SODIUM_SLUG = 'sodium';
 const DEFAULT_SHADER_SLUG = 'complementary-reimagined';
 const OPTIFINE_PROJECT = 'optifine-for-fabric';
 
-// UI'dan gelen shader slug'Ã„Â±nÃ„Â± kabul edilen deÃ„Å¸erlere kÃ„Â±s Ã¢â‚¬â€ geÃƒÂ§ersiz/eski bir
-// slug Modrinth'te 404'e dÃƒÂ¶nÃƒÂ¼p tÃƒÂ¼m launch'u patlatabilir. TanÃ„Â±nmayan slug
-// iÃƒÂ§in sessizce default'a dÃƒÂ¼Ã…Å¸.
+// UI'dan gelen shader slug'Ãƒâ€Ã‚Â±nÃƒâ€Ã‚Â± kabul edilen deÃƒâ€Ã…Â¸erlere kÃƒâ€Ã‚Â±s ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â geÃƒÆ’Ã‚Â§ersiz/eski bir
+// slug Modrinth'te 404'e dÃƒÆ’Ã‚Â¶nÃƒÆ’Ã‚Â¼p tÃƒÆ’Ã‚Â¼m launch'u patlatabilir. TanÃƒâ€Ã‚Â±nmayan slug
+// iÃƒÆ’Ã‚Â§in sessizce default'a dÃƒÆ’Ã‚Â¼Ãƒâ€¦Ã…Â¸.
 const KNOWN_SHADER_SLUGS = new Set([
   'complementary-reimagined', 'complementary-unbound', 'bsl-shaders',
   'photon-shader', 'solas-shader', 'bliss-shader', 'rethinking-voxels',
@@ -174,8 +174,8 @@ function resolveShaderSlug(requested) {
   return DEFAULT_SHADER_SLUG;
 }
 
-// Modrinth dosya adlarÃ„Â± (AstraLex vb.) Ã‚Â§ kodlarÃ„Â± iÃƒÂ§erebiliyor. Yerel diskte
-// her zaman slug.zip kullan Ã¢â‚¬â€ Iris eÃ…Å¸leÃ…Å¸mesi ve ÃƒÂ¶nbellek tutarlÃ„Â± kalÃ„Â±r.
+// Modrinth dosya adlarÃƒâ€Ã‚Â± (AstraLex vb.) Ãƒâ€šÃ‚Â§ kodlarÃƒâ€Ã‚Â± iÃƒÆ’Ã‚Â§erebiliyor. Yerel diskte
+// her zaman slug.zip kullan ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Iris eÃƒâ€¦Ã…Â¸leÃƒâ€¦Ã…Â¸mesi ve ÃƒÆ’Ã‚Â¶nbellek tutarlÃƒâ€Ã‚Â± kalÃƒâ€Ã‚Â±r.
 function shaderPackLocalName(slug) {
   return `${resolveShaderSlug(slug)}.zip`;
 }
@@ -184,12 +184,12 @@ function isModrinthNotFound(err) {
   return err instanceof LauncherError && err.code === Codes.MODRINTH_NOT_FOUND;
 }
 
-// (Modrinth sÃƒÂ¼rÃƒÂ¼m-seÃƒÂ§im yardÃ„Â±mcÃ„Â±larÃ„Â± modrinthVersionSelect.js'e taÃ…Å¸Ã„Â±ndÃ„Â± Ã¢â‚¬â€ yukarÃ„Â±da
-//  require ile aynÃ„Â± adlarla iÃƒÂ§e alÃ„Â±nÃ„Â±r.)
+// (Modrinth sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼m-seÃƒÆ’Ã‚Â§im yardÃƒâ€Ã‚Â±mcÃƒâ€Ã‚Â±larÃƒâ€Ã‚Â± modrinthVersionSelect.js'e taÃƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±ndÃƒâ€Ã‚Â± ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â yukarÃƒâ€Ã‚Â±da
+//  require ile aynÃƒâ€Ã‚Â± adlarla iÃƒÆ’Ã‚Â§e alÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±r.)
 
-// Modrinth'te en yeni sÃƒÂ¼rÃƒÂ¼m "Border" (yalnÃ„Â±zca Continuity); OptiFine yolu "Default" ister.
+// Modrinth'te en yeni sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼m "Border" (yalnÃƒâ€Ã‚Â±zca Continuity); OptiFine yolu "Default" ister.
 // 1.21.9+ ve 26.x: pack.mcmeta min_format/max_format zorunlu; Modrinth paketleri
-// eski pack_format + supported_formats ile gelince oyun baÃ…Å¸langÃ„Â±ÃƒÂ§ta paketi siliyor.
+// eski pack_format + supported_formats ile gelince oyun baÃƒâ€¦Ã…Â¸langÃƒâ€Ã‚Â±ÃƒÆ’Ã‚Â§ta paketi siliyor.
 function resourcePackFormatForGameVersion(gameVersion) {
   const id = String(gameVersion || '').trim();
   const m26 = id.match(/^26\.(\d+)(?:\.(\d+))?$/);
@@ -231,8 +231,8 @@ function packAlreadySupportsGameFormat(pack, format) {
   const min = packFormatScalar(pack.min_format);
   const max = packFormatScalar(pack.max_format);
   if (min == null || max == null) return false;
-  // 1.21.9+ oyunlarÃ„Â± geniÃ…Å¸ min/max aralÃ„Â±Ã„Å¸Ã„Â±nÃ„Â± (ÃƒÂ¶r. 55Ã¢â‚¬â€œ84) reddedip options.txt'ten
-  // silebiliyor; hedef sÃƒÂ¼rÃƒÂ¼mle birebir eÃ…Å¸leÃ…Å¸me gerekir.
+  // 1.21.9+ oyunlarÃƒâ€Ã‚Â± geniÃƒâ€¦Ã…Â¸ min/max aralÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â±nÃƒâ€Ã‚Â± (ÃƒÆ’Ã‚Â¶r. 55ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“84) reddedip options.txt'ten
+  // silebiliyor; hedef sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mle birebir eÃƒâ€¦Ã…Â¸leÃƒâ€¦Ã…Â¸me gerekir.
   return (
     min === format &&
     max === format &&
@@ -241,9 +241,9 @@ function packAlreadySupportsGameFormat(pack, format) {
   );
 }
 
-// 1.21.9 öncesi oyunlar pack.mcmeta'da pack_format ister; yoksa paketi hiç yüklemez
-// ("Couldn't load pack metadata"). Aynı zip önce 26.x için min/max_format'a
-// yamalanıp sonra eski bir sürümde açılınca bu olur — geri yamalamak gerekir.
+// 1.21.9 Ã¶ncesi oyunlar pack.mcmeta'da pack_format ister; yoksa paketi hiÃ§ yÃ¼klemez
+// ("Couldn't load pack metadata"). AynÄ± zip Ã¶nce 26.x iÃ§in min/max_format'a
+// yamalanÄ±p sonra eski bir sÃ¼rÃ¼mde aÃ§Ä±lÄ±nca bu olur â€” geri yamalamak gerekir.
 const LEGACY_FALLBACK_PACK_FORMAT = 34;
 
 function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
@@ -270,20 +270,20 @@ function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
     if (packAlreadySupportsGameFormat(pack, format)) return false;
     meta.pack = { description, min_format: format, max_format: format };
   } else {
-    // Paketin kendi pack_format'ı varsa dokunma (orijinal Modrinth paketi).
+    // Paketin kendi pack_format'Ä± varsa dokunma (orijinal Modrinth paketi).
     if (typeof pack.pack_format === 'number') return false;
     meta.pack = { description, pack_format: format };
   }
 
-  // adm-zip writeZip() mevcut arÃ…Å¸ivi yerinde gÃƒÂ¼ncellerken bazÃ„Â± paketleri (3D crops vb.)
-  // bozabiliyor; ÃƒÂ§Ã„Â±kar Ã¢â€ â€™ pack.mcmeta yaz Ã¢â€ â€™ yeniden zip'le akÃ„Â±Ã…Å¸Ã„Â± gÃƒÂ¼venli.
+  // adm-zip writeZip() mevcut arÃƒâ€¦Ã…Â¸ivi yerinde gÃƒÆ’Ã‚Â¼ncellerken bazÃƒâ€Ã‚Â± paketleri (3D crops vb.)
+  // bozabiliyor; ÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±kar ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ pack.mcmeta yaz ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ yeniden zip'le akÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â± gÃƒÆ’Ã‚Â¼venli.
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'marsana-rp-'));
   const tmpOut = `${zipPath}.marsana-patch.tmp`;
   try {
-    // Kaynak paketi Modrinth'ten indirilmiÃ…Å¸ uzak bir zip; girdi adlarÃ„Â± gÃƒÂ¼venilmez.
-    // adm-zip'in extractAllTo'su yerine kendi kapsama kontrolÃƒÂ¼mÃƒÂ¼z kullanÃ„Â±lÃ„Â±r.
-    // GÃƒÂ¼vensiz bir girdi ÃƒÂ§Ã„Â±karsa hata fÃ„Â±rlar, aÃ…Å¸aÃ„Å¸Ã„Â±daki catch paketi olduÃ„Å¸u gibi
-    // bÃ„Â±rakÃ„Â±r (yama uygulanmaz) Ã¢â‚¬â€ bozuk paket yerine yamasÃ„Â±z paket tercih edilir.
+    // Kaynak paketi Modrinth'ten indirilmiÃƒâ€¦Ã…Â¸ uzak bir zip; girdi adlarÃƒâ€Ã‚Â± gÃƒÆ’Ã‚Â¼venilmez.
+    // adm-zip'in extractAllTo'su yerine kendi kapsama kontrolÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼z kullanÃƒâ€Ã‚Â±lÃƒâ€Ã‚Â±r.
+    // GÃƒÆ’Ã‚Â¼vensiz bir girdi ÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±karsa hata fÃƒâ€Ã‚Â±rlar, aÃƒâ€¦Ã…Â¸aÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±daki catch paketi olduÃƒâ€Ã…Â¸u gibi
+    // bÃƒâ€Ã‚Â±rakÃƒâ€Ã‚Â±r (yama uygulanmaz) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â bozuk paket yerine yamasÃƒâ€Ã‚Â±z paket tercih edilir.
     extractZipInside(zip, tmpRoot);
     fs.writeFileSync(path.join(tmpRoot, 'pack.mcmeta'), `${JSON.stringify(meta, null, 3)}\n`, 'utf8');
     const newZip = new AdmZip();
@@ -358,7 +358,7 @@ function cleanupStaleShaderPacks(shaderpacksDir, activeSlug) {
     if (entry === keepName) continue;
     const lower = entry.toLowerCase();
     const isKnown = [...KNOWN_SHADER_SLUGS].some((s) => lower === `${s}.zip`);
-    if (isKnown || /Ã‚Â§|Ãƒâ€šÃ‚Â§/.test(entry)) {
+    if (isKnown || /Ãƒâ€šÃ‚Â§|ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§/.test(entry)) {
       removeIfExists(path.join(shaderpacksDir, entry));
     }
   }
@@ -367,7 +367,7 @@ function cleanupStaleShaderPacks(shaderpacksDir, activeSlug) {
 function isCorruptShaderPackName(name) {
   const s = String(name || '').trim();
   if (!s) return false;
-  return /Ã‚Â§|Ãƒâ€šÃ‚Â§|\u00C2\u00A7|\\u00C2\\u00A7|LexBoosT/i.test(s);
+  return /Ãƒâ€šÃ‚Â§|ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§|\u00C2\u00A7|\\u00C2\\u00A7|LexBoosT/i.test(s);
 }
 
 function repairLegacyShaderPack({ gameRoot, shaderpacksDir, shaderSlug, activateFns }) {
@@ -429,8 +429,8 @@ function normalizePresets(p) {
     clientHudPack: !!(p && p.clientHudPack),
     sodium: sodiumExplicit ? !!p.sodium : shaderFps,
     sodiumExtra: !!(p && p.sodiumExtra),
-    // OptiFine paketi kendi optimizasyon modlarÃ„Â±nÃ„Â± getirir; ikisi birlikte ÃƒÂ§ift jar ÃƒÂ¼retir.
-    // KullanÃ„Â±cÃ„Â±nÃ„Â±n "Mod ekle" ile eklediÃ„Å¸i, bu seÃƒÂ§imde yÃƒÂ¼klenecek mod var.
+    // OptiFine paketi kendi optimizasyon modlarÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â± getirir; ikisi birlikte ÃƒÆ’Ã‚Â§ift jar ÃƒÆ’Ã‚Â¼retir.
+    // KullanÃƒâ€Ã‚Â±cÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±n "Mod ekle" ile eklediÃƒâ€Ã…Â¸i, bu seÃƒÆ’Ã‚Â§imde yÃƒÆ’Ã‚Â¼klenecek mod var.
     userMods: !!(p && p.userMods),
     fpsBoost: !!(p && p.fpsBoost && !p.optifine),
     fpsUnlimited: !!(p && p.fpsBoost && !p.optifine && p.fpsUnlimited),
@@ -444,8 +444,8 @@ const STRICT_PATCH_MOD_SLUGS = new Set([
   'sodium',
 ]);
 
-// YalnÃ„Â±zca ÃƒÂ¶n sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼ gÃƒÂ¼ncel olan modlar: Steam 'n' Rails 1.21.1 portunun son "release"i
-// (0.2.1) eski kalÃ„Â±yor, gÃƒÂ¼ncel iÃƒÂ§erik beta kanalÃ„Â±nda yayÃ„Â±nlanÃ„Â±yor.
+// YalnÃƒâ€Ã‚Â±zca ÃƒÆ’Ã‚Â¶n sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼ gÃƒÆ’Ã‚Â¼ncel olan modlar: Steam 'n' Rails 1.21.1 portunun son "release"i
+// (0.2.1) eski kalÃƒâ€Ã‚Â±yor, gÃƒÆ’Ã‚Â¼ncel iÃƒÆ’Ã‚Â§erik beta kanalÃƒâ€Ã‚Â±nda yayÃƒâ€Ã‚Â±nlanÃƒâ€Ã‚Â±yor.
 const PRERELEASE_MOD_SLUGS = new Set(['create-steam-n-rails-1.21.1']);
 
 const OPTIONAL_LOADER_MOD_SLUGS = new Set([POLYTONE_SLUG, ...CLIENT_HUD_MOD_SLUGS]);
@@ -456,7 +456,7 @@ function usesStrictModrinthPatch(gameVersion) {
 }
 
 function polytoneSupportedForGameVersion(gameVersion) {
-  // Polytone Modrinth'te en fazla 1.21.11'e kadar; 26.x iÃƒÂ§in native jar yok.
+  // Polytone Modrinth'te en fazla 1.21.11'e kadar; 26.x iÃƒÆ’Ã‚Â§in native jar yok.
   return !/^26\./.test(String(gameVersion || '').trim());
 }
 
@@ -471,7 +471,7 @@ function fullbrightNeedsPolytone(p, gameVersion) {
 }
 
 function betterLeavesNeedsCullLeaves(p) {
-  // Better Leaves kaynak paketi tek baÃ…Å¸Ã„Â±na yetmez; Cull Leaves (veya OptiFine Smart Leaves) gerekir.
+  // Better Leaves kaynak paketi tek baÃƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±na yetmez; Cull Leaves (veya OptiFine Smart Leaves) gerekir.
   return !!(p.betterLeaves && !p.optifine);
 }
 
@@ -520,8 +520,8 @@ function modrinthSlugsForPresets(p, gameVersion) {
   return out;
 }
 
-// OptiFine modpack'i Continuity gibi opsiyonel modlarÃ„Â± `*.jar.disabled` olarak
-// getiriyor. KullanÃ„Â±cÃ„Â± "kabartma" preset'ini de seÃƒÂ§tiyse bu modlarÃ„Â± etkinleÃ…Å¸tir.
+// OptiFine modpack'i Continuity gibi opsiyonel modlarÃƒâ€Ã‚Â± `*.jar.disabled` olarak
+// getiriyor. KullanÃƒâ€Ã‚Â±cÃƒâ€Ã‚Â± "kabartma" preset'ini de seÃƒÆ’Ã‚Â§tiyse bu modlarÃƒâ€Ã‚Â± etkinleÃƒâ€¦Ã…Â¸tir.
 const OPTIFINE_EMBOSSED_MOD_PREFIXES = Object.freeze(['continuity']);
 
 /** OptiFine mrpack eski surumle getirir; Modrinth'ten yeniden cekilir. */
@@ -556,7 +556,7 @@ const OPTIFINE_RECONCILE_JAR_TESTS = Object.freeze({
   'forge-config-api-port': /^forgeconfigapiport/i,
 });
 
-/** OptiFine paketinde rrls vb. ile cakisan modlar Ã¢â‚¬â€ kaldirilir, yeniden indirilmez. */
+/** OptiFine paketinde rrls vb. ile cakisan modlar ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â kaldirilir, yeniden indirilmez. */
 const OPTIFINE_STRIP_JAR_TESTS = Object.freeze([
   /^dark-loading-screen/i,
   /^macos[-_]?input/i,
@@ -595,10 +595,10 @@ function enableOptifineEmbossedMods(modsDir) {
   return enabled;
 }
 
-// Continuity'nin yan-yana baÃ„Å¸lÃ„Â± doku (CTM) etkisi ancak built-in resource
-// pack'leri Minecraft'Ã„Â±n `options.txt` `resourcePacks` listesinde yer aldÃ„Â±Ã„Å¸Ã„Â±nda
-// gÃƒÂ¶rÃƒÂ¼nÃƒÂ¼r. Mod yokken Minecraft bu paketleri otomatik kaldÃ„Â±rÃ„Â±yor, mod tekrar
-// yÃƒÂ¼klendiÃ„Å¸inde geri eklemiyor.
+// Continuity'nin yan-yana baÃƒâ€Ã…Â¸lÃƒâ€Ã‚Â± doku (CTM) etkisi ancak built-in resource
+// pack'leri Minecraft'Ãƒâ€Ã‚Â±n `options.txt` `resourcePacks` listesinde yer aldÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â±nda
+// gÃƒÆ’Ã‚Â¶rÃƒÆ’Ã‚Â¼nÃƒÆ’Ã‚Â¼r. Mod yokken Minecraft bu paketleri otomatik kaldÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â±yor, mod tekrar
+// yÃƒÆ’Ã‚Â¼klendiÃƒâ€Ã…Â¸inde geri eklemiyor.
 const CONTINUITY_PACKS = Object.freeze(['continuity:default', 'continuity:glass_pane_culling_fix']);
 
 function ensureContinuityResourcePacks(gameRoot) {
@@ -645,7 +645,7 @@ function modResourcePackFilenamesForPresets(presets) {
   if (presets.betterLeaves) files.push(BETTER_LEAVES_PACK_LOCAL_NAME);
   if (presets.glowingOres) files.push(GLOWING_ORES_PACK_LOCAL_NAME);
   if (presets.crops3d) files.push(CROPS_3D_PACK_LOCAL_NAME);
-  // Round Trees diÃ„Å¸er paketlerin ÃƒÂ¼stÃƒÂ¼nde olmalÃ„Â± (Modrinth ÃƒÂ¶nerisi).
+  // Round Trees diÃƒâ€Ã…Â¸er paketlerin ÃƒÆ’Ã‚Â¼stÃƒÆ’Ã‚Â¼nde olmalÃƒâ€Ã‚Â± (Modrinth ÃƒÆ’Ã‚Â¶nerisi).
   if (presets.roundTrees) files.push(ROUND_TREES_PACK_LOCAL_NAME);
   return files;
 }
@@ -828,7 +828,7 @@ function presetsMatch(saved, wanted) {
     saved.clientHudPack === wanted.clientHudPack &&
     saved.sodium === wanted.sodium &&
     saved.sodiumExtra === wanted.sodiumExtra &&
-    // Eski bundle'larda alan yok; yok = kapalÃ„Â±.
+    // Eski bundle'larda alan yok; yok = kapalÃƒâ€Ã‚Â±.
     !!saved.fpsBoost === !!wanted.fpsBoost &&
     !!saved.userMods === !!wanted.userMods
   );
@@ -1008,7 +1008,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         });
         fresh.push(...jars);
       } catch {
-        /* OptiFine paketindeki yardimci mod bu surumde yoksa atla Ã¢â‚¬â€ kirli jar zaten silindi */
+        /* OptiFine paketindeki yardimci mod bu surumde yoksa atla ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â kirli jar zaten silindi */
       }
     }
     modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
@@ -1021,7 +1021,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const hasZoomify = fs.existsSync(modsDir) &&
       fs.readdirSync(modsDir).some((f) => /^zoomify/i.test(f) && f.endsWith('.jar'));
     if (hasZoomify) return out;
-    status('Zoom (C) iÃƒÂ§in Zoomify kuruluyor Ã¢â‚¬â€ resmi OptiFine 26.x henÃƒÂ¼z yok.');
+    status('Zoom (C) iÃƒÆ’Ã‚Â§in Zoomify kuruluyor ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â resmi OptiFine 26.x henÃƒÆ’Ã‚Â¼z yok.');
     try {
       const fresh = await downloadModsFromSlugs({ modsDir, gameVersion, slugs: ['zoomify'] });
       out = [...new Set([...out, ...fresh])];
@@ -1064,7 +1064,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       !allFilesExist(modsDir, existing.jars) ||
       !allFilesExist(shaderpacksDir, existing.shaderpacks || []) ||
       !allFilesExist(resourcepacksDir, existing.resourcepacks || []) ||
-      (existing.shaderpacks || []).some((name) => /Ã‚Â§/.test(String(name))) ||
+      (existing.shaderpacks || []).some((name) => /Ãƒâ€šÃ‚Â§/.test(String(name))) ||
       !clientHudDependenciesOk(modsDir, modPresets) ||
       (modPresets.marsanaClientMenu &&
         repoRoot &&
@@ -1119,19 +1119,19 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return { merged, loaderVersion };
   }
 
-  // MCLC, Minecraft 1.21+'in numerik asset index ID'sini (ÃƒÂ¶rn. "30") gameVersion
-  // adÃ„Â±yla kaydedebiliyor; sonuÃƒÂ§ olarak oyun aradÃ„Â±Ã„Å¸Ã„Â± `<id>.json`'u bulamayÃ„Â±p
-  // panorama, diller ve sesleri yÃƒÂ¼kleyemiyor. Eksikse Mojang'dan indirip
-  // doÃ„Å¸ru isimle yerleÃ…Å¸tir.
+  // MCLC, Minecraft 1.21+'in numerik asset index ID'sini (ÃƒÆ’Ã‚Â¶rn. "30") gameVersion
+  // adÃƒâ€Ã‚Â±yla kaydedebiliyor; sonuÃƒÆ’Ã‚Â§ olarak oyun aradÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â± `<id>.json`'u bulamayÃƒâ€Ã‚Â±p
+  // panorama, diller ve sesleri yÃƒÆ’Ã‚Â¼kleyemiyor. Eksikse Mojang'dan indirip
+  // doÃƒâ€Ã…Â¸ru isimle yerleÃƒâ€¦Ã…Â¸tir.
   async function ensureAssetIndexFile({ gameRoot, assetIndex }) {
     if (!assetIndex || !assetIndex.id || !assetIndex.url) return;
     const indexesDir = path.join(gameRoot, 'assets', 'indexes');
     await fs.promises.mkdir(indexesDir, { recursive: true });
-    // assetIndex.id uzak Mojang JSON'undan geliyor; dosya adÃ„Â±na doÃ„Å¸rudan gÃƒÂ¶mÃƒÂ¼lÃƒÂ¼yor.
+    // assetIndex.id uzak Mojang JSON'undan geliyor; dosya adÃƒâ€Ã‚Â±na doÃƒâ€Ã…Â¸rudan gÃƒÆ’Ã‚Â¶mÃƒÆ’Ã‚Â¼lÃƒÆ’Ã‚Â¼yor.
     const targetPath = assertInside(
       indexesDir,
       `${assetIndex.id}.json`,
-      `Asset index adÃ„Â± gÃƒÂ¼venli deÃ„Å¸il: "${assetIndex.id}".`
+      `Asset index adÃƒâ€Ã‚Â± gÃƒÆ’Ã‚Â¼venli deÃƒâ€Ã…Â¸il: "${assetIndex.id}".`
     );
     if (fs.existsSync(targetPath)) return;
     await httpClient.download(assetIndex.url, targetPath, {
@@ -1148,10 +1148,10 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     for (const pack of prev.resourcepacks || []) removeIfExists(path.join(resourcepacksDir, pack));
   }
 
-  // Mojang'Ã„Â±n base sÃƒÂ¼rÃƒÂ¼mleri (1.20, 1.21, 1.19) iÃƒÂ§in mod ekosistemi genelde
-  // patch sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼nÃƒÂ¼ (1.20.1, 1.21.1, ...) hedefler Ã¢â‚¬â€ base'ten ilk patch'e mod
-  // gÃƒÂ¼ncellemesi gelir. Anchor sorgusunu expand edersek Modrinth daha gÃƒÂ¼ncel ve
-  // birbiriyle uyumlu sÃƒÂ¼rÃƒÂ¼mleri dÃƒÂ¶ner.
+  // Mojang'Ãƒâ€Ã‚Â±n base sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mleri (1.20, 1.21, 1.19) iÃƒÆ’Ã‚Â§in mod ekosistemi genelde
+  // patch sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼nÃƒÆ’Ã‚Â¼ (1.20.1, 1.21.1, ...) hedefler ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â base'ten ilk patch'e mod
+  // gÃƒÆ’Ã‚Â¼ncellemesi gelir. Anchor sorgusunu expand edersek Modrinth daha gÃƒÆ’Ã‚Â¼ncel ve
+  // birbiriyle uyumlu sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mleri dÃƒÆ’Ã‚Â¶ner.
   function expandGameVersion(v) {
     return modrinthGameVersionCandidates(v);
   }
@@ -1169,17 +1169,17 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
   }
 
-  // Modlar arasÃ„Â± "latest" sÃƒÂ¼rÃƒÂ¼mler bazen birbiriyle uyumsuz olabilir (ÃƒÂ¶rn. Iris
-  // 1.6.11 Modrinth manifest'inde Sodium 0.5.7'yi gÃƒÂ¶sterir ama jar iÃƒÂ§indeki
-  // breaks Sodium >=0.5.7'yi ÃƒÂ§akÃ„Â±Ã…Å¸malÃ„Â± sayar). Ãƒâ€¡ÃƒÂ¶zÃƒÂ¼m katmanlarÃ„Â±:
-  //  - gameVersion'Ã„Â± patch ile expand et Ã¢â‚¬â€ yeni anchor'lar gelir.
-  //  - Anchor mod (Iris/Continuity) ÃƒÂ¶nce ÃƒÂ§ek.
-  //  - Anchor'Ã„Â±n Modrinth `dependencies` listesindeki spesifik `version_id`'leri
-  //    indir; null ise anchor'Ã„Â±n yayÃ„Â±n tarihinden ÃƒÂ¶nceki en son uyumlu sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼
+  // Modlar arasÃƒâ€Ã‚Â± "latest" sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mler bazen birbiriyle uyumsuz olabilir (ÃƒÆ’Ã‚Â¶rn. Iris
+  // 1.6.11 Modrinth manifest'inde Sodium 0.5.7'yi gÃƒÆ’Ã‚Â¶sterir ama jar iÃƒÆ’Ã‚Â§indeki
+  // breaks Sodium >=0.5.7'yi ÃƒÆ’Ã‚Â§akÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸malÃƒâ€Ã‚Â± sayar). ÃƒÆ’Ã¢â‚¬Â¡ÃƒÆ’Ã‚Â¶zÃƒÆ’Ã‚Â¼m katmanlarÃƒâ€Ã‚Â±:
+  //  - gameVersion'Ãƒâ€Ã‚Â± patch ile expand et ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â yeni anchor'lar gelir.
+  //  - Anchor mod (Iris/Continuity) ÃƒÆ’Ã‚Â¶nce ÃƒÆ’Ã‚Â§ek.
+  //  - Anchor'Ãƒâ€Ã‚Â±n Modrinth `dependencies` listesindeki spesifik `version_id`'leri
+  //    indir; null ise anchor'Ãƒâ€Ã‚Â±n yayÃƒâ€Ã‚Â±n tarihinden ÃƒÆ’Ã‚Â¶nceki en son uyumlu sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼
   //    al (contemporary heuristic).
-  //  - AynÃ„Â± projenin tekrar indirilmesini engellemek iÃƒÂ§in downloaded set tutulur.
-  // skipExisting: diskte aynÃ„Â± boyutta jar varsa yeniden indirme (her aÃƒÂ§Ã„Â±lÃ„Â±Ã…Å¸ta ~50 MB'lÃ„Â±k
-  // paketi ÃƒÂ§ekmemek iÃƒÂ§in). optionalSlugs: bu slug'lar iÃƒÂ§in uygun sÃƒÂ¼rÃƒÂ¼m yoksa atla.
+  //  - AynÃƒâ€Ã‚Â± projenin tekrar indirilmesini engellemek iÃƒÆ’Ã‚Â§in downloaded set tutulur.
+  // skipExisting: diskte aynÃƒâ€Ã‚Â± boyutta jar varsa yeniden indirme (her aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±lÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸ta ~50 MB'lÃƒâ€Ã‚Â±k
+  // paketi ÃƒÆ’Ã‚Â§ekmemek iÃƒÆ’Ã‚Â§in). optionalSlugs: bu slug'lar iÃƒÆ’Ã‚Â§in uygun sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼m yoksa atla.
   async function downloadModsFromSlugs({ modsDir, gameVersion, slugs, modrinthLoaders, skipExisting = false, optionalSlugs = null }) {
     const loaderFilter = Array.isArray(modrinthLoaders) && modrinthLoaders.length
       ? modrinthLoaders
@@ -1220,8 +1220,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       if (!file) return;
       downloadedVersionIds.add(version.id);
       if (version.project_id) downloadedProjectIds.add(version.project_id);
-      // file.filename Modrinth'ten geliyor; yol bileÃ…Å¸eni iÃƒÂ§erebilir. mrpackInstaller
-      // aynÃ„Â± alanda path.basename uyguluyor Ã¢â‚¬â€ burada da modsDir dÃ„Â±Ã…Å¸Ã„Â±na ÃƒÂ§Ã„Â±kÃ„Â±Ã…Å¸Ã„Â± engelle.
+      // file.filename Modrinth'ten geliyor; yol bileÃƒâ€¦Ã…Â¸eni iÃƒÆ’Ã‚Â§erebilir. mrpackInstaller
+      // aynÃƒâ€Ã‚Â± alanda path.basename uyguluyor ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â burada da modsDir dÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±na ÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±kÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â± engelle.
       const safeName = path.basename(String(file.filename || ''));
       if (!safeName) return;
       const destPath = assertInside(modsDir, safeName);
@@ -1288,7 +1288,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           if (OPTIONAL_LOADER_MOD_SLUGS.has(slug) || (optionalSlugs && optionalSlugs.has(slug))) continue;
           throw new LauncherError(
             Codes.MODRINTH_NOT_FOUND,
-            `Modrinth: "${slug}" iÃƒÂ§in uygun sÃƒÂ¼rÃƒÂ¼m bulunamadÃ„Â±.`
+            `Modrinth: "${slug}" iÃƒÆ’Ã‚Â§in uygun sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼m bulunamadÃƒâ€Ã‚Â±.`
           );
         }
       } catch (err) {
@@ -1296,8 +1296,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         if (err && err.code === Codes.MODRINTH_NOT_FOUND) {
           throw new LauncherError(
             Codes.MODRINTH_NOT_FOUND,
-            `Bu Minecraft sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼ (${gameVersion}) iÃƒÂ§in "${slug}" modunun ${loaderFilter.join('/')} uyumlu sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼ Modrinth'te yok. ` +
-              'Snapshot/henÃƒÂ¼z yayÃ„Â±nlanmamÃ„Â±Ã…Å¸ sÃƒÂ¼rÃƒÂ¼mlerde bu modlar olmaz Ã¢â‚¬â€ stable bir release (ÃƒÂ¶rn. 1.21.4, 1.20.1) seÃƒÂ§in.'
+            `Bu Minecraft sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼ (${gameVersion}) iÃƒÆ’Ã‚Â§in "${slug}" modunun ${loaderFilter.join('/')} uyumlu sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼ Modrinth'te yok. ` +
+              'Snapshot/henÃƒÆ’Ã‚Â¼z yayÃƒâ€Ã‚Â±nlanmamÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸ sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mlerde bu modlar olmaz ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â stable bir release (ÃƒÆ’Ã‚Â¶rn. 1.21.4, 1.20.1) seÃƒÆ’Ã‚Â§in.'
           );
         }
         throw err;
@@ -1334,7 +1334,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         await fs.promises.mkdir(shaderpacksDir, { recursive: true });
         await httpClient.download(file.url, path.join(shaderpacksDir, safeName), modrinthClient.fileIntegrity(file));
         if (onNotice) {
-          onNotice(`Shader paketi hazÃ„Â±r: ${safeName}`);
+          onNotice(`Shader paketi hazÃƒâ€Ã‚Â±r: ${safeName}`);
         }
         return [safeName];
       } catch (err) {
@@ -1346,7 +1346,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (slug !== DEFAULT_SHADER_SLUG && isModrinthNotFound(lastErr)) {
       if (onNotice) {
         onNotice(
-          `"${slug}" bu Minecraft sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼nde bulunamadÃ„Â± Ã¢â‚¬â€ Complementary Reimagined kullanÃ„Â±lÃ„Â±yor.`
+          `"${slug}" bu Minecraft sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼nde bulunamadÃƒâ€Ã‚Â± ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Complementary Reimagined kullanÃƒâ€Ã‚Â±lÃƒâ€Ã‚Â±yor.`
         );
       }
       try {
@@ -1368,9 +1368,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return [];
   }
 
-  // Iris shader paketi otomatik aktivasyonu: indirilen pack zaten varsa kullanÃ„Â±cÃ„Â±nÃ„Â±n
-  // Options Ã¢â€ â€™ Video Ã¢â€ â€™ Shader Packs menÃƒÂ¼sÃƒÂ¼ne girip seÃƒÂ§mesi gerekmesin. Iris ilk aÃƒÂ§Ã„Â±lÃ„Â±Ã…Å¸ta
-  // boÃ…Å¸ bir `shaderPack=` yazÃ„Â±yor; mevcut satÃ„Â±rÃ„Â± (varsa) gÃƒÂ¼ncelle, yoksa ekle.
+  // Iris shader paketi otomatik aktivasyonu: indirilen pack zaten varsa kullanÃƒâ€Ã‚Â±cÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±n
+  // Options ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Video ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Shader Packs menÃƒÆ’Ã‚Â¼sÃƒÆ’Ã‚Â¼ne girip seÃƒÆ’Ã‚Â§mesi gerekmesin. Iris ilk aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±lÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸ta
+  // boÃƒâ€¦Ã…Â¸ bir `shaderPack=` yazÃƒâ€Ã‚Â±yor; mevcut satÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â± (varsa) gÃƒÆ’Ã‚Â¼ncelle, yoksa ekle.
   function writeShaderPropertiesFile(propsPath, shaderpackFilename) {
     let body = '';
     if (fs.existsSync(propsPath)) {
@@ -1400,15 +1400,15 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     writeShaderPropertiesFile(path.join(gameRoot, 'config', 'iris.properties'), shaderpackFilename);
   }
 
-  // Oculus (Iris'in Forge/NeoForge fork'u) kendi config dosyasÃ„Â±nÃ„Â± kullanÃ„Â±r:
-  // `config/oculus.properties`. Format Iris ile aynÃ„Â±.
+  // Oculus (Iris'in Forge/NeoForge fork'u) kendi config dosyasÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â± kullanÃƒâ€Ã‚Â±r:
+  // `config/oculus.properties`. Format Iris ile aynÃƒâ€Ã‚Â±.
   function activateShaderPackInOculusConfig({ gameRoot, shaderpackFilename }) {
     if (!shaderpackFilename) return;
     writeShaderPropertiesFile(path.join(gameRoot, 'config', 'oculus.properties'), shaderpackFilename);
   }
 
-  // OptiFine'Ã„Â±n shader config dosyasÃ„Â± ayrÃ„Â±: `optionsshaders.txt`. Format ana
-  // options.txt'e benzer ama OptiFine bunu shader pack seÃƒÂ§imi iÃƒÂ§in okur.
+  // OptiFine'Ãƒâ€Ã‚Â±n shader config dosyasÃƒâ€Ã‚Â± ayrÃƒâ€Ã‚Â±: `optionsshaders.txt`. Format ana
+  // options.txt'e benzer ama OptiFine bunu shader pack seÃƒÆ’Ã‚Â§imi iÃƒÆ’Ã‚Â§in okur.
   function deactivateShaderConfig(gameRoot) {
     for (const name of ['iris.properties', 'oculus.properties']) {
       const propsPath = path.join(gameRoot, 'config', name);
@@ -1449,13 +1449,13 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     fs.writeFileSync(optionsPath, lines.join('\n'), 'utf8');
   }
 
-  // Forge / NeoForge iÃƒÂ§in launch ÃƒÂ¶ncesi eski shader mod jar'larÃ„Â±nÃ„Â± temizle.
-  // AynÃ„Â± kategoride iki sÃƒÂ¼rÃƒÂ¼m (ÃƒÂ¶rn. Rubidium + Embeddium ya da Oculus + Iris)
-  // duplicate hatasÃ„Â± verir Ã¢â‚¬â€ sÃ„Â±fÃ„Â±rdan kuruyoruz ki tutarlÃ„Â± kombinasyon olsun.
+  // Forge / NeoForge iÃƒÆ’Ã‚Â§in launch ÃƒÆ’Ã‚Â¶ncesi eski shader mod jar'larÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â± temizle.
+  // AynÃƒâ€Ã‚Â± kategoride iki sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼m (ÃƒÆ’Ã‚Â¶rn. Rubidium + Embeddium ya da Oculus + Iris)
+  // duplicate hatasÃƒâ€Ã‚Â± verir ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â sÃƒâ€Ã‚Â±fÃƒâ€Ã‚Â±rdan kuruyoruz ki tutarlÃƒâ€Ã‚Â± kombinasyon olsun.
   //
-  // Ãƒâ€“NEMLÃ„Â°: hem aktif `.jar` hem stash kopyalarÃ„Â±nÃ„Â± siliyoruz. Aksi halde
-  // applyLoaderModsState bir sonraki loader geÃƒÂ§iÃ…Å¸inde eski stash'i restore
-  // edip eski Rubidium'u geri getirir ve yeni Embeddium ile ÃƒÂ§akÃ„Â±Ã…Å¸Ã„Â±r.
+  // ÃƒÆ’Ã¢â‚¬â€œNEMLÃƒâ€Ã‚Â°: hem aktif `.jar` hem stash kopyalarÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â± siliyoruz. Aksi halde
+  // applyLoaderModsState bir sonraki loader geÃƒÆ’Ã‚Â§iÃƒâ€¦Ã…Â¸inde eski stash'i restore
+  // edip eski Rubidium'u geri getirir ve yeni Embeddium ile ÃƒÆ’Ã‚Â§akÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±r.
   const FORGE_FAMILY_SHADER_PREFIXES = ['oculus', 'rubidium', 'embeddium', 'iris', 'sodium'];
   function cleanupForgeFamilyShaderJars(modsDir) {
     if (!fs.existsSync(modsDir)) return;
@@ -1472,7 +1472,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
   }
 
-  // Forge ailesinde kabartma iÃƒÂ§in yÃƒÂ¶netilen jar'lar: Continuity (Forge/NeoForge).
+  // Forge ailesinde kabartma iÃƒÆ’Ã‚Â§in yÃƒÆ’Ã‚Â¶netilen jar'lar: Continuity (Forge/NeoForge).
   const FORGE_FAMILY_EMBOSSED_PREFIXES = ['continuity'];
   function cleanupForgeFamilyEmbossedJars(modsDir) {
     if (!fs.existsSync(modsDir)) return;
@@ -1505,13 +1505,13 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       ],
     });
 
-    // Eski shader mod kombinasyonlarÃ„Â±nÃ„Â± temizle Ã¢â‚¬â€ duplicate riskini ÃƒÂ¶nler.
+    // Eski shader mod kombinasyonlarÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â± temizle ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â duplicate riskini ÃƒÆ’Ã‚Â¶nler.
     if (loader === 'forge' || loader === 'neoforge') {
       cleanupForgeFamilyShaderJars(modsDir);
     }
 
     if (loader === 'forge-optifine') {
-      status('Shader paketi indiriliyor (OptiFine iÃƒÂ§in)...');
+      status('Shader paketi indiriliyor (OptiFine iÃƒÆ’Ã‚Â§in)...');
       const packs = await downloadShaderPack({
         shaderpacksDir,
         gameVersion,
@@ -1525,9 +1525,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       return { jars: [], shaderpacks: packs };
     }
 
-    // Anchor mod yeterli Ã¢â‚¬â€ Modrinth'in `dependencies` listesi Sodium/Embeddium
-    // gibi gerekli baÃ„Å¸Ã„Â±mlÃ„Â±lÃ„Â±klarÃ„Â± zaten getiriyor. Ek slug yazarsak bir
-    // projenin iki sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼nÃƒÂ¼ (ÃƒÂ¶rn. Rubidium + Embeddium) yan yana indirebiliriz
+    // Anchor mod yeterli ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Modrinth'in `dependencies` listesi Sodium/Embeddium
+    // gibi gerekli baÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±mlÃƒâ€Ã‚Â±lÃƒâ€Ã‚Â±klarÃƒâ€Ã‚Â± zaten getiriyor. Ek slug yazarsak bir
+    // projenin iki sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼nÃƒÆ’Ã‚Â¼ (ÃƒÆ’Ã‚Â¶rn. Rubidium + Embeddium) yan yana indirebiliriz
     // ve Forge bunu "duplicate mod" diye reddeder.
     const SLUGS_BY_LOADER = {
       forge: ['oculus'],
@@ -1539,7 +1539,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       throw new Error(`installShadersForExternalLoader: desteklenmeyen loader: ${loader}`);
     }
 
-    status(`Shader modlarÃ„Â± indiriliyor (${loader})...`);
+    status(`Shader modlarÃƒâ€Ã‚Â± indiriliyor (${loader})...`);
     const jars = await downloadModsFromSlugs({
       modsDir,
       gameVersion,
@@ -1551,16 +1551,16 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const packs = await downloadShaderPack({
       shaderpacksDir,
       gameVersion,
-      loaders: ['iris'], // Oculus de Iris API'sini kullanÃ„Â±r, aynÃ„Â± paket
+      loaders: ['iris'], // Oculus de Iris API'sini kullanÃƒâ€Ã‚Â±r, aynÃƒâ€Ã‚Â± paket
       shaderSlug,
       onNotice: status,
     });
     if (packs[0]) {
       if (loader === 'forge') {
-        // Oculus kendi config dosyasÃ„Â±nÃ„Â± okur (oculus.properties), iris.properties deÃ„Å¸il.
+        // Oculus kendi config dosyasÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â± okur (oculus.properties), iris.properties deÃƒâ€Ã…Â¸il.
         activateShaderPackInOculusConfig({ gameRoot, shaderpackFilename: packs[0] });
       } else {
-        // NeoForge ve Quilt: gerÃƒÂ§ek Iris mod'u Ã¢â€ â€™ iris.properties
+        // NeoForge ve Quilt: gerÃƒÆ’Ã‚Â§ek Iris mod'u ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ iris.properties
         activateShaderPackInIrisConfig({ gameRoot, shaderpackFilename: packs[0] });
       }
     }
@@ -1592,20 +1592,20 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (!picked) {
       throw new LauncherError(
         Codes.MODRINTH_NOT_FOUND,
-        `${label} bu Minecraft sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼ (${gameVersion}) iÃƒÂ§in Modrinth'te bulunamadÃ„Â±.`
+        `${label} bu Minecraft sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼ (${gameVersion}) iÃƒÆ’Ã‚Â§in Modrinth'te bulunamadÃƒâ€Ã‚Â±.`
       );
     }
 
     const file = modrinthClient.primaryFileOf(picked);
     if (!file || !file.url) {
-      throw new LauncherError(Codes.MODRINTH_NOT_FOUND, `${label} dosyasÃ„Â± Modrinth'te bulunamadÃ„Â±.`);
+      throw new LauncherError(Codes.MODRINTH_NOT_FOUND, `${label} dosyasÃƒâ€Ã‚Â± Modrinth'te bulunamadÃƒâ€Ã‚Â±.`);
     }
 
     await fs.promises.mkdir(resourcepacksDir, { recursive: true });
     await httpClient.download(file.url, path.join(resourcepacksDir, localName), modrinthClient.fileIntegrity(file));
     ensureResourcePackCompatibleForGame({ resourcepacksDir, localName, gameVersion });
     const versionLabel = picked.name || picked.version_number || label;
-    if (onNotice) onNotice(`${label} ${versionLabel} hazÃ„Â±r: ${localName}`);
+    if (onNotice) onNotice(`${label} ${versionLabel} hazÃƒâ€Ã‚Â±r: ${localName}`);
     return [localName];
   }
 
@@ -1621,13 +1621,13 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (!picked) {
       throw new LauncherError(
         Codes.MODRINTH_NOT_FOUND,
-        `New Glowing Ores bu Minecraft sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼ (${gameVersion}) iÃƒÂ§in Modrinth'te bulunamadÃ„Â±.`
+        `New Glowing Ores bu Minecraft sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼ (${gameVersion}) iÃƒÆ’Ã‚Â§in Modrinth'te bulunamadÃƒâ€Ã‚Â±.`
       );
     }
 
     const file = modrinthClient.primaryFileOf(picked);
     if (!file || !file.url) {
-      throw new LauncherError(Codes.MODRINTH_NOT_FOUND, 'New Glowing Ores dosyasÃ„Â± Modrinth\'te bulunamadÃ„Â±.');
+      throw new LauncherError(Codes.MODRINTH_NOT_FOUND, 'New Glowing Ores dosyasÃƒâ€Ã‚Â± Modrinth\'te bulunamadÃƒâ€Ã‚Â±.');
     }
 
     await fs.promises.mkdir(resourcepacksDir, { recursive: true });
@@ -1640,7 +1640,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
     const variant = glowingOresVariantLabel(picked);
     const variantLabel = variant === 'border' ? 'Border (Continuity)' : 'Default (OptiFine/Continuity)';
-    if (onNotice) onNotice(`New Glowing Ores ${variantLabel} hazÃ„Â±r: ${GLOWING_ORES_PACK_LOCAL_NAME}`);
+    if (onNotice) onNotice(`New Glowing Ores ${variantLabel} hazÃƒâ€Ã‚Â±r: ${GLOWING_ORES_PACK_LOCAL_NAME}`);
     return [GLOWING_ORES_PACK_LOCAL_NAME];
   }
 
@@ -1656,13 +1656,13 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (!picked) {
       throw new LauncherError(
         Codes.MODRINTH_NOT_FOUND,
-        `Fullbright UB bu Minecraft sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼ (${gameVersion}) iÃƒÂ§in Modrinth/CurseForge'ta bulunamadÃ„Â±.`
+        `Fullbright UB bu Minecraft sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼ (${gameVersion}) iÃƒÆ’Ã‚Â§in Modrinth/CurseForge'ta bulunamadÃƒâ€Ã‚Â±.`
       );
     }
 
     const file = modrinthClient.primaryFileOf(picked);
     if (!file || !file.url) {
-      throw new LauncherError(Codes.MODRINTH_NOT_FOUND, 'Fullbright UB dosyasÃ„Â± Modrinth\'te bulunamadÃ„Â±.');
+      throw new LauncherError(Codes.MODRINTH_NOT_FOUND, 'Fullbright UB dosyasÃƒâ€Ã‚Â± Modrinth\'te bulunamadÃƒâ€Ã‚Â±.');
     }
 
     await fs.promises.mkdir(resourcepacksDir, { recursive: true });
@@ -1674,7 +1674,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     });
 
     const label = picked.name || picked.version_number || 'Fullbright UB';
-    if (onNotice) onNotice(`Fullbright UB ${label} hazÃ„Â±r: ${FULLBRIGHT_PACK_LOCAL_NAME}`);
+    if (onNotice) onNotice(`Fullbright UB ${label} hazÃƒâ€Ã‚Â±r: ${FULLBRIGHT_PACK_LOCAL_NAME}`);
     return [FULLBRIGHT_PACK_LOCAL_NAME];
   }
 
@@ -1743,7 +1743,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
 
     if (includeShader && !includeOptifine && (loader === 'fabric' || loader === 'quilt') && polytoneSupportedForGameVersion(gameVersion)) {
-      status('Fullbright + Shader iÃƒÂ§in PolyTone indiriliyor...');
+      status('Fullbright + Shader iÃƒÆ’Ã‚Â§in PolyTone indiriliyor...');
       try {
         await downloadModsFromSlugs({
           modsDir,
@@ -1752,7 +1752,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           modrinthLoaders: [loader],
         });
       } catch {
-        status('PolyTone bulunamadÃ„Â± Ã¢â‚¬â€ Fullbright Sodium/Iris ile ÃƒÂ§alÃ„Â±Ã…Å¸mayabilir.');
+        status('PolyTone bulunamadÃƒâ€Ã‚Â± ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Fullbright Sodium/Iris ile ÃƒÆ’Ã‚Â§alÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸mayabilir.');
       }
     }
     return { resourcepacks };
@@ -1807,7 +1807,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
 
     const modLoader = loader === 'forge-optifine' ? 'forge' : loader;
     if (!includeOptifine && ['fabric', 'quilt', 'forge', 'neoforge'].includes(modLoader)) {
-      status('Better Leaves iÃƒÂ§in Cull Leaves indiriliyor (Sodium/Embeddium baÃ„Å¸Ã„Â±mlÃ„Â±lÃ„Â±klarÃ„Â± otomatik)...');
+      status('Better Leaves iÃƒÆ’Ã‚Â§in Cull Leaves indiriliyor (Sodium/Embeddium baÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±mlÃƒâ€Ã‚Â±lÃƒâ€Ã‚Â±klarÃƒâ€Ã‚Â± otomatik)...');
       try {
         await downloadModsFromSlugs({
           modsDir,
@@ -1816,11 +1816,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           modrinthLoaders: [modLoader],
         });
       } catch {
-        status('Cull Leaves bulunamadÃ„Â± Ã¢â‚¬â€ OptiFine Smart Leaves veya Fabric yÃƒÂ¼kleyici deneyin.');
+        status('Cull Leaves bulunamadÃƒâ€Ã‚Â± ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â OptiFine Smart Leaves veya Fabric yÃƒÆ’Ã‚Â¼kleyici deneyin.');
       }
     } else if (loader === 'vanilla') {
       status(
-        "Better Leaves: Vanilla'da tam etki iÃƒÂ§in Fabric + Cull Leaves veya Forge/OptiFine + Smart Leaves kullanÃ„Â±n."
+        "Better Leaves: Vanilla'da tam etki iÃƒÆ’Ã‚Â§in Fabric + Cull Leaves veya Forge/OptiFine + Smart Leaves kullanÃƒâ€Ã‚Â±n."
       );
     }
     return { resourcepacks };
@@ -1855,9 +1855,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
 
     if (!includeOptifine && !includeEmbossed && modLoader === 'neoforge') {
-      status('Glowing Ores: NeoForge\'da Continuity + Connector gerekir Ã¢â‚¬â€ maden parÃ„Â±ltÃ„Â±sÃ„Â± gÃƒÂ¶rÃƒÂ¼nmeyebilir.');
+      status('Glowing Ores: NeoForge\'da Continuity + Connector gerekir ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â maden parÃƒâ€Ã‚Â±ltÃƒâ€Ã‚Â±sÃƒâ€Ã‚Â± gÃƒÆ’Ã‚Â¶rÃƒÆ’Ã‚Â¼nmeyebilir.');
     } else if (willInstallContinuity) {
-      status('Glowing Ores iÃƒÂ§in Continuity indiriliyor...');
+      status('Glowing Ores iÃƒÆ’Ã‚Â§in Continuity indiriliyor...');
       try {
         await downloadModsFromSlugs({
           modsDir,
@@ -1867,12 +1867,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         });
         ensureContinuityResourcePacks(gameRoot);
       } catch {
-        status('Continuity bulunamadÃ„Â± Ã¢â‚¬â€ OptiFine Emissive Textures veya KabartmalÃ„Â± bloklar (Continuity) gerekir.');
+        status('Continuity bulunamadÃƒâ€Ã‚Â± ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â OptiFine Emissive Textures veya KabartmalÃƒâ€Ã‚Â± bloklar (Continuity) gerekir.');
       }
     } else if (includeOptifine) {
-      status('Glowing Ores (Default): OptiFine\'da Video AyarlarÃ„Â± Ã¢â€ â€™ Kalite Ã¢â€ â€™ Emissive Textures aÃƒÂ§Ã„Â±n.');
+      status('Glowing Ores (Default): OptiFine\'da Video AyarlarÃƒâ€Ã‚Â± ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Kalite ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Emissive Textures aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±n.');
     } else if (loader === 'vanilla') {
-      status('Glowing Ores (Default): Vanilla\'da parÃ„Â±ltÃ„Â± iÃƒÂ§in Fabric+Continuity veya Forge+OptiFine kullanÃ„Â±n.');
+      status('Glowing Ores (Default): Vanilla\'da parÃƒâ€Ã‚Â±ltÃƒâ€Ã‚Â± iÃƒÆ’Ã‚Â§in Fabric+Continuity veya Forge+OptiFine kullanÃƒâ€Ã‚Â±n.');
     }
     return { resourcepacks };
   }
@@ -1902,8 +1902,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
   }
 
-  // Launcher'Ã„Â±n kurduÃ„Å¸u Create jar'larÃ„Â±nÃ„Â± (loader geÃƒÂ§iÃ…Å¸inde stash'lenmiÃ…Å¸ kopyalarÃ„Â±
-  // dahil) siler. `keep` listesindeki adlarÃ„Â±n etkin kopyasÃ„Â± korunur.
+  // Launcher'Ãƒâ€Ã‚Â±n kurduÃƒâ€Ã…Â¸u Create jar'larÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â± (loader geÃƒÆ’Ã‚Â§iÃƒâ€¦Ã…Â¸inde stash'lenmiÃƒâ€¦Ã…Â¸ kopyalarÃƒâ€Ã‚Â±
+  // dahil) siler. `keep` listesindeki adlarÃƒâ€Ã‚Â±n etkin kopyasÃƒâ€Ã‚Â± korunur.
   function removeManagedCreateJars(gameRoot, { keep = [] } = {}) {
     const modsDir = path.join(gameRoot, 'mods');
     const managed = readManagedCreateJars(modsDir);
@@ -1924,8 +1924,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
   }
 
-  // Flywheel: compute-shader tabanlÃ„Â± "indirect" backend ve SMOOTH Ã„Â±Ã…Å¸Ã„Â±k, entegre GPU'da
-  // pahalÃ„Â±. Dosya ilk oyun aÃƒÂ§Ã„Â±lÃ„Â±Ã…Å¸Ã„Â±nda oluÃ…Å¸ur; yoksa sonraki aÃƒÂ§Ã„Â±lÃ„Â±Ã…Å¸ta denenir.
+  // Flywheel: compute-shader tabanlÃƒâ€Ã‚Â± "indirect" backend ve SMOOTH Ãƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±k, entegre GPU'da
+  // pahalÃƒâ€Ã‚Â±. Dosya ilk oyun aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±lÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±nda oluÃƒâ€¦Ã…Â¸ur; yoksa sonraki aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±lÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸ta denenir.
   function tuneFlywheelConfig(gameRoot) {
     const cfgPath = path.join(gameRoot, FLYWHEEL_CONFIG_REL);
     let text;
@@ -1941,7 +1941,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return next !== text;
   }
 
-  // Her aÃƒÂ§Ã„Â±lÃ„Â±Ã…Å¸ta: render/simÃƒÂ¼lasyon mesafesi ÃƒÂ¼st sÃ„Â±nÃ„Â±rÃ„Â± aÃ…Å¸Ã„Â±yorsa dÃƒÂ¼Ã…Å¸ÃƒÂ¼rÃƒÂ¼r (altÃ„Â±ndakilere dokunmaz).
+  // Her aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±lÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸ta: render/simÃƒÆ’Ã‚Â¼lasyon mesafesi ÃƒÆ’Ã‚Â¼st sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â± aÃƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±yorsa dÃƒÆ’Ã‚Â¼Ãƒâ€¦Ã…Â¸ÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼r (altÃƒâ€Ã‚Â±ndakilere dokunmaz).
   function capCreateDistances(gameRoot) {
     const optionsPath = path.join(gameRoot, 'options.txt');
     let text;
@@ -1968,7 +1968,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return changed;
   }
 
-  // options.txt'te ÃƒÂ¼st sÃ„Â±nÃ„Â±rÃ„Â± aÃ…Å¸an deÃ„Å¸erleri dÃƒÂ¼Ã…Å¸ÃƒÂ¼rÃƒÂ¼r; sÃ„Â±nÃ„Â±rÃ„Â±n altÃ„Â±ndakilere dokunmaz.
+  // options.txt'te ÃƒÆ’Ã‚Â¼st sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â± aÃƒâ€¦Ã…Â¸an deÃƒâ€Ã…Â¸erleri dÃƒÆ’Ã‚Â¼Ãƒâ€¦Ã…Â¸ÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼r; sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â±n altÃƒâ€Ã‚Â±ndakilere dokunmaz.
   function capCreateVideoOptions(gameRoot) {
     const optionsPath = path.join(gameRoot, 'options.txt');
     let text;
@@ -2000,8 +2000,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return changed;
   }
 
-  // HazÃ„Â±r paketlerin video ayarÃ„Â±: render mesafesi 12'ye ayarlanÃ„Â±r, aÃ„Å¸Ã„Â±r ayarlar sÃ„Â±nÃ„Â±rlanÃ„Â±r.
-  // Paket baÃ…Å¸Ã„Â±na bir kez uygulanÃ„Â±r; paket kapatÃ„Â±lÃ„Â±nca iÃ…Å¸aret silinir, yeniden seÃƒÂ§ilince tekrar uygulanÃ„Â±r.
+  // HazÃƒâ€Ã‚Â±r paketlerin video ayarÃƒâ€Ã‚Â±: render mesafesi 12'ye ayarlanÃƒâ€Ã‚Â±r, aÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±r ayarlar sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rlanÃƒâ€Ã‚Â±r.
+  // Paket baÃƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±na bir kez uygulanÃƒâ€Ã‚Â±r; paket kapatÃƒâ€Ã‚Â±lÃƒâ€Ã‚Â±nca iÃƒâ€¦Ã…Â¸aret silinir, yeniden seÃƒÆ’Ã‚Â§ilince tekrar uygulanÃƒâ€Ã‚Â±r.
   function syncFpsBoostVideoOptions({ gameRoot, modsDir, enabled, unlimited, status }) {
     const markerPath = path.join(modsDir, FPS_BOOST_MARKER_FILE);
     const optionsPath = path.join(gameRoot, 'options.txt');
@@ -2009,17 +2009,17 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     try {
       marker = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
     } catch {
-      /* iÃ…Å¸aret yok ya da bozuk */
+      /* iÃƒâ€¦Ã…Â¸aret yok ya da bozuk */
     }
     let text = '';
     try {
       text = fs.readFileSync(optionsPath, 'utf8');
     } catch {
-      /* ilk kurulum: options.txt henÃƒÂ¼z yok */
+      /* ilk kurulum: options.txt henÃƒÆ’Ã‚Â¼z yok */
     }
     if (!enabled) {
       if (!marker) return;
-      // YalnÃ„Â±zca paketin yazdÃ„Â±Ã„Å¸Ã„Â± deÃ„Å¸er hÃƒÂ¢lÃƒÂ¢ duruyorsa geri al; kullanÃ„Â±cÃ„Â± oyun iÃƒÂ§inden deÃ„Å¸iÃ…Å¸tirdiyse dokunma.
+      // YalnÃƒâ€Ã‚Â±zca paketin yazdÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â± deÃƒâ€Ã…Â¸er hÃƒÆ’Ã‚Â¢lÃƒÆ’Ã‚Â¢ duruyorsa geri al; kullanÃƒâ€Ã‚Â±cÃƒâ€Ã‚Â± oyun iÃƒÆ’Ã‚Â§inden deÃƒâ€Ã…Â¸iÃƒâ€¦Ã…Â¸tirdiyse dokunma.
       const prev = (marker && marker.prev) || {};
       const written = FPS_BOOST_FORCED_OPTIONS[marker.mode] || FPS_BOOST_FORCED_OPTIONS.unlimited;
       const restored = text.split(NEWLINE_RE).map((line) => {
@@ -2036,8 +2036,8 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const mode = unlimited ? 'unlimited' : 'capped';
     if (marker && marker.tuned === FPS_BOOST_TUNE_VERSION && marker.mode === mode) return;
 
-    // "Ãƒâ€“nceki deÃ„Å¸er" yalnÃ„Â±zca paket ilk uygulandÃ„Â±Ã„Å¸Ã„Â±nda dosyadan okunur; paketler arasÃ„Â± geÃƒÂ§iÃ…Å¸te
-    // dosyadaki deÃ„Å¸er ÃƒÂ¶teki paketin yazdÃ„Â±Ã„Å¸Ã„Â±dÃ„Â±r, eski iÃ…Å¸aretteki korunur.
+    // "ÃƒÆ’Ã¢â‚¬â€œnceki deÃƒâ€Ã…Â¸er" yalnÃƒâ€Ã‚Â±zca paket ilk uygulandÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â±nda dosyadan okunur; paketler arasÃƒâ€Ã‚Â± geÃƒÆ’Ã‚Â§iÃƒâ€¦Ã…Â¸te
+    // dosyadaki deÃƒâ€Ã…Â¸er ÃƒÆ’Ã‚Â¶teki paketin yazdÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â±dÃƒâ€Ã‚Â±r, eski iÃƒâ€¦Ã…Â¸aretteki korunur.
     const forced = FPS_BOOST_FORCED_OPTIONS[mode];
     const prev = { ...((marker && marker.prev) || {}) };
     const seen = new Set();
@@ -2065,32 +2065,32 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (next !== text) fs.writeFileSync(optionsPath, next, 'utf8');
     fs.mkdirSync(modsDir, { recursive: true });
     fs.writeFileSync(markerPath, JSON.stringify({ tuned: FPS_BOOST_TUNE_VERSION, mode, prev }), 'utf8');
-    status('Paket: render mesafesi ' + FPS_BOOST_RENDER_DISTANCE + ' chunk yapÃ„Â±ldÃ„Â±, ' + (unlimited ? 'FPS sÃ„Â±nÃ„Â±rÃ„Â± kaldÃ„Â±rÃ„Â±ldÃ„Â±' : 'FPS sÃ„Â±nÃ„Â±rÃ„Â± 120 yapÃ„Â±ldÃ„Â±') + ', aÃ„Å¸Ã„Â±r video ayarlarÃ„Â± dÃƒÂ¼Ã…Å¸ÃƒÂ¼rÃƒÂ¼ldÃƒÂ¼ (oyun iÃƒÂ§inden deÃ„Å¸iÃ…Å¸tirilebilir).');
+    status('Paket: render mesafesi ' + FPS_BOOST_RENDER_DISTANCE + ' chunk yapÃƒâ€Ã‚Â±ldÃƒâ€Ã‚Â±, ' + (unlimited ? 'FPS sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â± kaldÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â±ldÃƒâ€Ã‚Â±' : 'FPS sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â± 120 yapÃƒâ€Ã‚Â±ldÃƒâ€Ã‚Â±') + ', aÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±r video ayarlarÃƒâ€Ã‚Â± dÃƒÆ’Ã‚Â¼Ãƒâ€¦Ã…Â¸ÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼ldÃƒÆ’Ã‚Â¼ (oyun iÃƒÆ’Ã‚Â§inden deÃƒâ€Ã…Â¸iÃƒâ€¦Ã…Â¸tirilebilir).');
   }
 
   function releaseFpsBoostVideoOptions(gameRoot) {
     syncFpsBoostVideoOptions({ gameRoot, modsDir: path.join(gameRoot, 'mods'), enabled: false });
   }
 
-  // Create + kÃƒÂ¼ratÃƒÂ¶rlÃƒÂ¼ eklenti listesi (CREATE_ADDON_SLUGS). ArayÃƒÂ¼z bu seÃƒÂ§eneÃ„Å¸i NeoForge
-  // 1.21.1'e sabitler. GÃƒÂ¼ncel jar'lar yeniden indirilmez; Modrinth'e ulaÃ…Å¸Ã„Â±lamazsa kurulu
-  // jar'larla devam edilir (tek oyunculu, ÃƒÂ§evrimdÃ„Â±Ã…Å¸Ã„Â± aÃƒÂ§Ã„Â±lÃ„Â±Ã…Å¸). Taban Create bulunamazsa
-  // hata verilir; bir eklentinin uygun sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼ yoksa o eklenti sessizce atlanÃ„Â±r.
+  // Create + kÃƒÆ’Ã‚Â¼ratÃƒÆ’Ã‚Â¶rlÃƒÆ’Ã‚Â¼ eklenti listesi (CREATE_ADDON_SLUGS). ArayÃƒÆ’Ã‚Â¼z bu seÃƒÆ’Ã‚Â§eneÃƒâ€Ã…Â¸i NeoForge
+  // 1.21.1'e sabitler. GÃƒÆ’Ã‚Â¼ncel jar'lar yeniden indirilmez; Modrinth'e ulaÃƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±lamazsa kurulu
+  // jar'larla devam edilir (tek oyunculu, ÃƒÆ’Ã‚Â§evrimdÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â± aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±lÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸). Taban Create bulunamazsa
+  // hata verilir; bir eklentinin uygun sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼ yoksa o eklenti sessizce atlanÃƒâ€Ã‚Â±r.
   //
-  // `serverPack`: Klima SMP paketi Ã¢â‚¬â€ Create ve eklentileri sunucuyla aynÃ„Â±
-  // sabit sÃƒÂ¼rÃƒÂ¼mden kurulur (NeoForge kayÃ„Â±t eÃ…Å¸leÃ…Å¸mesi), yalnÃ„Â±zca FPS modlarÃ„Â± gÃƒÂ¼ncel ÃƒÂ§ekilir.
+  // `serverPack`: Klima SMP paketi ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Create ve eklentileri sunucuyla aynÃƒâ€Ã‚Â±
+  // sabit sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mden kurulur (NeoForge kayÃƒâ€Ã‚Â±t eÃƒâ€¦Ã…Â¸leÃƒâ€¦Ã…Â¸mesi), yalnÃƒâ€Ã‚Â±zca FPS modlarÃƒâ€Ã‚Â± gÃƒÆ’Ã‚Â¼ncel ÃƒÆ’Ã‚Â§ekilir.
   async function installCreateForExternalLoader({ loader, gameRoot, gameVersion, emit, serverPack = false }) {
     const modsDir = path.join(gameRoot, 'mods');
     const status = statusEmitter(emit);
     const previous = readManagedCreateJars(modsDir);
-    // Sunucu paketinde ÃƒÂ§evrimdÃ„Â±Ã…Å¸Ã„Â± yedek yalnÃ„Â±zca sabit jar'lar zaten kuruluysa kullanÃ„Â±lÃ„Â±r:
-    // normal Create paketinin eklentileriyle sunucuya baÃ„Å¸lanÃ„Â±lamaz.
+    // Sunucu paketinde ÃƒÆ’Ã‚Â§evrimdÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â± yedek yalnÃƒâ€Ã‚Â±zca sabit jar'lar zaten kuruluysa kullanÃƒâ€Ã‚Â±lÃƒâ€Ã‚Â±r:
+    // normal Create paketinin eklentileriyle sunucuya baÃƒâ€Ã…Â¸lanÃƒâ€Ã‚Â±lamaz.
     const previousOnDisk =
       previous.length > 0 &&
       previous.every((j) => fs.existsSync(path.join(modsDir, j))) &&
       (!serverPack || MARSANA_SERVER_PINNED_MODS.every((m) => previous.includes(m.file)));
 
-    status(serverPack ? 'Klima SMP paketi hazÃ„Â±rlanÃ„Â±yor...' : 'Create ve eklentileri hazÃ„Â±rlanÃ„Â±yor...');
+    status(serverPack ? 'Klima SMP paketi hazÃƒâ€Ã‚Â±rlanÃƒâ€Ã‚Â±yor...' : 'Create ve eklentileri hazÃƒâ€Ã‚Â±rlanÃƒâ€Ã‚Â±yor...');
     let jars;
     try {
       if (serverPack) {
@@ -2113,21 +2113,21 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           skipExisting: true,
           optionalSlugs: new Set([...CREATE_ADDON_SLUGS, ...CREATE_PERF_SLUGS]),
         });
-        // Launcher'la gelen eklentiler; taban Create kurulduysa eklenir, jar eksikse atlanÃ„Â±r.
+        // Launcher'la gelen eklentiler; taban Create kurulduysa eklenir, jar eksikse atlanÃƒâ€Ã‚Â±r.
         if (jars.length > 0) {
           for (const addon of CREATE_BUNDLED_ADDONS) {
             try {
               const [jar] = await downloadPinnedMods(modsDir, [addon]);
               if (!jars.includes(jar)) jars.push(jar);
             } catch (err) {
-              status('Create: ' + addon.file + ' atlandÃ„Â± (' + err.message + ').');
+              status('Create: ' + addon.file + ' atlandÃƒâ€Ã‚Â± (' + err.message + ').');
             }
           }
         }
       }
     } catch (err) {
       if (previousOnDisk) {
-        status("Create: Modrinth'e ulaÃ…Å¸Ã„Â±lamadÃ„Â± Ã¢â‚¬â€ kurulu sÃƒÂ¼rÃƒÂ¼mlerle devam ediliyor.");
+        status("Create: Modrinth'e ulaÃƒâ€¦Ã…Â¸Ãƒâ€Ã‚Â±lamadÃƒâ€Ã‚Â± ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â kurulu sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mlerle devam ediliyor.");
         return { jars: previous };
       }
       throw err;
@@ -2136,11 +2136,11 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (jars.length === 0) {
       throw new LauncherError(
         Codes.MODRINTH_NOT_FOUND,
-        `Create modunun ${loader} ${gameVersion} uyumlu sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼ Modrinth'te bulunamadÃ„Â±.`
+        `Create modunun ${loader} ${gameVersion} uyumlu sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼ Modrinth'te bulunamadÃƒâ€Ã‚Â±.`
       );
     }
     if (capCreateDistances(gameRoot)) {
-      status('Create: render mesafesi en fazla ' + CREATE_RENDER_DISTANCE_MAX + ', simÃƒÂ¼lasyon mesafesi en fazla ' + CREATE_SIMULATION_DISTANCE_MAX + ' (takÃ„Â±lmayÃ„Â± ÃƒÂ¶nler).');
+      status('Create: render mesafesi en fazla ' + CREATE_RENDER_DISTANCE_MAX + ', simÃƒÆ’Ã‚Â¼lasyon mesafesi en fazla ' + CREATE_SIMULATION_DISTANCE_MAX + ' (takÃƒâ€Ã‚Â±lmayÃƒâ€Ã‚Â± ÃƒÆ’Ã‚Â¶nler).');
     }
     const marker = readCreateMarker(modsDir);
     let tuned = marker.tuned;
@@ -2149,16 +2149,16 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       const r = tuneFlywheelConfig(gameRoot);
       if (r !== null) {
         flywheelTuned = true;
-        if (r) status('Create: Flywheel hafif moda alÃ„Â±ndÃ„Â± (entegre ekran kartÃ„Â± iÃƒÂ§in).');
+        if (r) status('Create: Flywheel hafif moda alÃƒâ€Ã‚Â±ndÃƒâ€Ã‚Â± (entegre ekran kartÃƒâ€Ã‚Â± iÃƒÆ’Ã‚Â§in).');
       }
     }
     if (!tuned) {
       if (capCreateVideoOptions(gameRoot)) {
-        status('Create: render mesafesi ve benzeri aÃ„Å¸Ã„Â±r video ayarlarÃ„Â± FPS iÃƒÂ§in dÃƒÂ¼Ã…Å¸ÃƒÂ¼rÃƒÂ¼ldÃƒÂ¼ (oyun iÃƒÂ§inden deÃ„Å¸iÃ…Å¸tirilebilir).');
+        status('Create: render mesafesi ve benzeri aÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±r video ayarlarÃƒâ€Ã‚Â± FPS iÃƒÆ’Ã‚Â§in dÃƒÆ’Ã‚Â¼Ãƒâ€¦Ã…Â¸ÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼ldÃƒÆ’Ã‚Â¼ (oyun iÃƒÆ’Ã‚Â§inden deÃƒâ€Ã…Â¸iÃƒâ€¦Ã…Â¸tirilebilir).');
       }
       tuned = true;
     }
-    // Listeden ÃƒÂ§Ã„Â±kan / gÃƒÂ¼ncellenen eski jar'larÃ„Â± sil, marker'Ã„Â± tÃƒÂ¼m yeni jar'larla yaz.
+    // Listeden ÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±kan / gÃƒÆ’Ã‚Â¼ncellenen eski jar'larÃƒâ€Ã‚Â± sil, marker'Ãƒâ€Ã‚Â± tÃƒÆ’Ã‚Â¼m yeni jar'larla yaz.
     removeManagedCreateJars(gameRoot, { keep: jars });
     fs.writeFileSync(
       path.join(modsDir, CREATE_MARKER_FILE),
@@ -2176,7 +2176,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
   }
 
-  // Sabit sÃƒÂ¼rÃƒÂ¼mlÃƒÂ¼ jar'larÃ„Â± indirir; diskte aynÃ„Â± hash'le duranlar yeniden indirilmez.
+  // Sabit sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mlÃƒÆ’Ã‚Â¼ jar'larÃƒâ€Ã‚Â± indirir; diskte aynÃƒâ€Ã‚Â± hash'le duranlar yeniden indirilmez.
   async function downloadPinnedMods(modsDir, mods) {
     await fs.promises.mkdir(modsDir, { recursive: true });
     const jars = [];
@@ -2185,12 +2185,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       const destPath = assertInside(modsDir, safeName);
       if (sha512OfFile(destPath) !== mod.sha512) {
         if (mod.bundled) {
-          // Modrinth'te olmayan (ÃƒÂ¶r. incelemede) mod: launcher'la gelen jar kopyalanÃ„Â±r.
+          // Modrinth'te olmayan (ÃƒÆ’Ã‚Â¶r. incelemede) mod: launcher'la gelen jar kopyalanÃƒâ€Ã‚Â±r.
           const src = repoRoot ? path.join(repoRoot, 'bundled-mods', mod.bundled) : null;
           if (!src || sha512OfFile(src) !== mod.sha512) {
             throw new LauncherError(
               Codes.MODRINTH_NOT_FOUND,
-              `Klima SMP modu launcher iÃƒÂ§inde bulunamadÃ„Â±: ${safeName}`
+              `Klima SMP modu launcher iÃƒÆ’Ã‚Â§inde bulunamadÃƒâ€Ã‚Â±: ${safeName}`
             );
           }
           await fs.promises.copyFile(src, destPath);
@@ -2203,24 +2203,24 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     return jars;
   }
 
-  // Forge ailesi loader'lar iÃƒÂ§in kabartmalÃ„Â± blok (CTM) modunu yÃƒÂ¼kle.
-  //   'forge'           Ã¢â€ â€™ Continuity Forge (sadece 1.20.1; Modrinth'te tek sÃƒÂ¼rÃƒÂ¼m)
-  //   'neoforge'        Ã¢â€ â€™ Continuity NeoForge (sadece 1.21.1; tek sÃƒÂ¼rÃƒÂ¼m)
-  //   'forge-optifine'  Ã¢â€ â€™ no-op (OptiFine kendi iÃƒÂ§inde CTM destekler)
+  // Forge ailesi loader'lar iÃƒÆ’Ã‚Â§in kabartmalÃƒâ€Ã‚Â± blok (CTM) modunu yÃƒÆ’Ã‚Â¼kle.
+  //   'forge'           ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Continuity Forge (sadece 1.20.1; Modrinth'te tek sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼m)
+  //   'neoforge'        ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Continuity NeoForge (sadece 1.21.1; tek sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼m)
+  //   'forge-optifine'  ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ no-op (OptiFine kendi iÃƒÆ’Ã‚Â§inde CTM destekler)
   async function installEmbossedForExternalLoader({ loader, gameRoot, gameVersion, emit }) {
     const modsDir = path.join(gameRoot, 'mods');
     const status = statusEmitter(emit);
 
     if (loader === 'forge-optifine') {
-      status('Kabartma: OptiFine kendi iÃƒÂ§inde baÃ„Å¸lÃ„Â± doku desteÃ„Å¸i saÃ„Å¸lÃ„Â±yor Ã¢â‚¬â€ ek mod indirilmedi.');
+      status('Kabartma: OptiFine kendi iÃƒÆ’Ã‚Â§inde baÃƒâ€Ã…Â¸lÃƒâ€Ã‚Â± doku desteÃƒâ€Ã…Â¸i saÃƒâ€Ã…Â¸lÃƒâ€Ã‚Â±yor ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â ek mod indirilmedi.');
       return { jars: [] };
     }
     if (loader === 'neoforge') {
-      // NeoForge'da Continuity native deÃ„Å¸il Ã¢â‚¬â€ sadece Sinytra Connector ile
-      // ÃƒÂ§alÃ„Â±Ã…Å¸an Fabric jar'Ã„Â± ve bu kombinasyon NeoForge 21.1.x ile
-      // ClassCastException (ModFileParser$MixinConfig) atÃ„Â±yor. Indirmeyi
-      // atla, kullanÃ„Â±cÃ„Â±yÃ„Â± bilgilendir.
-      status('Kabartma: NeoForge bu sÃƒÂ¼rÃƒÂ¼mde Continuity\'yi native desteklemiyor Ã¢â‚¬â€ atlandÃ„Â±.');
+      // NeoForge'da Continuity native deÃƒâ€Ã…Â¸il ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â sadece Sinytra Connector ile
+      // ÃƒÆ’Ã‚Â§alÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸an Fabric jar'Ãƒâ€Ã‚Â± ve bu kombinasyon NeoForge 21.1.x ile
+      // ClassCastException (ModFileParser$MixinConfig) atÃƒâ€Ã‚Â±yor. Indirmeyi
+      // atla, kullanÃƒâ€Ã‚Â±cÃƒâ€Ã‚Â±yÃƒâ€Ã‚Â± bilgilendir.
+      status('Kabartma: NeoForge bu sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mde Continuity\'yi native desteklemiyor ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â atlandÃƒâ€Ã‚Â±.');
       return { jars: [] };
     }
     if (loader !== 'forge') {
@@ -2237,9 +2237,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       modrinthLoaders: [loader],
     });
 
-    // options.txt'e Continuity resource pack'lerini ekle Ã¢â‚¬â€ Continuity 3.0+ kendi
+    // options.txt'e Continuity resource pack'lerini ekle ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Continuity 3.0+ kendi
     // built-in resource pack'lerini sunar ama Minecraft options'ta listelenmek
-    // zorundadÃ„Â±r, aksi takdirde CTM gÃƒÂ¶rÃƒÂ¼nmez.
+    // zorundadÃƒâ€Ã‚Â±r, aksi takdirde CTM gÃƒÆ’Ã‚Â¶rÃƒÆ’Ã‚Â¼nmez.
     ensureContinuityResourcePacks(gameRoot);
 
     return { jars };
@@ -2248,7 +2248,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
   async function ensure({ gameRoot, gameVersion, emit, modPresets, shaderSlug, fabricChannel = 'stable', playMode }) {
     const presets = normalizePresets(modPresets);
     if (!presets.shaderFps && !presets.embossedBlocks && !presets.optifine && !presets.voiceChat && !presets.fullbrightUb && !presets.betterLeaves && !presets.glowingOres && !presets.roundTrees && !presets.crops3d && !presets.schematicFarm && !presets.clientHudPack && !presets.marsanaClientMenu && !presets.sodium && !presets.sodiumExtra && !presets.userMods) {
-      throw new Error('shaderStackService.ensure: en az bir mod ÃƒÂ¶nayarÃ„Â± gerekli');
+      throw new Error('shaderStackService.ensure: en az bir mod ÃƒÆ’Ã‚Â¶nayarÃƒâ€Ã‚Â± gerekli');
     }
 
     const loaderPrefix = fabricChannel === 'beta' ? 'marsana-fabric-beta' : 'marsana';
@@ -2373,7 +2373,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           }
         }
       }
-      status(`Mod profili (ÃƒÂ¶nbellek): ${resolvedShaderSlug} shader hazÃ„Â±r, baÃ…Å¸latÃ„Â±lÃ„Â±yor...`);
+      status(`Mod profili (ÃƒÆ’Ã‚Â¶nbellek): ${resolvedShaderSlug} shader hazÃƒâ€Ã‚Â±r, baÃƒâ€¦Ã…Â¸latÃƒâ€Ã‚Â±lÃƒâ€Ã‚Â±yor...`);
       await installFabricProfile({
         gameVersion,
         customId,
@@ -2385,7 +2385,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
       return { customId: cached.customId, assetIndexId: cached.assetIndexId };
     }
 
-    status(`Mod profili: Fabric yÃƒÂ¼kleyici eÃ…Å¸leÃ…Å¸tiriliyor (${gameVersion})...`);
+    status(`Mod profili: Fabric yÃƒÆ’Ã‚Â¼kleyici eÃƒâ€¦Ã…Â¸leÃƒâ€¦Ã…Â¸tiriliyor (${gameVersion})...`);
     const { merged, loaderVersion } = await installFabricProfile({
       gameVersion,
       customId,
@@ -2395,7 +2395,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     });
     await ensureAssetIndexFile({ gameRoot, assetIndex: merged.assetIndex });
 
-    status('Mod profili: seÃƒÂ§ilen modlar indiriliyor...');
+    status('Mod profili: seÃƒÆ’Ã‚Â§ilen modlar indiriliyor...');
     cleanupPreviousBundle({ modsDir, shaderpacksDir, resourcepacksDir });
     removeIncompatiblePolytoneJars(modsDir, gameVersion);
 
@@ -2422,7 +2422,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     }
     let fpsBoostJars = [];
     if (presets.fpsBoost) {
-      status('Paket: FPS optimizasyon modlarÃ„Â± indiriliyor (uyumlu olanlar)...');
+      status('Paket: FPS optimizasyon modlarÃƒâ€Ã‚Â± indiriliyor (uyumlu olanlar)...');
       try {
         fpsBoostJars = await downloadModsFromSlugs({
           modsDir,
@@ -2431,12 +2431,12 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
           optionalSlugs: new Set(FPS_BOOST_SLUGS),
         });
       } catch {
-        status('Paket: bazÃ„Â± FPS modlarÃ„Â± indirilemedi Ã¢â‚¬â€ kalan modlarla devam ediliyor.');
+        status('Paket: bazÃƒâ€Ã‚Â± FPS modlarÃƒâ€Ã‚Â± indirilemedi ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â kalan modlarla devam ediliyor.');
       }
     }
     modCompatibilityService.purgeIncompatibleModJars(modsDir, gameVersion);
     jars = await ensureShaderCoreMods({ modsDir, gameVersion, presets, status, jars });
-    // Uyumsuz ÃƒÂ§Ã„Â±kÃ„Â±p temizlenen FPS modu bundle'a yazÃ„Â±lmamalÃ„Â±; yoksa ÃƒÂ¶nbellek her aÃƒÂ§Ã„Â±lÃ„Â±Ã…Å¸ta geÃƒÂ§ersiz olur.
+    // Uyumsuz ÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±kÃƒâ€Ã‚Â±p temizlenen FPS modu bundle'a yazÃƒâ€Ã‚Â±lmamalÃƒâ€Ã‚Â±; yoksa ÃƒÆ’Ã‚Â¶nbellek her aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±lÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸ta geÃƒÆ’Ã‚Â§ersiz olur.
     for (const name of fpsBoostJars) {
       if (!jars.includes(name) && fs.existsSync(path.join(modsDir, name))) jars.push(name);
     }
@@ -2586,56 +2586,56 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     if (presets.optifine) {
       const packLabel = optifineMeta && optifineMeta.packName ? optifineMeta.packName : 'OptiFine for Fabric';
       const mc26Note = /^26\./.test(String(gameVersion))
-        ? ' Resmi OptiFine.jar 26.x\'te henÃƒÂ¼z yok; zoom iÃƒÂ§in Zoomify (C) eklendi.'
+        ? ' Resmi OptiFine.jar 26.x\'te henÃƒÆ’Ã‚Â¼z yok; zoom iÃƒÆ’Ã‚Â§in Zoomify (C) eklendi.'
         : '';
       status(
-        `${packLabel} kuruldu.${mc26Note} Video ayarlarÃ„Â± ve shader seÃƒÂ§enekleri paket iÃƒÂ§indeki modlarla gelir; ` +
-          'Shader + FPS seÃƒÂ§eneÃ„Å¸iyle birlikte kullanmayÃ„Â±n.'
+        `${packLabel} kuruldu.${mc26Note} Video ayarlarÃƒâ€Ã‚Â± ve shader seÃƒÆ’Ã‚Â§enekleri paket iÃƒÆ’Ã‚Â§indeki modlarla gelir; ` +
+          'Shader + FPS seÃƒÆ’Ã‚Â§eneÃƒâ€Ã…Â¸iyle birlikte kullanmayÃƒâ€Ã‚Â±n.'
       );
     } else if (presets.shaderFps && presets.embossedBlocks) {
       status(
-        'Mod profili hazÃ„Â±r. Shader: SeÃƒÂ§enekler Ã¢â€ â€™ Video Ã¢â€ â€™ Shader Packs (ComplementaryÃ¢â‚¬â„¢de Performance ÃƒÂ¶nerilir). ' +
+        'Mod profili hazÃƒâ€Ã‚Â±r. Shader: SeÃƒÆ’Ã‚Â§enekler ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Video ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Shader Packs (ComplementaryÃƒÂ¢Ã¢â€šÂ¬Ã¢â€Â¢de Performance ÃƒÆ’Ã‚Â¶nerilir). ' +
           'Kabartma: Continuity + Sodium.'
       );
     } else if (presets.shaderFps) {
       status(
-        'Shader + FPS profili hazÃ„Â±r. Oyun iÃƒÂ§inde: SeÃƒÂ§enekler Ã¢â€ â€™ Video Ã¢â€ â€™ Shader Packs; ComplementaryÃ¢â‚¬â„¢de Performance profili ÃƒÂ¶nerilir.'
+        'Shader + FPS profili hazÃƒâ€Ã‚Â±r. Oyun iÃƒÆ’Ã‚Â§inde: SeÃƒÆ’Ã‚Â§enekler ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Video ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Shader Packs; ComplementaryÃƒÂ¢Ã¢â€šÂ¬Ã¢â€Â¢de Performance profili ÃƒÆ’Ã‚Â¶nerilir.'
       );
     } else if (presets.voiceChat) {
       status(
-        'Simple Voice Chat kuruldu. Oyunda V tuÃ…Å¸una basarak veya ayarlardan mikrofonu yapÃ„Â±landÃ„Â±rÃ„Â±n; sunucuda da mod gerekir.'
+        'Simple Voice Chat kuruldu. Oyunda V tuÃƒâ€¦Ã…Â¸una basarak veya ayarlardan mikrofonu yapÃƒâ€Ã‚Â±landÃƒâ€Ã‚Â±rÃƒâ€Ã‚Â±n; sunucuda da mod gerekir.'
       );
     } else if (presets.fullbrightUb) {
       status(
         fullbrightNeedsPolytone(presets, gameVersion)
-          ? 'Fullbright UB kuruldu. Kaynak paketi etkinleÃ…Å¸tirildi; Sodium/Iris ile PolyTone da yÃƒÂ¼klendi.'
+          ? 'Fullbright UB kuruldu. Kaynak paketi etkinleÃƒâ€¦Ã…Â¸tirildi; Sodium/Iris ile PolyTone da yÃƒÆ’Ã‚Â¼klendi.'
           : presets.shaderFps && !presets.optifine && !polytoneSupportedForGameVersion(gameVersion)
-            ? 'Fullbright UB kuruldu. 26.x sÃƒÂ¼rÃƒÂ¼mÃƒÂ¼nde PolyTone henÃƒÂ¼z yok Ã¢â‚¬â€ kaynak paketi etkin; tam parlaklÃ„Â±k Sodium/Iris ile sÃ„Â±nÃ„Â±rlÃ„Â± olabilir.'
-            : 'Fullbright UB kuruldu. Kaynak paketi indirildi ve SeÃƒÂ§enekler Ã¢â€ â€™ Kaynak paketleri bÃƒÂ¶lÃƒÂ¼mÃƒÂ¼nde etkinleÃ…Å¸tirildi.'
+            ? 'Fullbright UB kuruldu. 26.x sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼nde PolyTone henÃƒÆ’Ã‚Â¼z yok ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â kaynak paketi etkin; tam parlaklÃƒâ€Ã‚Â±k Sodium/Iris ile sÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â±rlÃƒâ€Ã‚Â± olabilir.'
+            : 'Fullbright UB kuruldu. Kaynak paketi indirildi ve SeÃƒÆ’Ã‚Â§enekler ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Kaynak paketleri bÃƒÆ’Ã‚Â¶lÃƒÆ’Ã‚Â¼mÃƒÆ’Ã‚Â¼nde etkinleÃƒâ€¦Ã…Â¸tirildi.'
       );
     } else if (presets.betterLeaves) {
       status(
         betterLeavesNeedsCullLeaves(presets)
           ? presets.optifine
-            ? "Motschen's Better Leaves kuruldu. OptiFine Ã¢â€ â€™ Video AyarlarÃ„Â± Ã¢â€ â€™ Kalite Ã¢â€ â€™ Smart Leaves aÃƒÂ§Ã„Â±n."
-            : "Motschen's Better Leaves kuruldu. Kaynak paketi ve Cull Leaves yÃƒÂ¼klendi."
-          : "Motschen's Better Leaves kuruldu. Kaynak paketi etkinleÃ…Å¸tirildi."
+            ? "Motschen's Better Leaves kuruldu. OptiFine ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Video AyarlarÃƒâ€Ã‚Â± ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Kalite ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Smart Leaves aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±n."
+            : "Motschen's Better Leaves kuruldu. Kaynak paketi ve Cull Leaves yÃƒÆ’Ã‚Â¼klendi."
+          : "Motschen's Better Leaves kuruldu. Kaynak paketi etkinleÃƒâ€¦Ã…Â¸tirildi."
       );
     } else if (presets.glowingOres) {
       const borderPack = glowingOresUseContinuityPack({ presets });
       status(
         borderPack
-          ? 'New Glowing Ores (Border) kuruldu. Continuity ile parÃ„Â±ltÃ„Â± ve baÃ„Å¸lÃ„Â± ÃƒÂ§erÃƒÂ§eve etkin.'
-          : 'New Glowing Ores (Default) kuruldu. OptiFine kullanÃ„Â±yorsanÃ„Â±z Emissive Textures aÃƒÂ§Ã„Â±n.'
+          ? 'New Glowing Ores (Border) kuruldu. Continuity ile parÃƒâ€Ã‚Â±ltÃƒâ€Ã‚Â± ve baÃƒâ€Ã…Â¸lÃƒâ€Ã‚Â± ÃƒÆ’Ã‚Â§erÃƒÆ’Ã‚Â§eve etkin.'
+          : 'New Glowing Ores (Default) kuruldu. OptiFine kullanÃƒâ€Ã‚Â±yorsanÃƒâ€Ã‚Â±z Emissive Textures aÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±n.'
       );
     } else if (presets.roundTrees) {
-      status('Round Trees kuruldu. Kaynak paketi listenin en ÃƒÂ¼stÃƒÂ¼ne yerleÃ…Å¸tirildi.');
+      status('Round Trees kuruldu. Kaynak paketi listenin en ÃƒÆ’Ã‚Â¼stÃƒÆ’Ã‚Â¼ne yerleÃƒâ€¦Ã…Â¸tirildi.');
     } else if (presets.crops3d) {
-      status('3D crops Revamped kuruldu. TarÃ„Â±m bloklarÃ„Â± 3D gÃƒÂ¶rÃƒÂ¼nÃƒÂ¼me geÃƒÂ§ti.');
+      status('3D crops Revamped kuruldu. TarÃƒâ€Ã‚Â±m bloklarÃƒâ€Ã‚Â± 3D gÃƒÆ’Ã‚Â¶rÃƒÆ’Ã‚Â¼nÃƒÆ’Ã‚Â¼me geÃƒÆ’Ã‚Â§ti.');
     } else if (presets.schematicFarm) {
-      status('Sematik Farm modu kuruldu. Oyunda F8 ile farm seÃƒÂ§in, Konumu Ayarla ile baÃ…Å¸langÃ„Â±ÃƒÂ§ noktasÃ„Â±nÃ„Â± belirleyin.');
+      status('Sematik Farm modu kuruldu. Oyunda F8 ile farm seÃƒÆ’Ã‚Â§in, Konumu Ayarla ile baÃƒâ€¦Ã…Â¸langÃƒâ€Ã‚Â±ÃƒÆ’Ã‚Â§ noktasÃƒâ€Ã‚Â±nÃƒâ€Ã‚Â± belirleyin.');
     } else {
-      status('KabartmalÃ„Â± blok / baÃ„Å¸lÃ„Â± doku: Continuity + Sodium hazÃ„Â±r.');
+      status('KabartmalÃƒâ€Ã‚Â± blok / baÃƒâ€Ã…Â¸lÃƒâ€Ã‚Â± doku: Continuity + Sodium hazÃƒâ€Ã‚Â±r.');
     }
 
     modIsolationService.enforceModIsolation(modsDir, presets, playMode);
@@ -2650,9 +2650,9 @@ module.exports = {
   CREATE_BUNDLED_ADDONS,
   resourcePackFormatForGameVersion,
   patchResourcePackZipForGameVersion,
-  // O1/O4 Ã¢â‚¬â€ kritik Modrinth sÃƒÂ¼rÃƒÂ¼m-eÃ…Å¸leÃ…Å¸tirme mantÃ„Â±Ã„Å¸Ã„Â± test edilebilsin diye dÃ„Â±Ã…Å¸a
-  // aktarÃ„Â±lÃ„Â±r (davranÃ„Â±Ã…Å¸ DEÃ„ÂÃ„Â°Ã…ÂMEZ; ayrÃ„Â±ca ileride ayrÃ„Â± modÃƒÂ¼le gÃƒÂ¼venli ÃƒÂ§Ã„Â±karÃ„Â±m
-  // iÃƒÂ§in test gÃƒÂ¼venlik aÃ„Å¸Ã„Â±). Bu fonksiyonlar saf (yan etkisiz).
+  // O1/O4 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â kritik Modrinth sÃƒÆ’Ã‚Â¼rÃƒÆ’Ã‚Â¼m-eÃƒâ€¦Ã…Â¸leÃƒâ€¦Ã…Â¸tirme mantÃƒâ€Ã‚Â±Ãƒâ€Ã…Â¸Ãƒâ€Ã‚Â± test edilebilsin diye dÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸a
+  // aktarÃƒâ€Ã‚Â±lÃƒâ€Ã‚Â±r (davranÃƒâ€Ã‚Â±Ãƒâ€¦Ã…Â¸ DEÃƒâ€Ã‚ÂÃƒâ€Ã‚Â°Ãƒâ€¦Ã‚ÂMEZ; ayrÃƒâ€Ã‚Â±ca ileride ayrÃƒâ€Ã‚Â± modÃƒÆ’Ã‚Â¼le gÃƒÆ’Ã‚Â¼venli ÃƒÆ’Ã‚Â§Ãƒâ€Ã‚Â±karÃƒâ€Ã‚Â±m
+  // iÃƒÆ’Ã‚Â§in test gÃƒÆ’Ã‚Â¼venlik aÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±). Bu fonksiyonlar saf (yan etkisiz).
   resolveShaderSlug,
   extractMcVersionFromModMeta,
   modrinthLoaderModGameVersionCandidates,
@@ -2662,7 +2662,7 @@ module.exports = {
   modrinthCandidateRank,
   pickNewestModrinthVersion,
   glowingOresVariantLabel,
-  // OptiFine reconcile slug/jar-test tablolari Ã¢â‚¬â€ regresyon testi icin. Slug'lar
+  // OptiFine reconcile slug/jar-test tablolari ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â regresyon testi icin. Slug'lar
   // gercek Modrinth proje slug'lari olmali; yanlis slug (404) reconcile'in bundled
   // bagimliligi silip geri koyamamasina ve oyun cokmesine yol acar.
   OPTIFINE_RECONCILE_SLUGS,
