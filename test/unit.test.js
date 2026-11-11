@@ -762,3 +762,27 @@ test('pelerin: launcher COSMETIC_ITEMS ile mod OPTIONS aynı id\'leri taşır ve
     }
   }
 });
+
+test('kaynak paketi: 26.x için yamalanan paket eski sürümde pack_format\'a geri döner', () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const AdmZip = require('adm-zip');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'marsana-rp-test-'));
+  try {
+    const zipPath = path.join(dir, 'fullbright-ub.zip');
+    const zip = new AdmZip();
+    zip.addFile('pack.mcmeta', Buffer.from(JSON.stringify({ pack: { description: 'FUB', pack_format: 34 } })));
+    zip.addFile('assets/minecraft/x.txt', Buffer.from('x'));
+    zip.writeZip(zipPath);
+    const readPack = () => JSON.parse(new AdmZip(zipPath).getEntry('pack.mcmeta').getData().toString('utf8')).pack;
+
+    assert.strictEqual(shader.patchResourcePackZipForGameVersion(zipPath, '1.21.1'), false, 'orijinal pack_format korunur');
+    assert.strictEqual(shader.patchResourcePackZipForGameVersion(zipPath, '26.1.2'), true);
+    assert.deepStrictEqual(readPack(), { description: 'FUB', min_format: 84, max_format: 84 });
+    assert.strictEqual(shader.patchResourcePackZipForGameVersion(zipPath, '1.21.1'), true);
+    assert.deepStrictEqual(readPack(), { description: 'FUB', pack_format: 34 });
+    assert.ok(new AdmZip(zipPath).getEntry('assets/minecraft/x.txt'), 'paket içeriği korunur');
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

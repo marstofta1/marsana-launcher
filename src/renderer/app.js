@@ -123,7 +123,14 @@ async function bootstrap() {
 
   const store = createStore(seededState);
   const i18n = initI18n(store);
-  store.setState({ statusText: i18n.t('common.ready') });
+  let readyText = i18n.t('common.ready');
+  store.setState({ statusText: readyText });
+  // Dil değişince boşta bekleyen "Hazır." durumunu da yeni dile çevir.
+  i18n.onChange(() => {
+    const next = i18n.t('common.ready');
+    if (store.getState().statusText === readyText) store.setState({ statusText: next });
+    readyText = next;
+  });
   updateBranding(store.getState().playMode, i18n.t);
 
   wireUpdateFlow({

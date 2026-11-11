@@ -241,9 +241,16 @@ function packAlreadySupportsGameFormat(pack, format) {
   );
 }
 
+// 1.21.9 öncesi oyunlar pack.mcmeta'da pack_format ister; yoksa paketi hiç yüklemez
+// ("Couldn't load pack metadata"). Aynı zip önce 26.x için min/max_format'a
+// yamalanıp sonra eski bir sürümde açılınca bu olur — geri yamalamak gerekir.
+const LEGACY_FALLBACK_PACK_FORMAT = 34;
+
 function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
-  if (!gameUsesModernResourcePackFormat(gameVersion)) return false;
-  const format = resourcePackFormatForGameVersion(gameVersion);
+  const modern = gameUsesModernResourcePackFormat(gameVersion);
+  const format = modern
+    ? resourcePackFormatForGameVersion(gameVersion)
+    : resourcePackFormatForGameVersion(gameVersion) ?? LEGACY_FALLBACK_PACK_FORMAT;
   if (format == null || !fs.existsSync(zipPath)) return false;
 
   const zip = new AdmZip(zipPath);
@@ -258,10 +265,15 @@ function patchResourcePackZipForGameVersion(zipPath, gameVersion) {
   }
 
   const pack = meta.pack || {};
-  if (packAlreadySupportsGameFormat(pack, format)) return false;
-
   const description = pack.description != null ? pack.description : 'Resource pack';
-  meta.pack = { description, min_format: format, max_format: format };
+  if (modern) {
+    if (packAlreadySupportsGameFormat(pack, format)) return false;
+    meta.pack = { description, min_format: format, max_format: format };
+  } else {
+    // Paketin kendi pack_format'ı varsa dokunma (orijinal Modrinth paketi).
+    if (typeof pack.pack_format === 'number') return false;
+    meta.pack = { description, pack_format: format };
+  }
 
   // adm-zip writeZip() mevcut arÃ…Å¸ivi yerinde gÃƒÂ¼ncellerken bazÃ„Â± paketleri (3D crops vb.)
   // bozabiliyor; ÃƒÂ§Ã„Â±kar Ã¢â€ â€™ pack.mcmeta yaz Ã¢â€ â€™ yeniden zip'le akÃ„Â±Ã…Å¸Ã„Â± gÃƒÂ¼venli.
@@ -2637,6 +2649,7 @@ module.exports = {
   createShaderStackService,
   CREATE_BUNDLED_ADDONS,
   resourcePackFormatForGameVersion,
+  patchResourcePackZipForGameVersion,
   // O1/O4 Ã¢â‚¬â€ kritik Modrinth sÃƒÂ¼rÃƒÂ¼m-eÃ…Å¸leÃ…Å¸tirme mantÃ„Â±Ã„Å¸Ã„Â± test edilebilsin diye dÃ„Â±Ã…Å¸a
   // aktarÃ„Â±lÃ„Â±r (davranÃ„Â±Ã…Å¸ DEÃ„ÂÃ„Â°Ã…ÂMEZ; ayrÃ„Â±ca ileride ayrÃ„Â± modÃƒÂ¼le gÃƒÂ¼venli ÃƒÂ§Ã„Â±karÃ„Â±m
   // iÃƒÂ§in test gÃƒÂ¼venlik aÃ„Å¸Ã„Â±). Bu fonksiyonlar saf (yan etkisiz).

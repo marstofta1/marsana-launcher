@@ -42,7 +42,16 @@ export function createCosmeticsPanel({ root, store, i18n }) {
   }
 
   function renderGrid(selected) {
-    grid.innerHTML = COSMETIC_ITEMS.map(
+    // Çeviri yoksa (anahtar geri dönerse) marsanaClient.js'teki Türkçe metne düş.
+    const tr = (key, fallback) => {
+      const v = i18n.t(key);
+      return v && v !== key ? v : fallback;
+    };
+    grid.innerHTML = COSMETIC_ITEMS.map((raw) => ({
+      ...raw,
+      label: tr(`cosmetics.items.${raw.id}.label`, raw.label),
+      hint: tr(`cosmetics.items.${raw.id}.hint`, raw.hint),
+    })).map(
       (item) => `
       <button
         type="button"
