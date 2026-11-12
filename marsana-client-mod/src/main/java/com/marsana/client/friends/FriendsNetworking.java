@@ -65,20 +65,34 @@ public final class FriendsNetworking {
         });
     }
 
+    /** Sunucuda Marsana modu var mi (kendi paketleriyle tasima). */
+    public static boolean hasServerMod() {
+        return ClientPlayNetworking.canSend(FriendsPayloads.FriendRequestC2S.TYPE);
+    }
+
     public static boolean sendFriendRequest(String targetName) {
-        if (!ClientPlayNetworking.canSend(FriendsPayloads.FriendRequestC2S.TYPE)) {
+        if (hasServerMod()) {
+            ClientPlayNetworking.send(new FriendsPayloads.FriendRequestC2S(targetName));
+        } else if (!WhisperFriendsTransport.sendRequest(targetName)) {
             return false;
         }
-        ClientPlayNetworking.send(new FriendsPayloads.FriendRequestC2S(targetName));
         FriendsManager.addOutgoingRequestByName(targetName);
         return true;
     }
 
     public static boolean sendFriendReply(java.util.UUID requesterUuid, boolean accept) {
-        if (!ClientPlayNetworking.canSend(FriendsPayloads.FriendRequestReplyC2S.TYPE)) {
-            return false;
+        if (hasServerMod()) {
+            ClientPlayNetworking.send(new FriendsPayloads.FriendRequestReplyC2S(requesterUuid, accept));
+        } else {
+            String name = FriendsManager.listIncomingRequests().stream()
+                .filter(r -> r.uuid().equals(requesterUuid))
+                .map(FriendsManager.FriendRequest::name)
+                .findFirst()
+                .orElse(null);
+            if (name == null || !WhisperFriendsTransport.sendReply(name, accept)) {
+                return false;
+            }
         }
-        ClientPlayNetworking.send(new FriendsPayloads.FriendRequestReplyC2S(requesterUuid, accept));
         if (accept) {
             FriendsManager.removeIncomingRequest(requesterUuid);
         }
@@ -86,15 +100,16 @@ public final class FriendsNetworking {
     }
 
     public static boolean sendFriendMessage(java.util.UUID targetUuid, String message) {
-        if (!ClientPlayNetworking.canSend(FriendsPayloads.FriendMessageC2S.TYPE)) {
-            return false;
+        if (hasServerMod()) {
+            ClientPlayNetworking.send(new FriendsPayloads.FriendMessageC2S(targetUuid, message));
+            return true;
         }
-        ClientPlayNetworking.send(new FriendsPayloads.FriendMessageC2S(targetUuid, message));
-        return true;
+        return WhisperFriendsTransport.sendMessage(FriendsManager.getFriendName(targetUuid), message);
     }
 
+    /** Arkadaslik su an kullanilabilir mi: sunucuda mod varsa ya da /msg ile (herhangi bir sunucuda). */
     public static boolean isServerSupported() {
-        return ClientPlayNetworking.canSend(FriendsPayloads.FriendRequestC2S.TYPE);
+        return hasServerMod() || WhisperFriendsTransport.canUse();
     }
 
     private static void notifyPlayer(Minecraft client, Component message) {

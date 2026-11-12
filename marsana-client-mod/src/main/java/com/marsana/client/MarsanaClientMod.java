@@ -26,6 +26,7 @@ public class MarsanaClientMod implements ClientModInitializer {
         ZoomHandler.register();
         ToggleSprintHandler.register();
         FriendsNetworking.registerClientHandlers();
+        com.marsana.client.friends.WhisperFriendsTransport.register();
         Runtime.getRuntime().addShutdownHook(new Thread(ModToggleManager::applyPendingFileToggles, "marsana-mod-sync"));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {

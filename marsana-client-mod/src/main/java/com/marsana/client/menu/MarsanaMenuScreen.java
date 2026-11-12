@@ -248,9 +248,11 @@ public class MarsanaMenuScreen extends Screen {
         String subtitle = switch (activeTab) {
             case MODS -> "Marsana HUD (CPS, keystrokes, zoom) aninda; Modrinth modlari jar ile";
             case COSMETICS -> "Ucretsiz pelerin secenekleri — sadece sen gorursun";
-            case FRIENDS -> FriendsNetworking.isServerSupported()
+            case FRIENDS -> FriendsNetworking.hasServerMod()
                 ? "Sunucudaki oyunculara istek gonder, arkadaslarinla mesajlas"
-                : "Arkadaslik icin sunucuda Marsana Client modu gerekli";
+                : FriendsNetworking.isServerSupported()
+                    ? "Fisilti (/msg) ile calisir — arkadasin ayni sunucuda olmali"
+                    : "Arkadaslarinla mesajlasmak icin bir sunucuya baglan";
         };
         graphics.centeredText(this.font, subtitle, this.width / 2, 52, 0xAAAAAA);
         super.extractRenderState(graphics, mouseX, mouseY, delta);

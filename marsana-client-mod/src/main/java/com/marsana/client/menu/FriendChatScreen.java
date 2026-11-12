@@ -45,7 +45,7 @@ public class FriendChatScreen extends Screen {
         int inputY = this.height - 56;
 
         messageInput = new EditBox(this.font, centerX - 160, inputY, 240, 20, Component.literal("Mesaj"));
-        messageInput.setMaxLength(256);
+        messageInput.setMaxLength(FriendsNetworking.hasServerMod() ? 256 : com.marsana.client.friends.WhisperFriendsTransport.MAX_MESSAGE_LENGTH);
         messageInput.setResponder(s -> {});
         addRenderableWidget(messageInput);
         setInitialFocus(messageInput);
@@ -84,7 +84,9 @@ public class FriendChatScreen extends Screen {
         if (!FriendsNetworking.sendFriendMessage(friendUuid, text)) {
             if (this.minecraft != null && this.minecraft.player != null) {
                 this.minecraft.player.sendSystemMessage(Component.literal(
-                    "Mesaj gonderilemedi — sunucu desteklemiyor veya arkadas cevrimdisi."
+                    FriendsNetworking.hasServerMod()
+                        ? "Mesaj gonderilemedi — arkadasin cevrimdisi olabilir."
+                        : "Mesaj gonderilemedi — arkadasin bu sunucuda cevrimici degil."
                 ).withStyle(ChatFormatting.RED));
             }
             return;

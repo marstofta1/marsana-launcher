@@ -108,12 +108,15 @@ public class AddFriendScreen extends Screen {
         }
         if (!FriendsNetworking.isServerSupported()) {
             notify(Component.literal(
-                "Sunucu Marsana arkadaslik sistemini desteklemiyor. Sunucuya Marsana Client modu kurulmali."
+                "Arkadaslik istegi icin bir sunucuya bagli olmalisin."
             ).withStyle(ChatFormatting.RED));
             return;
         }
         if (FriendsNetworking.sendFriendRequest(name)) {
-            notify(Component.literal("Istek gonderildi: " + name).withStyle(ChatFormatting.GREEN));
+            notify(Component.literal(FriendsNetworking.hasServerMod()
+                ? "Istek gonderildi: " + name
+                : "Istek fisilti (/msg) ile gonderildi: " + name + " (ikiniz de bu sunucuda olmalisiniz)"
+            ).withStyle(ChatFormatting.GREEN));
             if (nameInput != null) {
                 nameInput.setValue("");
             }
@@ -155,7 +158,7 @@ public class AddFriendScreen extends Screen {
 
         String subtitle = FriendsNetworking.isServerSupported()
             ? "Sunucudaki oyuncular veya isim yazarak istek gonder"
-            : "Oyunculari gorebilirsin; istek icin sunucuda Marsana Client modu gerekli";
+            : "Istek gondermek icin bir sunucuya baglan";
         graphics.centeredText(this.font, subtitle, this.width / 2, 28, 0xAAAAAA);
         graphics.text(this.font, "Oyuncu adi:", this.width / 2 - 160, 44, 0xAAAAAA);
 
