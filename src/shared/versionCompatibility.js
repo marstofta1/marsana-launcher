@@ -82,11 +82,6 @@ export function fabricOptifinePackSupported(versionId) {
   return parseInt(m[1], 10) <= 2;
 }
 
-/** Resmi optifine.net jar yalnızca klasik 1.x (en fazla 1.21.9). */
-export function officialOptifineJarSupported(versionId) {
-  return forgeOptifineLikelySupported(versionId);
-}
-
 // OptiFine'ın resmi olarak desteklediği en yeni Minecraft sürümü 1.21.9.
 // Klasik 1.x.y şeması dışı (örn. 26.1.2) sürümlerde OptiFine henüz yok.
 export function forgeOptifineLikelySupported(versionId) {
