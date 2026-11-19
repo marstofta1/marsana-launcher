@@ -1615,3 +1615,47 @@ body.no-animations *::after {
   width: 100%;
   margin-top: 8px;
 }
+
+/* Create eklenti açma/kapama listesi */
+.create-addons {
+  margin: 8px 0 4px 28px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-input);
+}
+
+.create-addons-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.create-addons-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.create-addons-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.create-addons-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 2px 12px;
+}
+
+.create-addons .create-addon {
+  margin: 0;
+  font-size: 13px;
+}
+
+.create-addons-warning {
+  margin: 8px 0 0;
+  padding-left: 0;
+  font-size: 12px;
+}

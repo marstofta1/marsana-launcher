@@ -825,3 +825,20 @@ test('neoforge: eski kurulum dosyaları silinir, korunanlar ve başka seriler ka
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+// ---------------------------------------------------------------- Create eklentileri
+test('create eklentileri: arayüz listesi kurulumdaki açılıp kapatılabilir slug\'larla aynı', async () => {
+  const { pathToFileURL } = require('node:url');
+  const mod = await import(pathToFileURL(path.join(__dirname, '..', 'src', 'shared', 'createAddons.js')).href);
+  assert.deepStrictEqual([...mod.CREATE_ADDON_IDS].sort(), [...shader.CREATE_TOGGLEABLE_ADDON_SLUGS].sort());
+});
+
+test('dil dosyaları: hepsi sözdizimi hatasız yüklenir', async () => {
+  const fs = require('node:fs');
+  const { pathToFileURL } = require('node:url');
+  const dir = path.join(__dirname, '..', 'src', 'shared', 'i18n', 'locales');
+  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js'))) {
+    const mod = await import(pathToFileURL(path.join(dir, f)).href);
+    assert.ok(mod.default || Object.keys(mod).length, f);
+  }
+});

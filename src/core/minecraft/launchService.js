@@ -883,7 +883,7 @@ function createLaunchService({
     };
   }
 
-  async function buildNeoForgeSpec({ version, includeCreate, createServerPack, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, javaPath, emit }) {
+  async function buildNeoForgeSpec({ version, includeCreate, createServerPack, createAddonsDisabled, includeShader, includeEmbossed, includeVoiceChat, includeFullbright, includeBetterLeaves, includeGlowingOres, includeRoundTrees, includeCrops3d, shaderSlug, javaPath, emit }) {
     const effectiveVersion =
       includeShader || includeEmbossed || includeVoiceChat || includeFullbright || includeBetterLeaves || includeGlowingOres ? effectiveModGameVersion(version) : version;
     if (effectiveVersion !== version && emit && emit.status) {
@@ -913,6 +913,7 @@ function createLaunchService({
         gameVersion: effectiveVersion,
         emit,
         serverPack: !!createServerPack,
+        disabledAddons: createServerPack ? [] : createAddonsDisabled,
       });
     }
 
@@ -1057,6 +1058,9 @@ function createLaunchService({
         version,
         includeCreate,
         createServerPack,
+        createAddonsDisabled: Array.isArray(modPresets && modPresets.createAddonsDisabled)
+          ? modPresets.createAddonsDisabled
+          : [],
         includeShader,
         includeEmbossed,
         includeVoiceChat,

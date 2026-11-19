@@ -1,4 +1,5 @@
 import { isClientMode, sanitizeSelectionForPlayMode } from '../../shared/marsanaClient.js';
+import { mountCreateAddons } from './createAddonsPanel.js';
 import {
   shaderFpsSupported,
   embossedBlocksSupported,
@@ -151,6 +152,7 @@ export function createModsPanel({ root, store, i18n }) {
             <p class="hint mods-hint" data-role="hint-create">
               Özellikle tek oyunculu önerilir. Seçildiğinde sürüm 1.21.1 ve NeoForge otomatik ayarlanır.
             </p>
+            <div data-role="create-addons" hidden></div>
           </div>
 
           <div data-role="row-sodium">
@@ -1024,6 +1026,8 @@ export function createModsPanel({ root, store, i18n }) {
       }),
       i18n.onChange(applyModsI18n),
     ];
+    const addonsSlot = root.querySelector('[data-role="create-addons"]');
+    if (addonsSlot) unsubs.push(mountCreateAddons({ container: addonsSlot, store, i18n }));
     return () => unsubs.forEach((u) => u());
   }
 

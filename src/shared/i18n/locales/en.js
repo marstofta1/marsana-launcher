@@ -240,6 +240,11 @@ export default {
     voiceChatHint: 'Proximity voice chat; configure with V in-game. Requires the mod on multiplayer servers.',
     create: 'Create (+ add-ons)',
     createHint: 'Installs Create plus a curated set of add-ons (Aeronautics, Diesel Generators, Power Grid, Steam \'n\' Rails, Connected…). Best for singleplayer; about 4 GB RAM recommended. Selecting it automatically switches to version 1.21.1 and NeoForge.',
+    createAddons: {
+      title: 'Add-ons',
+      count: '{on}/{total} on',
+      warning: "An add-on you turn off is removed on the next PLAY. If a world uses it, that add-on's blocks and items are deleted from the world. Add-ons required by another add-on are still installed.",
+    },
     sodium: 'Sodium',
     sodiumHint: 'Performance mod for Fabric/Quilt. Recommended with Iris shaders; Shader + FPS no longer installs Sodium — select it separately.',
     sodiumExtra: 'Sodium Extra',

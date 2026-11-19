@@ -240,6 +240,11 @@ export default {
     voiceChatHint: 'Proximity sesli sohbet; oyunda V ile ayarlanır. Çok oyunculu sunucuda mod gerekir.',
     create: 'Create (+ eklentiler)',
     createHint: 'Create ve seçilmiş eklentileri (Aeronautics, Diesel Generators, Power Grid, Steam \'n\' Rails, Connected…) birlikte kurar. Özellikle tek oyunculu önerilir; yaklaşık 4 GB RAM önerilir. Seçildiğinde sürüm 1.21.1 ve NeoForge otomatik ayarlanır.',
+    createAddons: {
+      title: 'Eklentiler',
+      count: '{on}/{total} açık',
+      warning: "Kapattığın eklenti bir sonraki OYNA'da kaldırılır. Bir dünyada kullandığın eklentiyi kapatırsan o eklentinin blokları ve eşyaları o dünyadan silinir. Başka bir eklentinin gerektirdiği eklenti yine kurulur.",
+    },
     sodium: 'Sodium',
     sodiumHint: 'Fabric/Quilt için performans modu. Iris shader ile birlikte önerilir; Shader + FPS artık Sodium kurmaz — ayrı seçilir.',
     sodiumExtra: 'Sodium Extra',

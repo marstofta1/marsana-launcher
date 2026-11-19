@@ -128,6 +128,7 @@ export function createPlayButton({ root, store, launchApi, i18n }) {
           sodium: !!state.modSodium,
           sodiumExtra: !!state.modSodiumExtra,
           create: !!state.modCreate && loader === 'neoforge',
+          createAddonsDisabled: Array.isArray(state.createAddonsDisabled) ? state.createAddonsDisabled : [],
           marsanaServer: !clientMode && loader === 'neoforge' && isMarsanaServerPackSelected(state),
           ...packPresets,
           clientHudPack: state.playMode === 'client' && !!state.modClientHudPack && clientMenuOk,
