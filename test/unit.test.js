@@ -842,3 +842,13 @@ test('dil dosyaları: hepsi sözdizimi hatasız yüklenir', async () => {
     assert.ok(mod.default || Object.keys(mod).length, f);
   }
 });
+
+test('kaynak kod: bozuk kodlanmış (mojibake) Türkçe metin yok', () => {
+  const fs = require('node:fs');
+  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? walk(path.join(dir, e.name)) : /\.(c?js|html|css)$/.test(e.name) ? [path.join(dir, e.name)] : []);
+  // UTF-8 metin Windows-1252 sanılıp yeniden kaydedilince "ı" -> "Ä±", "ç" -> "Ã§" olur.
+  const bad = /Ã[\u0080-¿Œ-™]|Ä±|Å[\u009FžŸ]|â€/;
+  const offenders = walk(path.join(__dirname, '..', 'src')).filter((f) => bad.test(fs.readFileSync(f, 'utf8')));
+  assert.deepStrictEqual(offenders.map((f) => path.relative(path.join(__dirname, '..'), f)), []);
+});
