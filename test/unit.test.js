@@ -786,3 +786,42 @@ test('kaynak paketi: 26.x için yamalanan paket eski sürümde pack_format\'a ge
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+// ---------------------------------------------------------------- NeoForge temizliği
+test('neoforge: yalnız aynı serinin tutulmayan sürümleri silinecek listeye girer', () => {
+  const { staleNeoForgeVersions } = require('../src/core/mods/neoforgeInstaller');
+  const installed = ['21.1.251', '21.1.265', '21.1.266', '21.1.270', '21.10.64', '26.3.0.101', '../evil', '21.1.x/../..'];
+  assert.deepStrictEqual(staleNeoForgeVersions(installed, '21.1', ['21.1.270', '21.1.266']), ['21.1.251', '21.1.265']);
+  assert.deepStrictEqual(staleNeoForgeVersions(installed, '21.10', ['21.10.64']), []);
+  assert.deepStrictEqual(staleNeoForgeVersions(['26.3.0.8-beta', '26.3.0.101'], '26.3', ['26.3.0.101']), ['26.3.0.8-beta']);
+});
+
+test('neoforge: eski kurulum dosyaları silinir, korunanlar ve başka seriler kalır', () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const { createNeoForgeInstaller } = require('../src/core/mods/neoforgeInstaller');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'marsana-nf-'));
+  try {
+    const gameRoot = path.join(root, 'minecraft');
+    const mk = (p) => { fs.mkdirSync(path.join(gameRoot, p), { recursive: true }); fs.writeFileSync(path.join(gameRoot, p, 'x'), 'x'); };
+    for (const v of ['21.1.251', '21.1.266', '21.1.270', '21.10.64']) {
+      mk(`versions/neoforge-${v}`);
+      mk(`libraries/net/neoforged/neoforge/${v}`);
+      fs.writeFileSync(path.join(gameRoot, `neoforge-${v}-installer.jar.log`), 'log');
+    }
+    fs.mkdirSync(path.join(root, 'neoforge-installers'));
+    fs.writeFileSync(path.join(root, 'neoforge-installers', 'neoforge-21.1.251-installer.jar'), 'jar');
+    const inst = createNeoForgeInstaller({ httpClient: {}, paths: { userDataDir: root } });
+    const removed = inst.pruneOldVersions({ gameRoot, mcVersion: '1.21.1', current: '21.1.270', keep: ['21.1.266'] });
+    assert.deepStrictEqual(removed, ['21.1.251']);
+    const exists = (p) => fs.existsSync(path.join(gameRoot, p));
+    assert.ok(!exists('versions/neoforge-21.1.251'));
+    assert.ok(!exists('libraries/net/neoforged/neoforge/21.1.251'));
+    assert.ok(!exists('neoforge-21.1.251-installer.jar.log'));
+    assert.ok(!fs.existsSync(path.join(root, 'neoforge-installers', 'neoforge-21.1.251-installer.jar')));
+    for (const keep of ['21.1.266', '21.1.270', '21.10.64']) assert.ok(exists(`versions/neoforge-${keep}`), keep);
+    assert.deepStrictEqual(inst.pruneOldVersions({ gameRoot, mcVersion: '1.20.1', current: 'x' }), [], 'legacy 1.20.1 dokunulmaz');
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

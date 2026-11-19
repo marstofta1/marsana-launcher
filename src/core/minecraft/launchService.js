@@ -5,7 +5,11 @@ const os = require('os');
 const path = require('path');
 const { Client } = require('minecraft-launcher-core');
 const { isMac } = require('../../shared/platform');
-const { marsanaServerQuickPlay } = require('../../shared/marsanaServer');
+const {
+  marsanaServerQuickPlay,
+  MARSANA_SERVER_MC_VERSION,
+  MARSANA_SERVER_NEOFORGE_VERSION,
+} = require('../../shared/marsanaServer');
 const {
   isOrnitheVersionBlocked,
   ornitheBlockedVersionMessage,
@@ -887,11 +891,18 @@ function createLaunchService({
         text: `NeoForge mod uyumluluğu için Minecraft ${effectiveVersion} kullanılıyor (${version} base'i ile aynı dünya/protokol).`,
       });
     }
+    // Klima SMP paketi sabit NeoForge sürümünü kullanır; diğer NeoForge 1.21.1 oyunları en
+    // yeniyi alır ama sabit sürüm temizlikte korunur (iki mod arasında gidip gelince yeniden
+    // indirilmesin).
+    const serverPinApplies = effectiveVersion === MARSANA_SERVER_MC_VERSION;
     const { customId, neoforgeVersion } = await neoforgeInstaller.ensureInstalled({
       mcVersion: effectiveVersion,
       gameRoot: paths.gameRoot,
       javaPath,
       emit,
+      logger,
+      versionOverride: createServerPack && serverPinApplies ? MARSANA_SERVER_NEOFORGE_VERSION : undefined,
+      keepVersions: serverPinApplies ? [MARSANA_SERVER_NEOFORGE_VERSION] : [],
     });
     logger.info('NeoForge profile ready', { effectiveVersion, neoforgeVersion, customId });
 

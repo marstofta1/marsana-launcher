@@ -12,6 +12,10 @@
 const MARSANA_SERVER_HOST = 'marstral11880-OSWR.aternos.me';
 const MARSANA_SERVER_PORT = 25565;
 const MARSANA_SERVER_MC_VERSION = '1.21.1';
+// Klima SMP paketinin kurduğu sabit NeoForge sürümü. Sabitlenmezse launcher her NeoForge
+// yayınında yeni bir kurulum (~55 MB) indirir ve oyuncunun diskinde birikir. 21.1.x istemciler
+// aynı serideki sunuculara bağlanır; Aternos'ta seri değişirse (ör. 21.2) bunu da güncelle.
+const MARSANA_SERVER_NEOFORGE_VERSION = '21.1.266';
 const MARSANA_SERVER_DASHBOARD_URL = 'https://aternos.org/servers/';
 
 // İstemcide de bulunması gereken, sunucuyla aynı sabit sürümlü modlar. Sunucudaki giriş modu
@@ -85,6 +89,7 @@ module.exports = {
   MARSANA_SERVER_HOST,
   MARSANA_SERVER_PORT,
   MARSANA_SERVER_MC_VERSION,
+  MARSANA_SERVER_NEOFORGE_VERSION,
   MARSANA_SERVER_DASHBOARD_URL,
   MARSANA_SERVER_PINNED_MODS,
   marsanaServerQuickPlay,

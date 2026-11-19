@@ -46,6 +46,19 @@ function neoforgePrefixFor(mcVersion) {
   return v;
 }
 
+const SAFE_VERSION_RE = /^[0-9][0-9A-Za-z.+-]{0,40}$/;
+
+/**
+ * Aynı Minecraft serisine (prefix, ör. "21.1") ait, tutulmayacak NeoForge sürümleri.
+ * Saf fonksiyon: test edilir. keep içindekiler ve seri dışı sürümler asla dönmez.
+ */
+function staleNeoForgeVersions(installed, prefix, keep) {
+  const keepSet = new Set((keep || []).filter(Boolean));
+  return (installed || []).filter(
+    (v) => SAFE_VERSION_RE.test(v) && v.startsWith(`${prefix}.`) && !keepSet.has(v)
+  );
+}
+
 function isStable(versionStr) {
   return !/-(beta|rc|alpha|pre)/i.test(versionStr);
 }
@@ -153,9 +166,12 @@ function createNeoForgeInstaller({ httpClient, paths }) {
     }
   }
 
-  async function ensureInstallerJar({ mcVersion, emit }) {
+  async function ensureInstallerJar({ mcVersion, versionOverride, emit }) {
     const legacy = isLegacy1201(mcVersion);
-    const neoforgeVersion = await pickNeoForgeVersion(mcVersion);
+    if (versionOverride && !SAFE_VERSION_RE.test(versionOverride)) {
+      throw new LauncherError(Codes.FORGE_UNSUPPORTED, `NeoForge sürümü güvenli değil: "${versionOverride}".`);
+    }
+    const neoforgeVersion = versionOverride || (await pickNeoForgeVersion(mcVersion));
     const dir = installersDir();
     await fs.promises.mkdir(dir, { recursive: true });
     // neoforgeVersion, uzak maven-metadata.xml'den geliyor ve dosya adına
@@ -202,14 +218,62 @@ function createNeoForgeInstaller({ httpClient, paths }) {
     });
   }
 
-  async function ensureInstalled({ mcVersion, gameRoot, javaPath, emit }) {
+  /**
+   * Aynı seriden eski NeoForge kurulumlarını siler (sürüm profili, kütüphaneleri, yamalı
+   * istemci, kurucu jar'ı ve kurulum günlüğü). Her NeoForge yayını ~55 MB ekliyordu ve hiç
+   * silinmiyordu. Yalnız launcher'ın kendi oluşturduğu yollar; hata olursa (dosya kullanımda
+   * vb.) o sürüm atlanır, oyun başlatma asla engellenmez. Legacy 1.20.1 Forge'a dokunulmaz.
+   */
+  function pruneOldVersions({ gameRoot, mcVersion, current, keep = [], logger }) {
+    if (isLegacy1201(mcVersion)) return [];
+    const versionsDir = path.join(gameRoot, 'versions');
+    let installed = [];
+    try {
+      installed = fs
+        .readdirSync(versionsDir)
+        .filter((d) => d.startsWith('neoforge-'))
+        .map((d) => d.slice('neoforge-'.length));
+    } catch {
+      return [];
+    }
+    const stale = staleNeoForgeVersions(installed, neoforgePrefixFor(mcVersion), [current, ...keep]);
+    const removed = [];
+    for (const v of stale) {
+      const targets = [
+        path.join(versionsDir, `neoforge-${v}`),
+        path.join(gameRoot, 'libraries', 'net', 'neoforged', 'neoforge', v),
+        path.join(gameRoot, 'libraries', 'net', 'neoforged', 'minecraft-client-patched', v),
+        path.join(installersDir(), `neoforge-${v}-installer.jar`),
+        path.join(gameRoot, `neoforge-${v}-installer.jar.log`),
+      ];
+      try {
+        for (const t of targets) fs.rmSync(t, { recursive: true, force: true });
+        removed.push(v);
+      } catch (err) {
+        if (logger) logger.warn('Eski NeoForge silinemedi', { version: v, err: err.message });
+      }
+    }
+    return removed;
+  }
+
+  async function ensureInstalled({ mcVersion, gameRoot, javaPath, emit, versionOverride, keepVersions = [], logger }) {
     const { installerPath, neoforgeVersion, legacy } = await ensureInstallerJar({
       mcVersion,
+      versionOverride,
       emit,
     });
+    const prune = () => {
+      const removed = pruneOldVersions({ gameRoot, mcVersion, current: neoforgeVersion, keep: keepVersions, logger });
+      if (removed.length && emit && emit.status) {
+        emit.status({ text: `Eski NeoForge sürümleri silindi (${removed.length}): ${removed.join(', ')}` });
+      }
+    };
 
     const already = findInstalledProfile(gameRoot, neoforgeVersion, legacy);
-    if (already) return { customId: already, neoforgeVersion };
+    if (already) {
+      prune();
+      return { customId: already, neoforgeVersion };
+    }
 
     await fs.promises.mkdir(gameRoot, { recursive: true });
     const profilesPath = path.join(gameRoot, 'launcher_profiles.json');
@@ -236,10 +300,11 @@ function createNeoForgeInstaller({ httpClient, paths }) {
         `NeoForge installer tamamlandı fakat versions/ altında profil bulunamadı (${neoforgeVersion}).`
       );
     }
+    prune();
     return { customId: installed, neoforgeVersion };
   }
 
-  return { pickNeoForgeVersion, ensureInstallerJar, ensureInstalled };
+  return { pickNeoForgeVersion, ensureInstallerJar, ensureInstalled, pruneOldVersions };
 }
 
-module.exports = { createNeoForgeInstaller };
+module.exports = { createNeoForgeInstaller, staleNeoForgeVersions };
