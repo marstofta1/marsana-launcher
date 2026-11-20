@@ -49,8 +49,8 @@ const EMBOSSED_SLUGS = Object.freeze(['continuity', 'fabric-api']);
 const VOICE_CHAT_SLUG = 'simple-voice-chat';
 const CREATE_SLUG = 'create';
 // Create kutusu işaretlenince Create ile birlikte kurulan, bilerek kısa tutulmuş eklenti
-// listesi (disk/RAM/FPS). Örtüşenler (Create Generators, Crafts & Additions, dekor
-// paketleri) bilerek yok. Yalnızca zorunlu bağımlılıklar çekilir.
+// listesi (disk/RAM/FPS). Örtüşenler (Create Generators, Crafts & Additions) bilerek yok;
+// dekor için yalnız Create Deco var. Yalnızca zorunlu bağımlılıklar çekilir.
 const CREATE_ADDON_SLUGS = Object.freeze([
   'create-aeronautics',
   'create-steam-n-rails-1.21.1',
@@ -60,6 +60,7 @@ const CREATE_ADDON_SLUGS = Object.freeze([
   'create-connected',
   'create-dreams-and-desires',
   'create-framed',
+  'create-deco',
 ]);
 // Modrinth'te olmayan (ör. incelemede) Create eklentileri: jar launcher'la gelir
 // (bundled-mods/create-addons/), hash doğrulanıp kopyalanır. Modrinth'e çıkınca
@@ -70,7 +71,7 @@ const CREATE_BUNDLED_ADDONS = Object.freeze([
     file: 'create_engines-1.21.1-0.1.1.jar',
     bundled: 'create-addons/create_engines-1.21.1-0.1.1.jar',
     sha512:
-      '2928f02968bed21e9e5831126a164a2f87e64636613d8df610bd04279fb7ed171c16e8552e2a174fa0629e06fd142a949d087c7cf4b6cca4c1cb492c42acd487',
+      'c6244f23928ca16945204748f7ecc6e3030443c6c20f59e7a6049431ba038bc7fb3b7ee8a3b65d95656a85a3faac6bb5d10c3d5c21d4fbc5b951297a1dccff84',
   }),
 ]);
 // Create modunda FPS/RAM kazancı için kurulan hafif NeoForge optimizasyon modları

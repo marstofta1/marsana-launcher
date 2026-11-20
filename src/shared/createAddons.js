@@ -11,6 +11,7 @@ export const CREATE_ADDONS = Object.freeze([
   { id: 'create-connected', name: 'Create: Connected' },
   { id: 'create-dreams-and-desires', name: 'Dreams & Desires' },
   { id: 'create-framed', name: 'Create: Framed' },
+  { id: 'create-deco', name: 'Create Deco' },
 ]);
 
 export const CREATE_ADDON_IDS = Object.freeze(CREATE_ADDONS.map((a) => a.id));
