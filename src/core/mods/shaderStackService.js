@@ -15,6 +15,7 @@ const hudDepsService = require('./hudDepsService');
 const modCompatibilityService = require('./modCompatibilityService');
 const { CLIENT_HUD_MOD_SLUGS, CLIENT_HUD_REQUIRED_SLUGS } = require('../../shared/clientHudModRegistry');
 const { MARSANA_SERVER_PINNED_MODS } = require('../../shared/marsanaServer');
+const { CREATE_PACK } = require('../../shared/createPack');
 // O4 — Modrinth sürüm-seçim mantığı ayrı, bağımsız test edilebilir modüle taşındı.
 // Aynı adlarla içe alınır; tüm çağrı yerleri değişmeden çalışır.
 const {
@@ -47,24 +48,15 @@ const SHADER_BUNDLE_VERSION = 49;
 const SHADER_FPS_SLUGS = Object.freeze(['iris', 'fabric-api']);
 const EMBOSSED_SLUGS = Object.freeze(['continuity', 'fabric-api']);
 const VOICE_CHAT_SLUG = 'simple-voice-chat';
-const CREATE_SLUG = 'create';
-// Create kutusu işaretlenince Create ile birlikte kurulan, bilerek kısa tutulmuş eklenti
-// listesi (disk/RAM/FPS). Örtüşenler (Create Generators, Crafts & Additions) bilerek yok;
-// dekor için yalnız Create Deco var. Yalnızca zorunlu bağımlılıklar çekilir.
-const CREATE_ADDON_SLUGS = Object.freeze([
-  'create-aeronautics',
-  'create-steam-n-rails-1.21.1',
-  'create-railways-navigator',
-  'create-diesel-generators',
-  'power-grid',
-  'create-connected',
-  'create-dreams-and-desires',
-  'create-framed',
-  'create-deco',
-]);
+// Tek oyunculu "Create (+ eklentiler)" paketi: bir .mrpack'ten üretilen sabit jar listesi
+// (src/shared/createPack.js ← scripts/import-create-pack.js). Sürümler pakette sabittir;
+// jar'lar Modrinth CDN'inden sha512 doğrulanarak indirilir. Kütüphane/optimizasyon
+// modları ve Create'in kendisi kapatılamaz (`fixed`).
+const CREATE_PACK_MODS = CREATE_PACK.mods;
+const CREATE_DOWNLOAD_CONCURRENCY = 6;
 // Modrinth'te olmayan (ör. incelemede) Create eklentileri: jar launcher'la gelir
 // (bundled-mods/create-addons/), hash doğrulanıp kopyalanır. Modrinth'e çıkınca
-// slug'ı CREATE_ADDON_SLUGS'a taşı, buradan sil.
+// mrpack'e ekleyip buradan sil.
 const CREATE_BUNDLED_ADDONS = Object.freeze([
   Object.freeze({
     slug: 'create-engines',
@@ -74,13 +66,30 @@ const CREATE_BUNDLED_ADDONS = Object.freeze([
       'c6244f23928ca16945204748f7ecc6e3030443c6c20f59e7a6049431ba038bc7fb3b7ee8a3b65d95656a85a3faac6bb5d10c3d5c21d4fbc5b951297a1dccff84',
   }),
 ]);
-// Create modunda FPS/RAM kazancı için kurulan hafif NeoForge optimizasyon modları
-// (toplam ~4 MB). Hepsi opsiyonel: bulunamazsa atlanır.
 // Arayüzden tek tek açılıp kapatılabilen eklentiler (src/shared/createAddons.js ile aynı id'ler).
 const CREATE_TOGGLEABLE_ADDON_SLUGS = Object.freeze([
-  ...CREATE_ADDON_SLUGS,
+  ...CREATE_PACK_MODS.filter((m) => !m.fixed).map((m) => m.id),
   ...CREATE_BUNDLED_ADDONS.map((a) => a.slug),
 ]);
+
+// Açık bırakılan eklentiler + sabitler + bunların zorunlu bağımlılıkları (kapatılmış olsalar bile).
+function resolveCreatePackMods(disabled) {
+  const byId = new Map(CREATE_PACK_MODS.map((m) => [m.id, m]));
+  const wanted = new Set(CREATE_PACK_MODS.filter((m) => m.fixed || !disabled.has(m.id)).map((m) => m.id));
+  const queue = [...wanted];
+  while (queue.length) {
+    const mod = byId.get(queue.pop());
+    for (const dep of (mod && mod.requires) || []) {
+      if (!wanted.has(dep) && byId.has(dep)) {
+        wanted.add(dep);
+        queue.push(dep);
+      }
+    }
+  }
+  return CREATE_PACK_MODS.filter((m) => wanted.has(m.id));
+}
+// Klima SMP paketinde Create'in yanında kurulan hafif NeoForge optimizasyon modları
+// (toplam ~4 MB). Hepsi opsiyonel: bulunamazsa atlanır.
 const CREATE_PERF_SLUGS = Object.freeze([
   'sodium',
   'modernfix',
@@ -2079,10 +2088,9 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     syncFpsBoostVideoOptions({ gameRoot, modsDir: path.join(gameRoot, 'mods'), enabled: false });
   }
 
-  // Create + küratörlü eklenti listesi (CREATE_ADDON_SLUGS). Arayüz bu seçeneği NeoForge
-  // 1.21.1'e sabitler. Güncel jar'lar yeniden indirilmez; Modrinth'e ulaşılamazsa kurulu
-  // jar'larla devam edilir (tek oyunculu, çevrimdışı açılış). Taban Create bulunamazsa
-  // hata verilir; bir eklentinin uygun sürümü yoksa o eklenti sessizce atlanır.
+  // Tek oyunculu: Create paketi (CREATE_PACK, sabit sürümler) + launcher'la gelen eklentiler.
+  // Arayüz bu seçeneği NeoForge 1.21.1'e sabitler. Diskte doğru hash'le duran jar'lar yeniden
+  // indirilmez; Modrinth'e ulaşılamazsa kurulu jar'larla devam edilir (çevrimdışı açılış).
   //
   // `serverPack`: Klima SMP paketi — Create ve eklentileri sunucuyla aynı
   // sabit sürümden kurulur (NeoForge kayıt eşleşmesi), yalnızca FPS modları güncel çekilir.
@@ -2091,7 +2099,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     const disabled = new Set(
       serverPack ? [] : (disabledAddons || []).filter((s) => CREATE_TOGGLEABLE_ADDON_SLUGS.includes(s))
     );
-    const addonSlugs = CREATE_ADDON_SLUGS.filter((s) => !disabled.has(s));
+    const packMods = serverPack ? [] : resolveCreatePackMods(disabled);
     const bundledAddons = CREATE_BUNDLED_ADDONS.filter((a) => !disabled.has(a.slug));
     const modsDir = path.join(gameRoot, 'mods');
     const status = statusEmitter(emit);
@@ -2118,14 +2126,7 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
         });
         jars = [...pinned, ...perf.filter((j) => !pinned.includes(j))];
       } else {
-        jars = await downloadModsFromSlugs({
-          modsDir,
-          gameVersion,
-          slugs: [CREATE_SLUG, ...addonSlugs, ...CREATE_PERF_SLUGS],
-          modrinthLoaders: [loader],
-          skipExisting: true,
-          optionalSlugs: new Set([...addonSlugs, ...CREATE_PERF_SLUGS]),
-        });
+        jars = await downloadCreatePackMods(modsDir, packMods, status);
         // Launcher'la gelen eklentiler; taban Create kurulduysa eklenir, jar eksikse atlanır.
         if (jars.length > 0) {
           for (const addon of bundledAddons) {
@@ -2187,6 +2188,28 @@ function createShaderStackService({ httpClient, fabricInstaller, modrinthClient,
     } catch {
       return '';
     }
+  }
+
+  // Create paketinin jar'ları: eksik/değişmiş olanlar birkaç paralel bağlantıyla indirilir.
+  async function downloadCreatePackMods(modsDir, mods, status) {
+    await fs.promises.mkdir(modsDir, { recursive: true });
+    const missing = mods.filter((m) => sha512OfFile(assertInside(modsDir, path.basename(m.file))) !== m.sha512);
+    if (missing.length > 0) {
+      const mb = Math.round(missing.reduce((s, m) => s + (m.size || 0), 0) / 1e6);
+      status(`Create paketi: ${missing.length} mod indiriliyor (~${mb} MB)...`);
+    }
+    let next = 0;
+    let done = 0;
+    const worker = async () => {
+      while (next < missing.length) {
+        const mod = missing[next++];
+        await downloadPinnedMods(modsDir, [mod]);
+        done++;
+        if (done % 10 === 0 && done < missing.length) status(`Create paketi: ${done}/${missing.length} mod indirildi...`);
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(CREATE_DOWNLOAD_CONCURRENCY, missing.length) }, worker));
+    return mods.map((m) => path.basename(m.file));
   }
 
   // Sabit sürümlü jar'ları indirir; diskte aynı hash'le duranlar yeniden indirilmez.
@@ -2662,6 +2685,7 @@ module.exports = {
   createShaderStackService,
   CREATE_BUNDLED_ADDONS,
   CREATE_TOGGLEABLE_ADDON_SLUGS,
+  resolveCreatePackMods,
   resourcePackFormatForGameVersion,
   patchResourcePackZipForGameVersion,
   // O1/O4 — kritik Modrinth sürüm-eşleştirme mantığı test edilebilsin diye dışa

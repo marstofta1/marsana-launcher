@@ -1627,7 +1627,7 @@ body.no-animations *::after {
 
 .create-addons-head {
   display: flex;
-  justify-content: space-between;
+  gap: 8px;
   align-items: baseline;
   margin-bottom: 6px;
 }
@@ -1647,6 +1647,30 @@ body.no-animations *::after {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 2px 12px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.create-addons-bulk {
+  margin-left: auto;
+  padding-left: 12px;
+  display: inline-flex;
+  gap: 10px;
+}
+
+.create-addons-bulk button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--accent, var(--text-primary));
+  cursor: pointer;
+}
+
+.create-addons-bulk button:hover {
+  text-decoration: underline;
 }
 
 .create-addons .create-addon {

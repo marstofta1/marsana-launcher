@@ -28,11 +28,22 @@ export function mountCreateAddons({ container, store, i18n }) {
     <div class="create-addons-head">
       <span class="create-addons-title" data-role="title"></span>
       <span class="create-addons-count" data-role="count"></span>
+      <span class="create-addons-bulk">
+        <button type="button" class="link-button" data-bulk="on"></button>
+        <button type="button" class="link-button" data-bulk="off"></button>
+      </span>
     </div>
     <div class="create-addons-list" data-role="list"></div>
     <p class="hint create-addons-warning" data-role="warning"></p>
   `;
   const list = container.querySelector('[data-role="list"]');
+
+  function setDisabled(next) {
+    saveDisabled(next);
+    store.setState({ createAddonsDisabled: next });
+  }
+  container.querySelector('[data-bulk="on"]').addEventListener('click', () => setDisabled([]));
+  container.querySelector('[data-bulk="off"]').addEventListener('click', () => setDisabled([...CREATE_ADDON_IDS]));
 
   function disabledOf(state) {
     return Array.isArray(state.createAddonsDisabled) ? state.createAddonsDisabled : [];
@@ -49,6 +60,8 @@ export function mountCreateAddons({ container, store, i18n }) {
       total: CREATE_ADDONS.length,
     });
     container.querySelector('[data-role="warning"]').textContent = i18n.t('mods.createAddons.warning');
+    container.querySelector('[data-bulk="on"]').textContent = i18n.t('mods.createAddons.allOn');
+    container.querySelector('[data-bulk="off"]').textContent = i18n.t('mods.createAddons.allOff');
     list.innerHTML = CREATE_ADDONS.map(
       (a) => `
       <label class="field checkbox create-addon">
@@ -62,9 +75,7 @@ export function mountCreateAddons({ container, store, i18n }) {
         const current = new Set(disabledOf(store.getState()));
         if (cb.checked) current.delete(id);
         else current.add(id);
-        const next = CREATE_ADDON_IDS.filter((x) => current.has(x));
-        saveDisabled(next);
-        store.setState({ createAddonsDisabled: next });
+        setDisabled(CREATE_ADDON_IDS.filter((x) => current.has(x)));
       });
     }
   }

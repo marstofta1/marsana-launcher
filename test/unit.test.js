@@ -833,6 +833,24 @@ test('create eklentileri: arayüz listesi kurulumdaki açılıp kapatılabilir s
   assert.deepStrictEqual([...mod.CREATE_ADDON_IDS].sort(), [...shader.CREATE_TOGGLEABLE_ADDON_SLUGS].sort());
 });
 
+test('create paketi: kapatılan eklentinin gerektirdiği mod yine kurulur, sabitler kapanmaz', () => {
+  const { CREATE_PACK } = require('../src/shared/createPack');
+  const ids = (list) => list.map((m) => m.id);
+  const all = ids(shader.resolveCreatePackMods(new Set()));
+  assert.strictEqual(all.length, CREATE_PACK.mods.length);
+  for (const m of CREATE_PACK.mods) {
+    assert.match(m.sha512, /^[0-9a-f]{128}$/, m.id);
+    assert.match(m.url, /^https:\/\/cdn\.modrinth\.com\//, m.id);
+  }
+  // Hepsi kapalı: yalnız sabitler (+ onların bağımlılıkları) kalır, Create her zaman var.
+  const min = ids(shader.resolveCreatePackMods(new Set(shader.CREATE_TOGGLEABLE_ADDON_SLUGS)));
+  assert.ok(min.includes('create'));
+  assert.ok(!min.includes('create-deco'));
+  // Dragons Plus kapalı ama Enchantment Industry açık → Dragons Plus yine kurulur.
+  const dep = ids(shader.resolveCreatePackMods(new Set(['create-dragons-plus'])));
+  assert.ok(dep.includes('create-dragons-plus'));
+});
+
 test('dil dosyaları: hepsi sözdizimi hatasız yüklenir', async () => {
   const fs = require('node:fs');
   const { pathToFileURL } = require('node:url');

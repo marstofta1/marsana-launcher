@@ -239,10 +239,12 @@ export default {
     voiceChat: 'Voice Chat (Simple Voice Chat)',
     voiceChatHint: 'Proximity sesli sohbet; oyunda V ile ayarlanır. Çok oyunculu sunucuda mod gerekir.',
     create: 'Create (+ eklentiler)',
-    createHint: 'Create ve seçilmiş eklentileri (Aeronautics, Diesel Generators, Power Grid, Steam \'n\' Rails, Connected…) birlikte kurar. Özellikle tek oyunculu önerilir; yaklaşık 4 GB RAM önerilir. Seçildiğinde sürüm 1.21.1 ve NeoForge otomatik ayarlanır.',
+    createHint: "All of Create paketini kurar: Create ve her biri kapatılabilen yaklaşık 90 eklenti (Aeronautics, Diesel Generators, Power Grid, Steam 'n' Rails, Create Deco…). Özellikle tek oyunculu önerilir; yaklaşık 6 GB RAM önerilir. Seçildiğinde sürüm 1.21.1 ve NeoForge otomatik ayarlanır.",
     createAddons: {
       title: 'Eklentiler',
       count: '{on}/{total} açık',
+      allOn: 'Hepsini aç',
+      allOff: 'Hepsini kapat',
       warning: "Kapattığın eklenti bir sonraki OYNA'da kaldırılır. Bir dünyada kullandığın eklentiyi kapatırsan o eklentinin blokları ve eşyaları o dünyadan silinir. Başka bir eklentinin gerektirdiği eklenti yine kurulur.",
     },
     sodium: 'Sodium',
